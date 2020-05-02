@@ -19,10 +19,9 @@ namespace NNLib
         }
     }
 
-    public abstract class Network<T> : IReadOnlyNetwork<T> where T : Layer
+    public abstract class Network<T> : Lockable<T>, INetwork<T> where T : Layer
     {
-        internal List<T> Layers;
-        internal Matrix<double> Output;
+        private readonly List<T> _layers;
 
         protected Network(params T[] layers)
         {
@@ -32,51 +31,30 @@ namespace NNLib
             }
             ValidateLayersInputsAndOutputs(layers);
 
-            Layers = new List<T>(layers);
-            foreach (var layer in Layers)
+            _layers = new List<T>(layers);
+            foreach (var layer in _layers)
             {
                 layer.AssignNetwork(this);
                 AssignEventHandlers(layer);
             }
+
+            SetLockableChildren(_layers);
         }
 
-        public IReadOnlyList<T> ReadLayers => Layers.AsReadOnly();
-        public IReadOnlyList<Layer> ReadBaseLayers => Layers.AsReadOnly();
-        public ReadMatrixWrapper ReadOutput => Output;
-        public int TotalLayers => Layers.Count;
-        public int TotalNeurons => Layers.Sum(layer => layer.NeuronsCount);
-        public bool Locked { get; private set; }
 
+        public Matrix<double>? Output;
 
-        private void CheckIsLocked(){if(Locked) throw new ObjectLockedException("Network locked");}
-
-        internal virtual void Lock([CallerMemberName] string caller = "")
-        {
-            CheckIsLocked();
-            foreach (var layer in Layers)
-            {
-                layer.Lock();
-            }
-            Trace.WriteLine("Network obj LOCKED by " + caller);
-            Locked = true;
-        }
-
-        internal virtual void Unlock([CallerMemberName] string caller = "")
-        {
-            foreach (var layer in Layers)
-            {
-                layer.Unlock();
-            }
-            Trace.WriteLine("Network obj UNLOCKED by " + caller);
-            Locked = false;
-        }
+        public IReadOnlyList<T> Layers => _layers;
+        public IReadOnlyList<Layer> BaseLayers => _layers;
+        public int TotalLayers => _layers.Count;
+        public int TotalNeurons => _layers.Sum(layer => layer.NeuronsCount);
 
         public void AddLayer(T layer)
         {
             CheckIsLocked();
 
-            ValidateLayersInputsAndOutputs(Layers.Concat(new []{layer}).ToArray());
-            Layers.Add(layer);
+            ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToArray());
+            _layers.Add(layer);
             layer.AssignNetwork(this);
             AssignEventHandlers(layer);
         }
@@ -88,13 +66,13 @@ namespace NNLib
 
         private void LayerOnNeuronsCountChanged(Layer layer)
         {
-            for (int i = 0; i < Layers.Count; i++)
+            for (int i = 0; i < _layers.Count; i++)
             {
-                if (Layers[i] == layer)
+                if (_layers[i] == layer)
                 {
-                    if (i + 1 < Layers.Count)
+                    if (i + 1 < _layers.Count)
                     {
-                        Layers[i + 1].InputsCount = layer.NeuronsCount;
+                        _layers[i + 1].InputsCount = layer.NeuronsCount;
                     }
                     break;
                 }

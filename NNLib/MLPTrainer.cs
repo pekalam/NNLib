@@ -8,15 +8,13 @@ namespace NNLib
 {
     public class MLPTrainer
     {
-        private readonly MLPNetwork _network;
-
         //todo params
         public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, GradientDescent learningMethod, ILossFunction lossFunction)
         {
             Guards._NotNull(network).NotNull(trainingSets).NotNull(learningMethod).NotNull(lossFunction);
             ValidateNetworkAndTrainingSets(network, trainingSets);
 
-            _network = network;
+            Network = network;
             TrainingSets = trainingSets;
             LearningMethod = learningMethod;
             LossFunction = lossFunction;
@@ -27,7 +25,12 @@ namespace NNLib
         public ILossFunction LossFunction { get; set; }
         public SupervisedTrainingSets TrainingSets { get; }
         public GradientDescent LearningMethod { get; }
+        public MLPNetwork Network { get; }
+
         public double Error { get; private set; } = double.MaxValue;
+
+        public event Action EpochEnd;
+        public event Action IterationEnd;
 
         public void SetTrainingSet() => LearningMethod.TrainingSet = TrainingSets.TrainingSet;
         public void SetValidationSet() => LearningMethod.TrainingSet = TrainingSets.ValidationSet;
@@ -67,8 +70,8 @@ namespace NNLib
 
             for (int i = 0; i < result.Weigths.Count; i++)
             {
-                _network.Layers[i].Weights.Subtract(result.Weigths[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Subtract(result.Biases[i], _network.Layers[i].Biases);
+                Network.Layers[i].Weights.Subtract(result.Weigths[i], Network.Layers[i].Weights);
+                Network.Layers[i].Biases.Subtract(result.Biases[i], Network.Layers[i].Biases);
             }
         }
 
@@ -84,14 +87,14 @@ namespace NNLib
         {
             CheckTrainingCancelationIsRequested(ct);
 
-            var totalDelta = Matrix<double>.Build.Dense(_network.Layers.Last().NeuronsCount, 1);
+            var totalDelta = Matrix<double>.Build.Dense(Network.Layers.Last().NeuronsCount, 1);
             for (int i = 0; i < TrainingSets.TrainingSet.Input.Count; ++i)
             {
-                _network.CalculateOutput(TrainingSets.TrainingSet.Input[i]);
+                Network.CalculateOutput(TrainingSets.TrainingSet.Input[i]);
 
                 CheckTrainingCancelationIsRequested(ct);
 
-                var err = LossFunction.Function(_network.Output,
+                var err = LossFunction.Function(Network.Output,
                     TrainingSets.TrainingSet.Target[i]);
                 totalDelta.Add(err, totalDelta);
             }
@@ -102,7 +105,7 @@ namespace NNLib
 
         private bool DoIterationInternal(in CancellationToken ct)
         {
-            var result = LearningMethod.DoIteration(_network, LossFunction, ct);
+            var result = LearningMethod.DoIteration(Network, LossFunction, ct);
             
             CheckTrainingCancelationIsRequested(ct);
 
@@ -112,12 +115,13 @@ namespace NNLib
                 return true;
             }
 
+            IterationEnd?.Invoke();
             return false;
         }
 
         public void DoIteration(in CancellationToken ct = default)
         {
-            _network.Lock();
+            Network.Lock();
 
             try
             {
@@ -125,23 +129,23 @@ namespace NNLib
             }
             finally
             {
-                _network.Unlock();
+                Network.Unlock();
             }
         }
 
         public double DoEpoch(in CancellationToken ct = default)
         {
-            _network.Lock();
+            Network.Lock();
 
             try
             {
                 while (!DoIterationInternal(ct)) ;
-
+                EpochEnd?.Invoke();
                 Error = CalculateNetworkError(ct);
             }
             finally
             {
-                _network.Unlock();
+                Network.Unlock();
             }
 
             return Error;

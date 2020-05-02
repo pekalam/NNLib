@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
-    public abstract class Layer : IReadOnlyLayer
+    public abstract class Layer : Lockable
     {
-        private IReadOnlyNetwork _network;
-
-        internal Matrix<double> Weights;
-        internal Matrix<double> Biases;
-        internal Matrix<double> Output;
+        private INetwork _network;
 
         //TODO public? + UI
         internal event Action<Layer> NeuronsCountChanging;
@@ -31,15 +25,16 @@ namespace NNLib
             HasBiases = biases != null;
         }
 
+        public Matrix<double> Weights;
+        public Matrix<double> Biases;
+        public Matrix<double> Output;
 
-        internal void AssignNetwork(IReadOnlyNetwork network) => _network = network;
+
+        internal void AssignNetwork(INetwork network) => _network = network;
 
         public bool HasBiases { get; }
-        public ReadMatrixWrapper ReadOutput => Output;
-        public ReadMatrixWrapper ReadWeights => Weights;
-        public bool IsOutputLayer => _network.ReadBaseLayers[_network.ReadBaseLayers.Count - 1] == this;
-        public bool IsInputLayer => _network.ReadBaseLayers[0] == this;
-        public bool Locked { get; private set; }
+        public bool IsOutputLayer => _network.BaseLayers[^1] == this;
+        public bool IsInputLayer => _network.BaseLayers[0] == this;
 
         public int NeuronsCount
         {
@@ -75,21 +70,6 @@ namespace NNLib
                 BuildMatrices(value, NeuronsCount);
                 InputsCountChanged?.Invoke(this);
             }
-        }
-
-        private void CheckIsLocked() { if (Locked) throw new ObjectLockedException("Layer locked"); }
-
-        internal virtual void Lock([CallerMemberName] string caller = "")
-        {
-            CheckIsLocked();
-            Trace.WriteLine("Layer obj LOCKED by " + caller);
-            Locked = true;
-        }
-
-        internal virtual void Unlock([CallerMemberName] string caller = "")
-        {
-            Trace.WriteLine("Layer obj UNLOCKED by " + caller);
-            Locked = false;
         }
 
         protected abstract void BuildMatrices(int inputsCount, int neuronsCount);

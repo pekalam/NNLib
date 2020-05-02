@@ -66,18 +66,18 @@ namespace UnitTests
 
             net.CalculateOutput(Matrix<double>.Build.DenseOfArray(new double[,] {{1}, {2}}));
 
-            net.ReadOutput[0, 0].Should().Be(5);
-            net.ReadOutput[1, 0].Should().Be(6);
-            net.ReadOutput.ColumnCount.Should().Be(1);
-            net.ReadOutput.RowCount.Should().Be(2);
+            net.Output[0, 0].Should().Be(5);
+            net.Output[1, 0].Should().Be(6);
+            net.Output.ColumnCount.Should().Be(1);
+            net.Output.RowCount.Should().Be(2);
 
 
             l.CalculateOutput(Matrix<double>.Build.DenseOfArray(new double[,] {{2}, {0}}));
 
-            l.ReadOutput[0, 0].Should().Be(2);
-            l.ReadOutput[1, 0].Should().Be(4);
-            l.ReadOutput.ColumnCount.Should().Be(1);
-            l.ReadOutput.RowCount.Should().Be(2);
+            l.Output[0, 0].Should().Be(2);
+            l.Output[1, 0].Should().Be(4);
+            l.Output.ColumnCount.Should().Be(1);
+            l.Output.RowCount.Should().Be(2);
         }
 
 
