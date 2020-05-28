@@ -19,7 +19,7 @@ namespace NNLib
         }
     }
 
-    public abstract class Network<T> : Lockable<T>, INetwork<T> where T : Layer
+    public abstract class Network<T> : INetwork<T> where T : Layer
     {
         private readonly List<T> _layers;
 
@@ -38,7 +38,6 @@ namespace NNLib
                 AssignEventHandlers(layer);
             }
 
-            SetLockableChildren(_layers);
         }
 
 
@@ -51,8 +50,6 @@ namespace NNLib
 
         public void AddLayer(T layer)
         {
-            CheckIsLocked();
-
             ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToArray());
             _layers.Add(layer);
             layer.AssignNetwork(this);

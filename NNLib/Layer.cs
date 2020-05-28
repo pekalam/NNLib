@@ -3,7 +3,7 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
-    public abstract class Layer : Lockable
+    public abstract class Layer
     {
         private INetwork _network;
 
@@ -41,8 +41,6 @@ namespace NNLib
             get => Weights.RowCount;
             set
             {
-                CheckIsLocked();
-
                 if (value <= 0)
                 {
                     throw new ArgumentException($"{nameof(NeuronsCount)} cannot be lower or equal 0");
@@ -59,8 +57,6 @@ namespace NNLib
             get => Weights.ColumnCount;
             set
             {
-                CheckIsLocked();
-
                 if (value <= 0)
                 {
                     throw new ArgumentException($"{nameof(InputsCount)} cannot be lower or equal 0");

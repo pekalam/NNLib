@@ -11,7 +11,8 @@ namespace NNLib
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
-        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, GradientDescentParams parameters, ILossFunction lossFunction)
+        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, GradientDescentParams parameters,
+            ILossFunction lossFunction)
         {
             Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
             ValidateNetworkAndTrainingSets(network, trainingSets);
@@ -43,11 +44,13 @@ namespace NNLib
                 {
                     throw new Exception("Invalid network inputs count");
                 }
+
                 if (network.Layers.Last().NeuronsCount != set.Target[0].RowCount)
                 {
                     throw new Exception("Invalid network inputs count");
                 }
             }
+
             Validate(trainingSets.TrainingSet);
             if (trainingSets.ValidationSet != null)
             {
@@ -105,7 +108,7 @@ namespace NNLib
         private bool DoIterationInternal(in CancellationToken ct)
         {
             var result = BatchTrainer.DoIteration(Network, LossFunction, ct);
-            
+
             CheckTrainingCancelationIsRequested(ct);
 
             if (result != null)
@@ -120,43 +123,23 @@ namespace NNLib
 
         public void DoIteration(in CancellationToken ct = default)
         {
-            Network.Lock();
-
-            try
-            {
-                DoIterationInternal(ct);
-            }
-            finally
-            {
-                Network.Unlock();
-            }
+            DoIterationInternal(ct);
         }
 
         public double DoEpoch(in CancellationToken ct = default)
         {
-            Network.Lock();
+            var result = BatchTrainer.DoEpoch(Network, LossFunction, ct);
+            UpdateWeightsAndBiasesWithDeltaRule(result);
+            EpochEnd?.Invoke();
+            Error = CalculateNetworkError(ct);
 
-            try
-            {
-                var result = BatchTrainer.DoEpoch(Network, LossFunction, ct);
-                UpdateWeightsAndBiasesWithDeltaRule(result);
-                EpochEnd?.Invoke();
-                Error = CalculateNetworkError(ct);
-            }
-            finally
-            {
-                Network.Unlock();
-            }
 
             return Error;
         }
 
         public Task<double> DoEpochAsync(CancellationToken ct = default)
         {
-            return Task.Run(() =>
-            {
-                return DoEpoch(ct);
-            }, ct);
+            return Task.Run(() => { return DoEpoch(ct); }, ct);
         }
     }
 }
