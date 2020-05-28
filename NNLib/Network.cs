@@ -1,23 +1,24 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using MathNet.Numerics.LinearAlgebra;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace NNLib
 {
-    public class ObjectLockedException : Exception
+    public interface INetwork
     {
-        public ObjectLockedException()
-        {
-        }
-
-        public ObjectLockedException(string message) : base(message)
-        {
-        }
+        IReadOnlyList<Layer> BaseLayers { get; }
     }
+
+    public interface INetwork<T> : INetwork where T : Layer
+    {
+        IReadOnlyList<T> Layers { get; }
+        int TotalLayers { get; }
+        int TotalNeurons { get; }
+    }
+
 
     public abstract class Network<T> : INetwork<T> where T : Layer
     {

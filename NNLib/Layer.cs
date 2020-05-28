@@ -1,5 +1,5 @@
-﻿using System;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 
 namespace NNLib
 {
@@ -7,7 +7,6 @@ namespace NNLib
     {
         private INetwork _network;
 
-        //TODO public? + UI
         internal event Action<Layer> NeuronsCountChanging;
         internal event Action<Layer> InputsCountChanging;
         internal event Action<Layer> NeuronsCountChanged;

@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NNLib;
 using NNLib.ActivationFunction;
+using System;
+using System.Collections.Generic;
 using Xunit;
-using Xunit.Sdk;
 using M = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 namespace UnitTests

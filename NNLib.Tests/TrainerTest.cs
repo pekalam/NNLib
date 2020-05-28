@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using Moq;
 using NNLib;
 using NNLib.ActivationFunction;
+using System;
 using Xunit;
 
 namespace UnitTests

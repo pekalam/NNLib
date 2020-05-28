@@ -1,5 +1,5 @@
-using System;
 using NNLib;
+using System;
 using Xunit;
 
 namespace UnitTests

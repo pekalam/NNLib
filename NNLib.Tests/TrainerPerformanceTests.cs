@@ -1,7 +1,6 @@
-using System;
-using MathNet.Numerics;
 using NNLib;
 using NNLib.ActivationFunction;
+using System;
 using Xunit;
 using Xunit.Abstractions;
 

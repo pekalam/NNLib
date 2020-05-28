@@ -1,6 +1,6 @@
-﻿using System;
-using NNLib;
+﻿using NNLib;
 using NNLib.ActivationFunction;
+using System;
 using UnitTests;
 
 namespace TrainingTest

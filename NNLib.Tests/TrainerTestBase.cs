@@ -1,10 +1,10 @@
+using Moq;
+using NNLib;
+using NNLib.ActivationFunction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Moq;
-using NNLib;
-using NNLib.ActivationFunction;
 using Xunit;
 using Xunit.Abstractions;
 

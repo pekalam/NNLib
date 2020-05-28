@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
-using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {

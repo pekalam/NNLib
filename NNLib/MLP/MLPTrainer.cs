@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
