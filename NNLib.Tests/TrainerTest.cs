@@ -24,11 +24,11 @@ namespace UnitTests
         private MLPTrainer CreateBasicAndGateTrainer(MLPNetwork net)
         {
             return new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                new GradientDescent(new GradientDescentLearningParameters()
+                new GradientDescentParams()
                 {
                     LearningRate = 0.9,
                     Momentum = 0.1
-                }), new QuadraticLossFunction());
+                }, new QuadraticLossFunction());
         }
 
         [Fact]

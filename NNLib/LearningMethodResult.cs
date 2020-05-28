@@ -10,15 +10,15 @@ namespace NNLib
         {
         }
 
-        public List<Matrix<double>> Weigths { get; set; }
-        public List<Matrix<double>> Biases { get; set; }
+        public Matrix<double>[] Weigths { get; set; }
+        public Matrix<double>[] Biases { get; set; }
 
         public static LearningMethodResult FromNetwork(MLPNetwork network)
         {
             return new LearningMethodResult()
             {
-                Weigths = new List<Matrix<double>>(Enumerable.Repeat<Matrix<double>>(null, network.TotalLayers)),
-                Biases = new List<Matrix<double>>(Enumerable.Repeat<Matrix<double>>(null, network.TotalLayers)),
+                Weigths = new Matrix<double>[network.TotalLayers],
+                Biases = new Matrix<double>[network.TotalLayers],
             };
         }
     }

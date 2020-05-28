@@ -73,6 +73,16 @@ namespace NNLib
         }
 
         protected abstract void BuildMatrices(int inputsCount, int neuronsCount);
+
+        public void RandomizeW()
+        {
+
+        }
+
+        public void RandomizeB()
+        {
+        }
+
         public abstract void CalculateOutput(Matrix<double> input);
     }
 }

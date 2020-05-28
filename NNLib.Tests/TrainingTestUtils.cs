@@ -54,18 +54,18 @@ namespace UnitTests
         }
     }
 
-    public class GradientDescentTests : TrainerTestBase
+    public class BatchTrainerTests : TrainerTestBase
     {
         MLPNetwork net;
 
-        public GradientDescentTests()
+        public BatchTrainerTests()
         {
             net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }
 
-        private GradientDescent CreateLearningMethod(GradientDescentLearningParameters parameters)
+        private BatchTrainer CreateBatchTrainer(GradientDescentParams parameters)
         {
-            var method = new GradientDescent(parameters);
+            var method = new BatchTrainer(new GradientDescentAlgorithm(net, parameters));
             method.TrainingSet = TrainingTestUtils.AndGateSet();
             return method;
         }
@@ -73,14 +73,14 @@ namespace UnitTests
         [Fact]
         public void When_constructed_has_valid_state()
         {
-            var learningParams = new GradientDescentLearningParameters()
+            var learningParams = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
                 BatchSize = 4
             };
 
-            var method = CreateLearningMethod(learningParams);
+            var method = CreateBatchTrainer(learningParams);
             method.Iterations.Should().Be(0);
             method.IterationsPerEpoch.Should().Be(1);
             method.CurrentBatch.Should().Be(0);
@@ -89,16 +89,16 @@ namespace UnitTests
         [Fact]
         public void When_parameters_change_state_changes()
         {
-            var learningParams = new GradientDescentLearningParameters()
+            var learningParams = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
                 BatchSize = 4
             };
 
-            var method = CreateLearningMethod(learningParams);
+            var method = CreateBatchTrainer(learningParams);
 
-            var learningParams2 = new GradientDescentLearningParameters()
+            var learningParams2 = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
@@ -115,26 +115,26 @@ namespace UnitTests
         [Fact]
         public void When_invalid_parameters_throws()
         {
-            var learningParams = new GradientDescentLearningParameters()
+            var learningParams = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
                 BatchSize = 10
             };
 
-            Assert.Throws<ArgumentException>(() => CreateLearningMethod(learningParams));
+            Assert.Throws<ArgumentException>(() => CreateBatchTrainer(learningParams));
         }
 
         [Fact]
         public void Batch_training_iteration_returns_epoch_result()
         {
-            var learningParams = new GradientDescentLearningParameters()
+            var learningParams = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
                 BatchSize = 4
             };
-            var method = CreateLearningMethod(learningParams);
+            var method = CreateBatchTrainer(learningParams);
 
             method.Iterations.Should().Be(0);
             method.IterationsPerEpoch.Should().Be(1);
@@ -151,13 +151,13 @@ namespace UnitTests
         [Fact]
         public void Mini_Batch_training_iterations_returns_epoch_result()
         {
-            var learningParams = new GradientDescentLearningParameters()
+            var learningParams = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
                 BatchSize = 2
             };
-            var method = CreateLearningMethod(learningParams);
+            var method = CreateBatchTrainer(learningParams);
 
             method.Iterations.Should().Be(0);
             method.IterationsPerEpoch.Should().Be(2);
@@ -180,13 +180,13 @@ namespace UnitTests
         [Fact]
         public void Online_training_iterations_returns_epoch_result()
         {
-            var learningParams = new GradientDescentLearningParameters()
+            var learningParams = new GradientDescentParams()
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
                 BatchSize = 1
             };
-            var method = CreateLearningMethod(learningParams);
+            var method = CreateBatchTrainer(learningParams);
 
             method.Iterations.Should().Be(0);
             method.IterationsPerEpoch.Should().Be(4);

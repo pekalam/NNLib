@@ -27,9 +27,9 @@ namespace NNLib
             }
         }
 
-        public static SupervisedSet FromArrays(double[][] input, double[][] expected)
+        public static SupervisedSet FromArrays(double[][] input, double[][] target)
         {
-            ValidateInputAndTargetArrays(input, expected);
+            ValidateInputAndTargetArrays(input, target);
             var inputVectors = new List<Matrix<double>>();
             foreach (double[] inputVec in input)
             {
@@ -39,7 +39,7 @@ namespace NNLib
             var defaultInputVectorSet = new DefaultVectorSet(inputVectors);
 
             var targetVectors = new List<Matrix<double>>();
-            foreach (double[] targetVec in expected)
+            foreach (double[] targetVec in target)
             {
                 var vector = Vector<double>.Build.DenseOfArray(targetVec).ToColumnMatrix();
                 targetVectors.Add(vector);

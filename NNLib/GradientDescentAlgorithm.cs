@@ -2,91 +2,56 @@
 
 namespace NNLib
 {
-    internal class GradientDescentAlgorithm
+    public class GradientDescentAlgorithm
     {
-        private LearningMethodResult _previousLearningMethodResult;
+        private LearningMethodResult? _previousLearningMethodResult;
+        private readonly MLPNetwork _network;
 
-        public GradientDescentAlgorithm(GradientDescentLearningParameters learningParameters)
+        public GradientDescentAlgorithm(MLPNetwork network, GradientDescentParams @params)
         {
-            LearningParameters = learningParameters;
+            Params = @params;
+            _network = network;
         }
 
-        public GradientDescentLearningParameters LearningParameters { get; set; }
+        public GradientDescentParams Params { get; set; }
 
-        private void CalculateDeltaForOutputLayer(MLPNetwork network, int layerInd, ILossFunction lossFunction, LearningMethodResult result,
-            Matrix<double> input, Matrix<double> expected, out Matrix<double> previousDelta)
+        private Matrix<double> CalcUpdate(int layerInd, PerceptronLayer layer, LearningMethodResult result,
+            Matrix<double> input, Matrix<double> next)
         {
-            var layer = network.Layers[layerInd];
-            var layerInput = layer.IsInputLayer ? input : network.Layers[layerInd - 1].Output;
-
-            var lossFuncDerivative = lossFunction.Derivative(layer.Output, expected);
             var outputDerivative = layer.ActivationFunction.DerivativeY(layer.Output);
-
-            var delta = lossFuncDerivative.PointwiseMultiply(outputDerivative);
-            var biasesDelta = delta.Multiply(LearningParameters.LearningRate);
-            previousDelta = delta;
-
-            
-            var weightsDelta = delta.TransposeAndMultiply(layerInput).Multiply(LearningParameters.LearningRate);
-
-            if (_previousLearningMethodResult != null)
-            {
-                _previousLearningMethodResult.Weigths[layerInd] = _previousLearningMethodResult.Weigths[layerInd]
-                    .Multiply(LearningParameters.Momentum);
-                weightsDelta.Add(_previousLearningMethodResult.Weigths[layerInd], weightsDelta);
-            }
+            var delta = next.PointwiseMultiply(outputDerivative);
+            var biasesDelta = delta.Multiply(Params.LearningRate);
+            var weightsDelta = delta.TransposeAndMultiply(input).Multiply(Params.LearningRate);
 
             result.Weigths[layerInd] = weightsDelta;
             result.Biases[layerInd] = biasesDelta;
+
+            return delta;
         }
 
-        private void CalculateDeltaForInnerLayer(MLPNetwork network, int layerInd, LearningMethodResult result,
-            Matrix<double> input, ref Matrix<double> previousDelta)
+        public LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction)
         {
-            var layer = network.Layers[layerInd];
-            var nextLayer = network.Layers[layerInd + 1];
-            var layerInput = layer.IsInputLayer ? input : network.Layers[layerInd - 1].Output;
+            var learningResult = LearningMethodResult.FromNetwork(_network);
 
-            var prevTransp = nextLayer.Weights.TransposeThisAndMultiply(previousDelta);
-            var outputDerivative = layer.ActivationFunction.DerivativeY(layer.Output);
-
-            var delta = prevTransp.PointwiseMultiply(outputDerivative);
-            var biasesDelta = delta.Multiply(LearningParameters.LearningRate);
-            previousDelta = delta;
-
-            var weightsDelta = delta.TransposeAndMultiply(layerInput).Multiply(LearningParameters.LearningRate);
-
-            if (_previousLearningMethodResult != null)
+            Matrix<double> next = lossFunction.Derivative(_network.Layers[^1].Output, expected);
+            for (int i = _network.Layers.Count - 1; i >= 0; --i)
             {
-                _previousLearningMethodResult.Weigths[layerInd] = _previousLearningMethodResult.Weigths[layerInd]
-                    .Multiply(LearningParameters.Momentum);
-                weightsDelta.Add(_previousLearningMethodResult.Weigths[layerInd], weightsDelta);
-            }
+                var layer = _network.Layers[i];
 
-            result.Weigths[layerInd] = weightsDelta;
-            result.Biases[layerInd] = biasesDelta;
-        }
+                var previousDelta = CalcUpdate(i, layer, learningResult, i > 0 ? _network.Layers[i - 1].Output : input, next);
 
-        public LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction)
-        {
-            var learningResult = LearningMethodResult.FromNetwork(network);
-            Matrix<double> previousDelta = null;
+                next = layer.Weights.TransposeThisAndMultiply(previousDelta);
 
-            for (int i = network.Layers.Count - 1; i >= 0; --i)
-            {
-                var layer = network.Layers[i];
 
-                if (layer.IsOutputLayer)
+                if (_previousLearningMethodResult != null)
                 {
-                    CalculateDeltaForOutputLayer(network, i, lossFunction, learningResult, input, expected, out previousDelta);
-                }
-                else
-                {
-                    CalculateDeltaForInnerLayer(network, i, learningResult, input, ref previousDelta);
+                    _previousLearningMethodResult.Weigths[i] = _previousLearningMethodResult.Weigths[i]
+                        .Multiply(Params.Momentum);
+                    learningResult.Weigths[i].Add(_previousLearningMethodResult.Weigths[i], learningResult.Weigths[i]);
                 }
             }
 
-            if (LearningParameters.Momentum != 0d)
+            if (Params.Momentum > 0d)
             {
                 _previousLearningMethodResult = learningResult;
             }

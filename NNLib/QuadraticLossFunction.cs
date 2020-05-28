@@ -7,7 +7,7 @@ namespace NNLib
         public Matrix<double> Function(Matrix<double> input, Matrix<double> expected)
         {
             var err = input.Subtract(expected);
-            err.Power(2, err);
+            err.PointwiseMultiply(err, err);
             var result = err.Multiply(0.5d);
             return result;
         }

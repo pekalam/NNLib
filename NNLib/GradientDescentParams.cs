@@ -2,7 +2,7 @@
 
 namespace NNLib
 {
-    public class GradientDescentLearningParameters
+    public class GradientDescentParams
     {
         private double _learningRate = 0.1;
         private double _momentum = 0;

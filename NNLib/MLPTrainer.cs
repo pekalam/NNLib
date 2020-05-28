@@ -8,33 +8,32 @@ namespace NNLib
 {
     public class MLPTrainer
     {
-        //todo params
-        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, GradientDescent learningMethod, ILossFunction lossFunction)
+        public event Action? EpochEnd;
+        public event Action? IterationEnd;
+
+        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, GradientDescentParams parameters, ILossFunction lossFunction)
         {
-            Guards._NotNull(network).NotNull(trainingSets).NotNull(learningMethod).NotNull(lossFunction);
+            Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
             ValidateNetworkAndTrainingSets(network, trainingSets);
 
             Network = network;
             TrainingSets = trainingSets;
-            LearningMethod = learningMethod;
+            BatchTrainer = new BatchTrainer(new GradientDescentAlgorithm(Network, parameters));
             LossFunction = lossFunction;
 
-            LearningMethod.TrainingSet = trainingSets.TrainingSet;
+            BatchTrainer.TrainingSet = trainingSets.TrainingSet;
         }
 
         public ILossFunction LossFunction { get; set; }
+        public BatchTrainer BatchTrainer { get; }
         public SupervisedTrainingSets TrainingSets { get; }
-        public GradientDescent LearningMethod { get; }
         public MLPNetwork Network { get; }
 
         public double Error { get; private set; } = double.MaxValue;
 
-        public event Action EpochEnd;
-        public event Action IterationEnd;
-
-        public void SetTrainingSet() => LearningMethod.TrainingSet = TrainingSets.TrainingSet;
-        public void SetValidationSet() => LearningMethod.TrainingSet = TrainingSets.ValidationSet;
-        public void SetTestSet() => LearningMethod.TrainingSet = TrainingSets.TestSet;
+        public void SetTrainingSet() => BatchTrainer.TrainingSet = TrainingSets.TrainingSet;
+        public void SetValidationSet() => BatchTrainer.TrainingSet = TrainingSets.ValidationSet;
+        public void SetTestSet() => BatchTrainer.TrainingSet = TrainingSets.TestSet;
 
         private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
@@ -63,12 +62,12 @@ namespace NNLib
 
         protected void UpdateWeightsAndBiasesWithDeltaRule(LearningMethodResult result)
         {
-            if (result.Weigths.Count != result.Biases.Count)
+            if (result.Weigths.Length != result.Biases.Length)
             {
                 throw new Exception();
             }
 
-            for (int i = 0; i < result.Weigths.Count; i++)
+            for (int i = 0; i < result.Weigths.Length; i++)
             {
                 Network.Layers[i].Weights.Subtract(result.Weigths[i], Network.Layers[i].Weights);
                 Network.Layers[i].Biases.Subtract(result.Biases[i], Network.Layers[i].Biases);
@@ -105,7 +104,7 @@ namespace NNLib
 
         private bool DoIterationInternal(in CancellationToken ct)
         {
-            var result = LearningMethod.DoIteration(Network, LossFunction, ct);
+            var result = BatchTrainer.DoIteration(Network, LossFunction, ct);
             
             CheckTrainingCancelationIsRequested(ct);
 
@@ -139,7 +138,8 @@ namespace NNLib
 
             try
             {
-                while (!DoIterationInternal(ct)) ;
+                var result = BatchTrainer.DoEpoch(Network, LossFunction, ct);
+                UpdateWeightsAndBiasesWithDeltaRule(result);
                 EpochEnd?.Invoke();
                 Error = CalculateNetworkError(ct);
             }

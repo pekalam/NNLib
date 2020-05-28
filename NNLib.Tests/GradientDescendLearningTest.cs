@@ -9,7 +9,7 @@ namespace UnitTests
         [Fact]
         public void GradientDescendLearningParameters_throws_when_invalid_params()
         {
-            var par = new GradientDescentLearningParameters();
+            var par = new GradientDescentParams();
             Assert.Throws<InvalidOperationException>(() => par.LearningRate = 0);
             Assert.Throws<InvalidOperationException>(() => par.LearningRate = -1);
             Assert.Throws<InvalidOperationException>(() => par.LearningRate = double.PositiveInfinity);

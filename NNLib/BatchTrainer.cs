@@ -4,19 +4,18 @@ using System.Threading.Tasks;
 
 namespace NNLib
 {
-    public class GradientDescent
+    public class BatchTrainer
     {
-        private GradientDescentLearningParameters _parameters;
+        private GradientDescentParams _parameters;
         private SupervisedSet _trainingSet;
         private int _setIndex;
         private readonly GradientDescentAlgorithm _gradientDescent;
         private LearningMethodResult[] _methodResults;
 
-        public GradientDescent(GradientDescentLearningParameters parameters)
+        public BatchTrainer(GradientDescentAlgorithm gradientDescent)
         {
-            Guards._NotNull(parameters);
-            _parameters = parameters;
-            _gradientDescent = new GradientDescentAlgorithm(parameters);
+            _gradientDescent = gradientDescent;
+            _parameters = gradientDescent.Params;
         }
 
         public SupervisedSet TrainingSet
@@ -33,7 +32,7 @@ namespace NNLib
             }
         }
 
-        public GradientDescentLearningParameters Parameters
+        public GradientDescentParams Parameters
         {
             get => _parameters;
             set
@@ -85,12 +84,12 @@ namespace NNLib
 
             for (int i = 1; i < _methodResults.Length; i++)
             {
-                for (int j = 0; j < result.Weigths.Count; j++)
+                for (int j = 0; j < result.Weigths.Length; j++)
                 {
                     result.Weigths[j] = result.Weigths[j] + _methodResults[i].Weigths[j];
                 }
 
-                for (int j = 0; j < result.Biases.Count; j++)
+                for (int j = 0; j < result.Biases.Length; j++)
                 {
                     result.Biases[j] = result.Biases[j] + _methodResults[i].Biases[j];
                 }
@@ -99,7 +98,7 @@ namespace NNLib
             return result;
         }
 
-        public LearningMethodResult DoIteration(MLPNetwork network, ILossFunction lossFunction, in CancellationToken ct = default)
+        public LearningMethodResult? DoIteration(MLPNetwork network, ILossFunction lossFunction, in CancellationToken ct = default)
         {
             var input = _trainingSet.Input[_setIndex];
             var expected = _trainingSet.Target[_setIndex];
@@ -108,7 +107,7 @@ namespace NNLib
 
             CheckTrainingCancelationIsRequested(ct);
 
-            var result = _gradientDescent.CalculateDelta(network, input, expected, lossFunction);
+            var result = _gradientDescent.CalculateDelta(input, expected, lossFunction);
             _methodResults[Iterations] = result;
 
             _setIndex++;
@@ -136,14 +135,6 @@ namespace NNLib
             CheckTrainingCancelationIsRequested(ct);
             var result = DoIteration(network, lossFunction, ct);
             return result;
-        }
-
-        public Task<LearningMethodResult> DoEpochAsync(MLPNetwork network, ILossFunction lossFunction, CancellationToken ct = default)
-        {
-            return Task.Run(() =>
-            {
-                return DoEpoch(network, lossFunction, ct);
-            }, ct);
         }
     }
 }

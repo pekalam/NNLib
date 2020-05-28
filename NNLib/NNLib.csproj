@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="4.9.1" />
+    <PackageReference Include="MathNet.Numerics.MKL.Win" Version="2.3.0" />
+    <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="2.3.0" />
     <PackageReference Include="NuGet.CommandLine" Version="5.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
