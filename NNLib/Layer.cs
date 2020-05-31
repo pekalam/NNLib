@@ -12,10 +12,10 @@ namespace NNLib
         internal event Action<Layer> NeuronsCountChanged;
         internal event Action<Layer> InputsCountChanged;
 
-        protected Layer(int inputsCount, int neuronsCount, Matrix<double> weights, Matrix<double> biases,
+        protected Layer(Matrix<double> weights, Matrix<double> biases,
             Matrix<double> output)
         {
-            Guards._NotNull(weights).NotNull(output).GtZero(inputsCount).GtZero(neuronsCount);
+            Guards._NotNull(weights).NotNull(output);
 
             Weights = weights;
             Output = output;

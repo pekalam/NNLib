@@ -48,5 +48,10 @@ namespace NNLib
 
             return new SupervisedSet(defaultInputVectorSet, defaultTargetVectorSet);
         }
+
+        public static SupervisedSet Empty()
+        {
+            return new SupervisedSet(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
+        }
     }
 }

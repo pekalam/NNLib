@@ -11,12 +11,18 @@ namespace NNLib
 
 
         public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction)
-            : base(inputsCount, neuronsCount, BuildWeightsMatrix(inputsCount, neuronsCount),
+            : base(BuildWeightsMatrix(inputsCount, neuronsCount),
                 BuildBiasesMatrix(inputsCount, neuronsCount), BuildOutputMatrix(inputsCount, neuronsCount))
         {
+            Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(activationFunction);
+
             ActivationFunction = activationFunction;
         }
 
+        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double> output, IActivationFunction activationFunction) : base(weights, biases, output)
+        {
+            ActivationFunction = activationFunction;
+        }
 
         public IActivationFunction ActivationFunction
         {
@@ -36,6 +42,8 @@ namespace NNLib
 
         private static Matrix<double> BuildOutputMatrix(int inputsCount, int neuronsCount) =>
             Matrix<double>.Build.Dense(neuronsCount, 1);
+
+        internal PerceptronLayer Clone() => new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output.Clone(), ActivationFunction);
 
         protected override void BuildMatrices(int inputsCount, int neuronsCount)
         {

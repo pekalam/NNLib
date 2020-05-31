@@ -1,5 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -12,10 +13,6 @@ namespace NNLib
 
         public DefaultVectorSet(List<Matrix<double>> setOfVectors)
         {
-            if (setOfVectors.Count == 0)
-            {
-                throw new ArgumentException("Invalid count of vector set");
-            }
             _setOfVectors = setOfVectors;
         }
 

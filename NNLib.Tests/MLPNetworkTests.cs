@@ -80,6 +80,46 @@ namespace UnitTests
             l.Output.RowCount.Should().Be(2);
         }
 
+        [Fact]
+        public void Clone_creates_deep_copy()
+        {
+            var l = new PerceptronLayer(1, 2, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
 
+            var input = Matrix<double>.Build.Dense(1, 1);
+            input[0, 0] = 1;
+
+            net.CalculateOutput(input);
+
+            var net2 = net.Clone();
+            net2.TotalLayers.Should().Be(net.TotalLayers);
+
+            for (int i = 0; i < net.TotalLayers; i++)
+            {
+                net.Layers[i].Weights.CompareTo(net2.Layers[i].Weights).Should().BeTrue();
+                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeTrue();
+                net.Layers[i].Output.CompareTo(net2.Layers[i].Output).Should().BeTrue();
+            }
+
+            input[0, 0] = 10;
+            net2.Layers[0].Weights.Multiply(4, net2.Layers[0].Weights); 
+            net2.Layers[1].Weights.Multiply(4, net2.Layers[1].Weights);
+            net2.Layers[2].Weights.Multiply(4, net2.Layers[2].Weights);
+            net2.Layers[0].Biases.Multiply(4, net2.Layers[0].Biases);
+            net2.Layers[1].Biases.Multiply(4, net2.Layers[1].Biases);
+            net2.Layers[2].Biases.Multiply(4, net2.Layers[2].Biases);
+            net2.CalculateOutput(input);
+
+            net2.TotalLayers.Should().Be(net.TotalLayers);
+
+            for (int i = 0; i < net.TotalLayers; i++)
+            {
+                net.Layers[i].Weights.CompareTo(net2.Layers[i].Weights).Should().BeFalse();
+                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeFalse();
+                net.Layers[i].Output.CompareTo(net2.Layers[i].Output).Should().BeFalse();
+            }
+        }
     }
 }

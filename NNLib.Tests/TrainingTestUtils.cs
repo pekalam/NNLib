@@ -3,6 +3,7 @@ using NNLib;
 using NNLib.ActivationFunction;
 using System;
 using System.Collections.Generic;
+using MathNet.Numerics.LinearAlgebra;
 using Xunit;
 using M = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
@@ -30,24 +31,26 @@ namespace UnitTests
 
             return SupervisedSet.FromArrays(input, expected);
         }
-    }
 
-    public abstract class VectorSetInvariantsTest<T> where T : IVectorSet
-    {
-        protected abstract T CreateZeroSizeVectorSet();
-
-        [Fact]
-        public void ctor_when_set_count_is_zero_throws()
+        public static bool CompareTo(this Matrix<double> m1, Matrix<double> m2)
         {
-            Assert.Throws<ArgumentException>(() => CreateZeroSizeVectorSet());
-        } 
-    }
+            if (m1.RowCount != m2.RowCount || m1.ColumnCount != m2.ColumnCount)
+            {
+                return false;
+            }
 
-    public class DefaultVectorSetInvariantsTest : VectorSetInvariantsTest<DefaultVectorSet>
-    {
-        protected override DefaultVectorSet CreateZeroSizeVectorSet()
-        {
-            return new DefaultVectorSet(new List<M>());
+            for (int i = 0; i < m1.RowCount; i++)
+            {
+                for (int j = 0; j < m1.ColumnCount; j++)
+                {
+                    if (m1[i, j] != m2[i, j])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 

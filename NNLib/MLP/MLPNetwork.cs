@@ -1,13 +1,15 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
     public class MLPNetwork : Network<PerceptronLayer>
     {
-
         public MLPNetwork(params PerceptronLayer[] perceptronLayers) : base(perceptronLayers)
         {
         }
+
+        public MLPNetwork Clone() => new MLPNetwork(Layers.Select(l => l.Clone()).ToArray());
 
         public override void CalculateOutput(Matrix<double> input)
         {
