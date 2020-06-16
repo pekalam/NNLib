@@ -57,6 +57,21 @@ namespace NNLib
             AssignEventHandlers(layer);
         }
 
+        public void RemoveLayer(T layer)
+        {
+            var ind = _layers.IndexOf(layer);
+            if (ind == -1)
+            {
+                throw new ArgumentException("Cannot find layer");
+            }
+
+            Layer? next = ind == _layers.Count - 1 ? null : _layers[ind+1];
+            Layer? prev = ind == 0 ? null : _layers[ind-1];
+
+            next?.AdjustMatSize(prev);
+            _layers.RemoveAt(ind);
+        }
+
         private void AssignEventHandlers(Layer layer)
         {
             layer.NeuronsCountChanged += LayerOnNeuronsCountChanged;

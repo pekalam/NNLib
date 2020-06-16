@@ -121,5 +121,57 @@ namespace UnitTests
                 net.Layers[i].Output.CompareTo(net2.Layers[i].Output).Should().BeFalse();
             }
         }
+
+
+        [Fact]
+        public void RemoveLayer_removes_hidden_layer()
+        {
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
+
+            net.RemoveLayer(l2);
+
+            l.NeuronsCount.Should().Be(8);
+            l.InputsCount.Should().Be(1);
+            l3.InputsCount.Should().Be(8);
+            l3.NeuronsCount.Should().Be(1);
+            net.TotalLayers.Should().Be(2);
+        }
+
+        [Fact]
+        public void RemoveLayer_removes_output_layer()
+        {
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
+
+            net.RemoveLayer(l3);
+
+            l.NeuronsCount.Should().Be(8);
+            l.InputsCount.Should().Be(1);
+            l2.InputsCount.Should().Be(8);
+            l2.NeuronsCount.Should().Be(2);
+            net.TotalLayers.Should().Be(2);
+        }
+
+        [Fact]
+        public void RemoveLayer_removes_input_layer()
+        {
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
+
+            net.RemoveLayer(l);
+
+            l2.NeuronsCount.Should().Be(2);
+            l2.InputsCount.Should().Be(8);
+            l3.InputsCount.Should().Be(2);
+            l3.NeuronsCount.Should().Be(1);
+            net.TotalLayers.Should().Be(2);
+        }
     }
 }

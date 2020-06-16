@@ -1,6 +1,7 @@
 using NNLib;
 using NNLib.ActivationFunction;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,6 +23,15 @@ namespace UnitTests
                 parameters, lossFunction);
 
             VerifyTrainingError(0.01, trainer, output, timeout);
+        }
+
+        private async Task TestAndGateAsync(GradientDescentParams parameters, ILossFunction lossFunction, TimeSpan timeout)
+        {
+            var net = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
+                parameters, lossFunction);
+
+            await VerifyTrainingErrorAsync(0.01, trainer, output, timeout);
         }
 
         [Fact]
@@ -48,6 +58,40 @@ namespace UnitTests
         public void MLP_approximates_AND_gate_with_batch_GD()
         {
             TestAndGate(new GradientDescentParams()
+            {
+                Momentum = 0.9,
+                LearningRate = 0.2,
+                BatchSize = 4
+            }, new QuadraticLossFunction(), TimeSpan.FromMinutes(2));
+        }
+
+
+        [Fact]
+        public async Task MLP_approximates_AND_gate_with_online_GD_async()
+        {
+            await TestAndGateAsync(new GradientDescentParams()
+            {
+                Momentum = 0.9,
+                LearningRate = 0.2,
+                BatchSize = 1
+            }, new QuadraticLossFunction(), TimeSpan.FromMinutes(1));
+        }
+
+        [Fact]
+        public async Task MLP_approximates_AND_gate_with_minibatch_GD_async()
+        {
+            await TestAndGateAsync(new GradientDescentParams()
+            {
+                Momentum = 0.9,
+                LearningRate = 0.2,
+                BatchSize = 2
+            }, new QuadraticLossFunction(), TimeSpan.FromMinutes(1));
+        }
+
+        [Fact]
+        public async Task MLP_approximates_AND_gate_with_batch_GD_async()
+        {
+            await TestAndGateAsync(new GradientDescentParams()
             {
                 Momentum = 0.9,
                 LearningRate = 0.2,

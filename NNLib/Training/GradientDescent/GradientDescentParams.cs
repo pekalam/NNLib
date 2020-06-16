@@ -4,7 +4,7 @@ namespace NNLib
 {
     public class GradientDescentParams
     {
-        private double _learningRate = 0.1;
+        private double _learningRate = 0.001;
         private double _momentum = 0;
         private int _batchSize = 1;
 

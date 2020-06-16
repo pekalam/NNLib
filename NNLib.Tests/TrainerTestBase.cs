@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -75,7 +76,30 @@ namespace UnitTests
                 }
             }
 
-            Assert.True(sampleList.First() - sampleList.Last() > 0);
+            Assert.True(sampleList.First() - sampleList.Last() > 0.0d);
+        }
+
+        public async Task<Task> VerifyTrainingErrorAsync(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout,
+            int samples = 7_000)
+        {
+            var src = new CancellationTokenSource(timeout);
+
+            var sampleList = new List<double>();
+
+            while (sampleList.Count != samples)
+            {
+                await trainer.DoEpochAsync(src.Token);
+                sampleList.Add(trainer.Error);
+                output.WriteLine("Error: " + trainer.Error);
+                if (src.Token.IsCancellationRequested)
+                {
+                    Assert.False(true, "Training timeout");
+                }
+            }
+
+            Assert.True(sampleList.First() - sampleList.Last() > 0.0d);
+
+            return Task.CompletedTask;
         }
 
     }

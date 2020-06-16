@@ -31,6 +31,14 @@ namespace NNLib
 
         internal void AssignNetwork(INetwork network) => _network = network;
 
+        internal void AdjustMatSize(Layer? previous)
+        {
+            if (previous != null)
+            {
+                BuildMatrices(previous.NeuronsCount, NeuronsCount);
+            }
+        }
+
         public bool HasBiases { get; }
         public bool IsOutputLayer => _network.BaseLayers[^1] == this;
         public bool IsInputLayer => _network.BaseLayers[0] == this;

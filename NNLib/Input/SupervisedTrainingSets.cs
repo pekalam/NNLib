@@ -5,8 +5,8 @@ namespace NNLib
     public class SupervisedTrainingSets : IDisposable
     {
         public SupervisedSet TrainingSet { get; }
-        public SupervisedSet ValidationSet { get; set; }
-        public SupervisedSet TestSet { get; set; }
+        public SupervisedSet? ValidationSet { get; set; }
+        public SupervisedSet? TestSet { get; set; }
 
         public SupervisedTrainingSets(SupervisedSet trainingSet)
         {
