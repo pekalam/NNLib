@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System.Linq;
 
 namespace NNLib
 {
