@@ -109,8 +109,7 @@ namespace NNLib
             var result = _gradientDescent.CalculateDelta(input, expected, lossFunction);
             _methodResults[Iterations] = result;
 
-            _setIndex++;
-            _setIndex %= _trainingSet.Input.Count;
+            _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
 
             CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _parameters.BatchSize);
 

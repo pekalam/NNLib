@@ -1,15 +1,14 @@
-using Moq;
-using NNLib;
-using NNLib.ActivationFunction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
+using NNLib.ActivationFunction;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
     public class TrainerTestBase
     {

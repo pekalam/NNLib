@@ -1,7 +1,7 @@
 ﻿using NNLib;
 using NNLib.ActivationFunction;
 using System;
-using UnitTests;
+using NNLib.Tests;
 
 namespace TrainingTest
 {

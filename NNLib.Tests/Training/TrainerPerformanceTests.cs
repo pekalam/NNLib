@@ -1,19 +1,18 @@
-using NNLib;
-using NNLib.ActivationFunction;
 using System;
 using System.Threading.Tasks;
+using NNLib.ActivationFunction;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
     public class TrainerPerformanceTests : TrainerTestBase
     {
-        private readonly ITestOutputHelper output;
+        private readonly ITestOutputHelper _output;
 
         public TrainerPerformanceTests(ITestOutputHelper output)
         {
-            this.output = output;
+            _output = output;
         }
 
         private void TestAndGate(GradientDescentParams parameters, ILossFunction lossFunction, TimeSpan timeout)
@@ -22,7 +21,7 @@ namespace UnitTests
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
                 parameters, lossFunction);
 
-            VerifyTrainingError(0.01, trainer, output, timeout);
+            VerifyTrainingError(0.01, trainer, _output, timeout);
         }
 
         private async Task TestAndGateAsync(GradientDescentParams parameters, ILossFunction lossFunction, TimeSpan timeout)
@@ -31,7 +30,7 @@ namespace UnitTests
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
                 parameters, lossFunction);
 
-            await VerifyTrainingErrorAsync(0.01, trainer, output, timeout);
+            await VerifyTrainingErrorAsync(0.01, trainer, _output, timeout);
         }
 
         [Fact]

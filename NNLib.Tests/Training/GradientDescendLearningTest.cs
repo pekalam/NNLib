@@ -1,8 +1,7 @@
-using NNLib;
 using System;
 using Xunit;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
     public class GradientDescendLearningTest
     {

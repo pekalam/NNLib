@@ -1,12 +1,11 @@
+using System;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib;
 using NNLib.ActivationFunction;
-using System;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
     public class MLPNetworkTests
     {

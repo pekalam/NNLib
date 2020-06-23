@@ -1,9 +1,8 @@
-using NNLib;
-using NNLib.ActivationFunction;
 using System;
+using NNLib.ActivationFunction;
 using Xunit;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
     public class TrainerTest : TrainerTestBase
     {

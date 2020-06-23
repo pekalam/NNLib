@@ -1,72 +1,25 @@
-using FluentAssertions;
-using NNLib;
-using NNLib.ActivationFunction;
 using System;
-using System.Collections.Generic;
-using MathNet.Numerics.LinearAlgebra;
+using FluentAssertions;
+using NNLib.ActivationFunction;
 using Xunit;
-using M = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
-    public static class TrainingTestUtils
-    {
-        public static SupervisedSet AndGateSet()
-        {
-            var input = new[]
-            {
-                new []{0d,0d},
-                new []{0d,1d},
-                new []{1d,0d},
-                new []{1d,1d},
-            };
-
-            var expected = new[]
-            {
-                new []{0d},
-                new []{0d},
-                new []{0d},
-                new []{1d},
-            };
-
-            return SupervisedSet.FromArrays(input, expected);
-        }
-
-        public static bool CompareTo(this Matrix<double> m1, Matrix<double> m2)
-        {
-            if (m1.RowCount != m2.RowCount || m1.ColumnCount != m2.ColumnCount)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < m1.RowCount; i++)
-            {
-                for (int j = 0; j < m1.ColumnCount; j++)
-                {
-                    if (m1[i, j] != m2[i, j])
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
     public class BatchTrainerTests : TrainerTestBase
     {
-        MLPNetwork net;
+        private readonly MLPNetwork _net;
 
         public BatchTrainerTests()
         {
-            net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
+            _net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }
 
         private BatchTrainer CreateBatchTrainer(GradientDescentParams parameters)
         {
-            var method = new BatchTrainer(new GradientDescentAlgorithm(net, parameters));
-            method.TrainingSet = TrainingTestUtils.AndGateSet();
+            var method = new BatchTrainer(new GradientDescentAlgorithm(_net, parameters))
+            {
+                TrainingSet = TrainingTestUtils.AndGateSet()
+            };
             return method;
         }
 
@@ -87,7 +40,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void When_parameters_change_state_changes()
+        public void When_parameters_change_props_are_correct()
         {
             var learningParams = new GradientDescentParams()
             {
@@ -140,7 +93,7 @@ namespace UnitTests
             method.IterationsPerEpoch.Should().Be(1);
             method.CurrentBatch.Should().Be(0);
 
-            var result = method.DoIteration(net, new QuadraticLossFunction());
+            var result = method.DoIteration(_net, new QuadraticLossFunction());
             
             result.Should().NotBeNull();
             method.Iterations.Should().Be(0);
@@ -163,13 +116,13 @@ namespace UnitTests
             method.IterationsPerEpoch.Should().Be(2);
             method.CurrentBatch.Should().Be(0);
 
-            var result = method.DoIteration(net, new QuadraticLossFunction());
+            var result = method.DoIteration(_net, new QuadraticLossFunction());
             result.Should().BeNull();
             method.Iterations.Should().Be(1);
             method.IterationsPerEpoch.Should().Be(2);
             method.CurrentBatch.Should().Be(1);
 
-            result = method.DoIteration(net, new QuadraticLossFunction());
+            result = method.DoIteration(_net, new QuadraticLossFunction());
             result.Should().NotBeNull();
             method.Iterations.Should().Be(0);
             method.IterationsPerEpoch.Should().Be(2);
@@ -198,7 +151,7 @@ namespace UnitTests
                 method.Iterations.Should().Be(i % method.TrainingSet.Input.Count);
                 method.IterationsPerEpoch.Should().Be(4);
                 method.CurrentBatch.Should().Be(i % method.TrainingSet.Input.Count);
-                var result = method.DoIteration(net, new QuadraticLossFunction());
+                var result = method.DoIteration(_net, new QuadraticLossFunction());
 
                 if (i == method.TrainingSet.Input.Count - 1)
                 {
@@ -209,21 +162,6 @@ namespace UnitTests
                     result.Should().BeNull();
                 }
             }
-        }
-    }
-
-    public class SupervisedSetTests
-    {
-        [Fact]
-        public void ctor_when_vector_sets_differ_in_length_throws()
-        {
-            Assert.Throws<ArgumentException>(() => new SupervisedSet(new DefaultVectorSet(new List<M>()
-            {
-                M.Build.Random(2,1), M.Build.Random(2,1),
-            }), new DefaultVectorSet(new List<M>()
-            {
-                M.Build.Random(2,1),
-            })));
         }
     }
 }

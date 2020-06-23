@@ -1,9 +1,8 @@
-using FluentAssertions;
-using NNLib;
 using System;
+using FluentAssertions;
 using Xunit;
 
-namespace UnitTests
+namespace NNLib.Tests
 {
     public class SupervisedTrainingSetsTests
     {
