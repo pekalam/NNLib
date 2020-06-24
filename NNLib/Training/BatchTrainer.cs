@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Threading;
+using NNLib.Training;
 
 namespace NNLib
 {
     public class BatchTrainer
     {
-        private GradientDescentParams _parameters;
+        private BatchParams _parameters;
         private SupervisedSet _trainingSet;
         private int _setIndex;
-        private readonly GradientDescentAlgorithm _gradientDescent;
+        private readonly AlgorithmBase _algorithm;
         private LearningMethodResult[] _methodResults;
 
-        public BatchTrainer(GradientDescentAlgorithm gradientDescent)
+        public BatchTrainer(AlgorithmBase algorithm)
         {
-            _gradientDescent = gradientDescent;
-            _parameters = gradientDescent.Params;
+            _algorithm = algorithm;
+            _parameters = algorithm.BatchParams;
         }
 
         public SupervisedSet TrainingSet
@@ -31,7 +32,7 @@ namespace NNLib
             }
         }
 
-        public GradientDescentParams Parameters
+        public BatchParams Parameters
         {
             get => _parameters;
             set
@@ -106,7 +107,7 @@ namespace NNLib
 
             CheckTrainingCancelationIsRequested(ct);
 
-            var result = _gradientDescent.CalculateDelta(input, expected, lossFunction);
+            var result = _algorithm.CalculateDelta(input, expected, lossFunction);
             _methodResults[Iterations] = result;
 
             _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;

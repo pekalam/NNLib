@@ -1,8 +1,9 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.Training;
 
 namespace NNLib
 {
-    public class GradientDescentAlgorithm
+    public class GradientDescentAlgorithm : AlgorithmBase
     {
         private LearningMethodResult? _previousLearningMethodResult;
         private readonly MLPNetwork _network;
@@ -14,6 +15,7 @@ namespace NNLib
         }
 
         public GradientDescentParams Params { get; set; }
+        public override BatchParams BatchParams => Params;
 
         private Matrix<double> CalcUpdate(int layerInd, PerceptronLayer layer, LearningMethodResult result,
             Matrix<double> input, Matrix<double> next)
@@ -29,7 +31,7 @@ namespace NNLib
             return delta;
         }
 
-        public LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction)
+        public override LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction)
         {
             var learningResult = LearningMethodResult.FromNetwork(_network);
 
@@ -58,5 +60,6 @@ namespace NNLib
 
             return learningResult;
         }
+
     }
 }

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace NNLib.Tests
 {
-    public class GradientDescendLearningTest
+    public class GradientDescendParamsTest
     {
         [Fact]
         public void GradientDescendLearningParameters_throws_when_invalid_params()

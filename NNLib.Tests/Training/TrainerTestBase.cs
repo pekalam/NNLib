@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NNLib.ActivationFunction;
+using NNLib.Training;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,7 +13,14 @@ namespace NNLib.Tests
 {
     public class TrainerTestBase
     {
-        public MLPNetwork CreateNetwork(int inputs,
+        private readonly ITestOutputHelper _output;
+
+        public TrainerTestBase(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
+        protected MLPNetwork CreateNetwork(int inputs,
             params (int neuronsCount, IActivationFunction activationFunction)[] layers)
         {
             var netLayers = new PerceptronLayer[layers.Length];
@@ -32,7 +40,7 @@ namespace NNLib.Tests
             return net;
         }
 
-        public (Mock<MLPNetwork> net, List<Mock<PerceptronLayer>> layerMocks) CreateMockNetwork(int inputs, params (int neuronsCount, IActivationFunction activationFunction)[] layers)
+        protected (Mock<MLPNetwork> net, List<Mock<PerceptronLayer>> layerMocks) CreateMockNetwork(int inputs, params (int neuronsCount, IActivationFunction activationFunction)[] layers)
         {
             var netLayers = new PerceptronLayer[layers.Length];
             var inputLayer = new Mock<PerceptronLayer>(inputs, layers[0].neuronsCount, layers[0].activationFunction);
@@ -58,7 +66,7 @@ namespace NNLib.Tests
         }
 
 
-        public void VerifyTrainingError(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout, int samples = 7_000)
+        private void VerifyTrainingError(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout, int samples = 7_000)
         {
             var src = new CancellationTokenSource(timeout);
 
@@ -78,7 +86,7 @@ namespace NNLib.Tests
             Assert.True(sampleList.First() - sampleList.Last() > 0.0d);
         }
 
-        public async Task<Task> VerifyTrainingErrorAsync(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout,
+        private async Task<Task> VerifyTrainingErrorAsync(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout,
             int samples = 7_000)
         {
             var src = new CancellationTokenSource(timeout);
@@ -101,5 +109,22 @@ namespace NNLib.Tests
             return Task.CompletedTask;
         }
 
+        
+        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout)
+        {
+            var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
+                algorithm, lossFunction);
+
+            VerifyTrainingError(0.01, trainer, _output, timeout);
+        }
+
+        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout)
+        {
+            var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
+                algorithm, lossFunction);
+
+            await VerifyTrainingErrorAsync(0.01, trainer, _output, timeout);
+        }
+        
     }
 }

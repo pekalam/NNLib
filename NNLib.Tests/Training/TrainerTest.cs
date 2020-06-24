@@ -1,19 +1,24 @@
 using System;
 using NNLib.ActivationFunction;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NNLib.Tests
 {
     public class TrainerTest : TrainerTestBase
     {
+        public TrainerTest(ITestOutputHelper output) : base(output)
+        {
+        }
+        
         private MLPTrainer CreateBasicAndGateTrainer(MLPNetwork net)
         {
             return new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                new GradientDescentParams()
+                new GradientDescentAlgorithm(net, new GradientDescentParams()
                 {
                     LearningRate = 0.9,
                     Momentum = 0.1
-                }, new QuadraticLossFunction());
+                }), new QuadraticLossFunction());
         }
 
         [Fact]
@@ -31,6 +36,5 @@ namespace NNLib.Tests
 
             Assert.Throws<Exception>(() => CreateBasicAndGateTrainer(net3.Object));
         }
-
     }
 }

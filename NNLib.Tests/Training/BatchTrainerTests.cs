@@ -2,6 +2,7 @@ using System;
 using FluentAssertions;
 using NNLib.ActivationFunction;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NNLib.Tests
 {
@@ -9,7 +10,7 @@ namespace NNLib.Tests
     {
         private readonly MLPNetwork _net;
 
-        public BatchTrainerTests()
+        public BatchTrainerTests(ITestOutputHelper output) : base(output)
         {
             _net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }

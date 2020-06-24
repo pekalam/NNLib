@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NNLib.Training;
 
 namespace NNLib
 {
@@ -11,7 +12,7 @@ namespace NNLib
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
-        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, GradientDescentParams parameters,
+        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, AlgorithmBase algorithm,
             ILossFunction lossFunction)
         {
             Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
@@ -19,7 +20,7 @@ namespace NNLib
 
             Network = network;
             TrainingSets = trainingSets;
-            BatchTrainer = new BatchTrainer(new GradientDescentAlgorithm(Network, parameters));
+            BatchTrainer = new BatchTrainer(algorithm);
             LossFunction = lossFunction;
 
             BatchTrainer.TrainingSet = trainingSets.TrainingSet;
