@@ -48,7 +48,9 @@ namespace NNLib
         public IReadOnlyList<Layer> BaseLayers => _layers;
         public int TotalLayers => _layers.Count;
         public int TotalNeurons => _layers.Sum(layer => layer.NeuronsCount);
-
+        public int TotalSynapses => _layers.Sum(l => l.InputsCount);
+        public int TotalBiases => TotalNeurons;
+        
         public void AddLayer(T layer)
         {
             ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToArray());

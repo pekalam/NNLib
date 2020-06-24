@@ -17,6 +17,20 @@ namespace NNLib.Tests
         }
 
         [Fact]
+        public void MLPNetwork_when_constructed_has_valid_props()
+        {
+            var l = new PerceptronLayer(1, 2, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 3, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
+
+            net.TotalLayers.Should().Be(3);
+            net.TotalBiases.Should().Be(7);
+            net.TotalNeurons.Should().Be(7);
+            net.TotalSynapses.Should().Be(2 + 4 + 6);
+        }
+
+        [Fact]
         public void NeuronsCount_when_changed_neurons_count_in_layer_is_changed()
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction());
