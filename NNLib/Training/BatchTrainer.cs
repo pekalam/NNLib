@@ -9,13 +9,11 @@ namespace NNLib
         private BatchParams _parameters;
         private SupervisedSet _trainingSet;
         private int _setIndex;
-        private readonly AlgorithmBase _algorithm;
         private LearningMethodResult[] _methodResults;
 
-        public BatchTrainer(AlgorithmBase algorithm)
+        public BatchTrainer(BatchParams parameters)
         {
-            _algorithm = algorithm;
-            _parameters = algorithm.BatchParams;
+            _parameters = parameters;
         }
 
         public SupervisedSet TrainingSet
@@ -98,7 +96,7 @@ namespace NNLib
             return result;
         }
 
-        public LearningMethodResult? DoIteration(MLPNetwork network, ILossFunction lossFunction, in CancellationToken ct = default)
+        public LearningMethodResult? DoIteration(MLPNetwork network, ILossFunction lossFunction, AlgorithmBase algorithm, in CancellationToken ct = default)
         {
             var input = _trainingSet.Input[_setIndex];
             var expected = _trainingSet.Target[_setIndex];
@@ -107,7 +105,7 @@ namespace NNLib
 
             CheckTrainingCancelationIsRequested(ct);
 
-            var result = _algorithm.CalculateDelta(input, expected, lossFunction);
+            var result = algorithm.CalculateDelta(network, input, expected, lossFunction);
             _methodResults[Iterations] = result;
 
             _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
@@ -124,15 +122,15 @@ namespace NNLib
             return null;
         }
 
-        public LearningMethodResult DoEpoch(MLPNetwork network, ILossFunction lossFunction, in CancellationToken ct = default)
+        public LearningMethodResult DoEpoch(MLPNetwork network, ILossFunction lossFunction, AlgorithmBase algorithm, in CancellationToken ct = default)
         {
             for (int i = 0; i < IterationsPerEpoch - 1; i++)
             {
                 CheckTrainingCancelationIsRequested(ct);
-                DoIteration(network, lossFunction, ct);
+                DoIteration(network, lossFunction, algorithm, ct);
             }
             CheckTrainingCancelationIsRequested(ct);
-            var result = DoIteration(network, lossFunction, ct);
+            var result = DoIteration(network, lossFunction,algorithm, ct);
             return result;
         }
     }

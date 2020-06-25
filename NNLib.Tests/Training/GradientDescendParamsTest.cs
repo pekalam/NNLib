@@ -21,8 +21,6 @@ namespace NNLib.Tests
             Assert.Throws<InvalidOperationException>(() => par.Momentum = double.NegativeInfinity);
             Assert.Throws<InvalidOperationException>(() => par.Momentum = double.NaN);
 
-            Assert.Throws<InvalidOperationException>(() => par.BatchSize = 0);
-            Assert.Throws<InvalidOperationException>(() => par.BatchSize = -1);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using NNLib.ActivationFunction;
+using NNLib.Training;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,11 +15,11 @@ namespace NNLib.Tests
         private MLPTrainer CreateBasicAndGateTrainer(MLPNetwork net)
         {
             return new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                new GradientDescentAlgorithm(net, new GradientDescentParams()
+                new GradientDescentAlgorithm(new GradientDescentParams()
                 {
                     LearningRate = 0.9,
                     Momentum = 0.1
-                }), new QuadraticLossFunction());
+                }), new QuadraticLossFunction(), new BatchParams());
         }
 
         [Fact]

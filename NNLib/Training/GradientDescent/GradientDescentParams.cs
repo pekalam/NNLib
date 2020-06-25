@@ -3,7 +3,7 @@ using NNLib.Training;
 
 namespace NNLib
 {
-    public class GradientDescentParams : BatchParams
+    public class GradientDescentParams
     {
         private double _learningRate = 0.001;
         private double _momentum = 0;

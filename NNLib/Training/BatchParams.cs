@@ -2,6 +2,7 @@
 
 namespace NNLib.Training
 {
+    //todo remove
     public class BatchParams
     {
         private int _batchSize = 1;

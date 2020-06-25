@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Statistics;
 using Moq;
 using NNLib.ActivationFunction;
 using NNLib.Training;
@@ -65,8 +67,29 @@ namespace NNLib.Tests
             return (net, layerMocks);
         }
 
+        private void CheckVariance(List<double> samples)
+        {
+            var m = Vector<double>.Build.Dense(samples.ToArray());
+            var variance = Math.Sqrt(m.Variance());
+            var mean = m.Mean();
+            _output.WriteLine("Variance: " + variance);
+            _output.WriteLine("Mean: " + mean);
 
-        private void VerifyTrainingError(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout, int samples = 7_000)
+
+            int eq = 0;
+            for (int i = 0; i < m.Count; i++)
+            {
+                if (m[i] - variance*2 <= mean && m[i] + variance*2 >= mean) eq++;
+            }
+
+            if (eq >= m.Count / 3)
+            {
+                Assert.False(true, $"({eq}/{m.Count}) error values are equal or same as {mean}");
+            }
+        }
+
+
+        private void VerifyTrainingError(double target, MLPTrainer trainer, TimeSpan timeout, int samples = 7_000)
         {
             var src = new CancellationTokenSource(timeout);
 
@@ -76,17 +99,25 @@ namespace NNLib.Tests
             {
                 trainer.DoEpoch();
                 sampleList.Add(trainer.Error);
-                output.WriteLine("Error: " + trainer.Error);
+                _output.WriteLine("Error: " + trainer.Error);
+                if (double.IsNaN(trainer.Error)) Assert.False(true, "NaN error value");
                 if (src.Token.IsCancellationRequested)
                 {
                     Assert.False(true, "Training timeout");
                 }
+
+                if (trainer.Error <= target)
+                {
+                    Assert.True(true, $"Target {target} reached");
+                    return;
+                }
             }
 
-            Assert.True(sampleList.First() - sampleList.Last() > 0.0d);
+            CheckVariance(sampleList);
+            Assert.True(sampleList.First() - sampleList.Last() > 0.0d, "Error is not decreasing");
         }
 
-        private async Task<Task> VerifyTrainingErrorAsync(double target, MLPTrainer trainer, ITestOutputHelper output, TimeSpan timeout,
+        private async Task<Task> VerifyTrainingErrorAsync(double target, MLPTrainer trainer, TimeSpan timeout,
             int samples = 7_000)
         {
             var src = new CancellationTokenSource(timeout);
@@ -97,33 +128,41 @@ namespace NNLib.Tests
             {
                 await trainer.DoEpochAsync(src.Token);
                 sampleList.Add(trainer.Error);
-                output.WriteLine("Error: " + trainer.Error);
+                _output.WriteLine("Error: " + trainer.Error);
+                if (double.IsNaN(trainer.Error)) Assert.False(true, "NaN error value");
                 if (src.Token.IsCancellationRequested)
                 {
                     Assert.False(true, "Training timeout");
                 }
+
+                if (trainer.Error <= target)
+                {
+                    Assert.True(true, $"Target {target} reached");
+                    return Task.CompletedTask;
+                }
             }
 
-            Assert.True(sampleList.First() - sampleList.Last() > 0.0d);
+            CheckVariance(sampleList);
+            Assert.True(sampleList.First() - sampleList.Last() > 0.0d, "Error is not decreasing");
 
             return Task.CompletedTask;
         }
 
         
-        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout)
+        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000)
         {
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                algorithm, lossFunction);
+                algorithm, lossFunction, batchParams);
 
-            VerifyTrainingError(0.01, trainer, _output, timeout);
+            VerifyTrainingError(0.01, trainer, timeout, samples);
         }
 
-        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout)
+        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000)
         {
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                algorithm, lossFunction);
+                algorithm, lossFunction, batchParams);
 
-            await VerifyTrainingErrorAsync(0.01, trainer, _output, timeout);
+            await VerifyTrainingErrorAsync(0.01, trainer, timeout, samples);
         }
         
     }

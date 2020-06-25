@@ -6,16 +6,13 @@ namespace NNLib
     public class GradientDescentAlgorithm : AlgorithmBase
     {
         private LearningMethodResult? _previousLearningMethodResult;
-        private readonly MLPNetwork _network;
 
-        public GradientDescentAlgorithm(MLPNetwork network, GradientDescentParams @params)
+        public GradientDescentAlgorithm(GradientDescentParams parameters)
         {
-            Params = @params;
-            _network = network;
+            Params = parameters;
         }
 
         public GradientDescentParams Params { get; set; }
-        public override BatchParams BatchParams => Params;
 
         private Matrix<double> CalcUpdate(int layerInd, PerceptronLayer layer, LearningMethodResult result,
             Matrix<double> input, Matrix<double> next)
@@ -31,16 +28,21 @@ namespace NNLib
             return delta;
         }
 
-        public override LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction)
+        public override void Setup(SupervisedSet trainingData, MLPNetwork network)
         {
-            var learningResult = LearningMethodResult.FromNetwork(_network);
+            _previousLearningMethodResult = null;
+        }
 
-            Matrix<double> next = lossFunction.Derivative(_network.Layers[^1].Output, expected);
-            for (int i = _network.Layers.Count - 1; i >= 0; --i)
+        public override LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction)
+        {
+            var learningResult = LearningMethodResult.FromNetwork(network);
+
+            Matrix<double> next = lossFunction.Derivative(network.Layers[^1].Output, expected);
+            for (int i = network.Layers.Count - 1; i >= 0; --i)
             {
-                var layer = _network.Layers[i];
+                var layer = network.Layers[i];
 
-                var previousDelta = CalcUpdate(i, layer, learningResult, i > 0 ? _network.Layers[i - 1].Output : input, next);
+                var previousDelta = CalcUpdate(i, layer, learningResult, i > 0 ? network.Layers[i - 1].Output : input, next);
 
                 next = layer.Weights.TransposeThisAndMultiply(previousDelta);
 

@@ -4,8 +4,8 @@ namespace NNLib.Training
 {
     public abstract class AlgorithmBase
     {
-        public abstract LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction);
-        
-        public abstract BatchParams BatchParams { get; }
+        public abstract void Setup(SupervisedSet trainingData, MLPNetwork network);
+
+        public abstract LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected, ILossFunction lossFunction);
     }
 }

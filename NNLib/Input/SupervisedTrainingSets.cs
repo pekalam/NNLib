@@ -2,6 +2,11 @@
 
 namespace NNLib
 {
+    public enum SupervisedSetType
+    {
+        Training, Validation,Test
+    }
+
     public class SupervisedTrainingSets : IDisposable
     {
         public SupervisedSet TrainingSet { get; }

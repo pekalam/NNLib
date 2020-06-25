@@ -1,6 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using NNLib.Training;
@@ -9,33 +10,51 @@ namespace NNLib
 {
     public class MLPTrainer
     {
+        private SupervisedSetType _currentSetType;
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
         public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, AlgorithmBase algorithm,
-            ILossFunction lossFunction)
+            ILossFunction lossFunction, BatchParams parameters)
         {
             Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
             ValidateNetworkAndTrainingSets(network, trainingSets);
 
             Network = network;
             TrainingSets = trainingSets;
-            BatchTrainer = new BatchTrainer(algorithm);
+            BatchTrainer = new BatchTrainer(parameters);
             LossFunction = lossFunction;
+            Algorithm = algorithm;
 
-            BatchTrainer.TrainingSet = trainingSets.TrainingSet;
+            CurrentSetType = SupervisedSetType.Training;
         }
 
         public ILossFunction LossFunction { get; set; }
         public BatchTrainer BatchTrainer { get; }
         public SupervisedTrainingSets TrainingSets { get; }
+
+        public SupervisedSetType CurrentSetType
+        {
+            get => _currentSetType;
+            set
+            {
+                _currentSetType = value;
+                BatchTrainer.TrainingSet = value switch
+                {
+                    SupervisedSetType.Training => TrainingSets.TrainingSet,
+                    SupervisedSetType.Validation => TrainingSets.ValidationSet ??
+                                                    throw new NullReferenceException("Cannot assign empty validation set"),
+                    SupervisedSetType.Test => TrainingSets.TestSet ??
+                                              throw new NullReferenceException("Cannot assign empty test set"),
+                    _ => BatchTrainer.TrainingSet
+                };
+            }
+        }
+
         public MLPNetwork Network { get; }
+        public AlgorithmBase Algorithm { get; set; }
 
         public double Error { get; private set; } = double.MaxValue;
-
-        public void SetTrainingSet() => BatchTrainer.TrainingSet = TrainingSets.TrainingSet;
-        public void SetValidationSet() => BatchTrainer.TrainingSet = TrainingSets.ValidationSet;
-        public void SetTestSet() => BatchTrainer.TrainingSet = TrainingSets.TestSet;
 
         private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
@@ -108,7 +127,7 @@ namespace NNLib
 
         private bool DoIterationInternal(in CancellationToken ct)
         {
-            var result = BatchTrainer.DoIteration(Network, LossFunction, ct);
+            var result = BatchTrainer.DoIteration(Network, LossFunction, Algorithm, ct);
 
             CheckTrainingCancelationIsRequested(ct);
 
@@ -129,7 +148,7 @@ namespace NNLib
 
         public double DoEpoch(in CancellationToken ct = default)
         {
-            var result = BatchTrainer.DoEpoch(Network, LossFunction, ct);
+            var result = BatchTrainer.DoEpoch(Network, LossFunction, Algorithm, ct);
             UpdateWeightsAndBiasesWithDeltaRule(result);
             EpochEnd?.Invoke();
             Error = CalculateNetworkError(ct);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,13 +13,12 @@ namespace NNLib.Training.LevenbergMarquardt
     {
         private const double StepSize = 0.001;
 
-        public static (Matrix<double> J, Matrix<double> W) CalcJacobian(MLPNetwork network, ILossFunction lossFunction,
+        public static Matrix<double> CalcJacobian(MLPNetwork network, ILossFunction lossFunction,
             Matrix<double> input, Matrix<double> expected)
         {
             network.CalculateOutput(input);
             var y = lossFunction.Derivative(network.Output, expected);
             var J = Matrix<double>.Build.Dense(expected.RowCount, network.TotalSynapses + network.TotalBiases);
-            var W = J.Clone();
 
             int colPos = 0;
             for (int j = 0; j < network.TotalLayers; j++)
@@ -32,12 +32,11 @@ namespace NNLib.Training.LevenbergMarquardt
                         var del = StepSize * (1 + Math.Abs(pw));
                         w[k, l] += del;
                         network.CalculateOutput(input);
-                        var y1 = network.Output;
+                        var y1 = lossFunction.Derivative(network.Output, expected);
                         var d = (y1 - y).Divide(del);
                         for (int i = 0; i < d.RowCount; i++)
                         {
                             J[i, colPos] = d[i, 0];
-                            W[i, colPos] = pw;
                         }
 
                         w[k, l] = pw;
@@ -55,12 +54,11 @@ namespace NNLib.Training.LevenbergMarquardt
                     var del = StepSize * (1 + Math.Abs(pb));
                     b[i, 0] += del;
                     network.CalculateOutput(input);
-                    var y1 = network.Output;
+                    var y1 = lossFunction.Derivative(network.Output, expected);
                     var d = (y1 - y).Divide(del);
                     for (int k = 0; k < d.RowCount; k++)
                     {
                         J[k, colPos] = d[k, 0];
-                        W[k, colPos] = pb;
                     }
 
                     b[i, 0] = pb;
@@ -69,30 +67,35 @@ namespace NNLib.Training.LevenbergMarquardt
             }
 
 
-            return (J, W);
+            return J;
         }
     }
 
     public class LevenbergMarquardtAlgorithm : AlgorithmBase
     {
-        private MLPNetwork _network;
+        private List<Matrix<double>> _prevLossFuncVal = new List<Matrix<double>>();
+        private int k;
+        private double _lambda;
 
-        public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams @params, MLPNetwork network)
+        public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams parameters)
         {
-            Params = @params;
-            _network = network;
+            Params = parameters;
+            _lambda = Params.lambda;
         }
         
         public LevenbergMarquardtParams Params { get; set; }
-        public override BatchParams BatchParams => Params;
 
+        public override void Setup(SupervisedSet trainingData, MLPNetwork network)
+        {
+            throw new NotImplementedException();
+        }
 
-        public override LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected,
+        public override LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected,
             ILossFunction lossFunction)
         {
-            var result = LearningMethodResult.FromNetwork(_network);
-            _network.CalculateOutput(input);
-            var y = lossFunction.Function(_network.Output, expected);
+            var result = LearningMethodResult.FromNetwork(network);
+            network.CalculateOutput(input);
+            var y = lossFunction.Function(network.Output, expected);
 
             if (y.Enumerate().Max() < Params.Eps)
             {
@@ -100,20 +103,51 @@ namespace NNLib.Training.LevenbergMarquardt
                 return result;
             }
 
-            var (J, W) = JacobianApproximation.CalcJacobian(_network, lossFunction, input, expected);
-            var JtWJ = J.TransposeAndMultiply(W).Multiply(J);
-            var g = JtWJ.Add(JtWJ * Params.lambda);
-            var JtWdy = J.TransposeAndMultiply(W).Multiply(y);
+            _prevLossFuncVal.Add(y);
+            if (k >= 1 && _lambda > 0.0d)
+            {
+                if (_prevLossFuncVal.Last().Enumerate().Sum() < y.Enumerate().Sum())
+                {
+                    _lambda -= Params.LambdaStep;
+                }
+                else
+                {
+                    _lambda += Params.LambdaStep;
+                }
+            }
 
-            var d = g.PseudoInverse().Multiply(JtWdy);
+            if (_lambda < 0.0d) _lambda = 0.0d;
+
+            var e = lossFunction.Derivative(network.Output, expected);
+
+            var J = JacobianApproximation.CalcJacobian(network, lossFunction, input, expected);
+
+            
+            var Jt = J.Transpose();
+            var g = Jt * e;
+            var JtJ = Jt * J;
+
+
+            if (k++ == 0)
+            {
+                var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real);
+                _lambda = m;
+            }
+
+            var G = JtJ + _lambda;
+
+
+            //todo infinity exc
+            var d = G.PseudoInverse() * g;  
+            
             var delta = d.RowSums();
             int col = 0;
-            for (int i = 0; i < _network.TotalLayers; i++)
+            for (int i = 0; i < network.TotalLayers; i++)
             {
-                result.Weigths[i] = _network.Layers[i].Weights.Clone();
-                for (int j = 0; j < _network.Layers[i].NeuronsCount; j++)
+                result.Weigths[i] = network.Layers[i].Weights.Clone();
+                for (int j = 0; j < network.Layers[i].NeuronsCount; j++)
                 {
-                    for (int k = 0; k < _network.Layers[i].InputsCount; k++)
+                    for (int k = 0; k < network.Layers[i].InputsCount; k++)
                     {
                         result.Weigths[i][j, k] = delta[col++];
                     }
@@ -121,10 +155,10 @@ namespace NNLib.Training.LevenbergMarquardt
                 
             }
 
-            for (int i = 0; i < _network.TotalLayers; i++)
+            for (int i = 0; i < network.TotalLayers; i++)
             {
-                result.Biases[i] = _network.Layers[i].Biases.Clone();
-                for (int j = 0; j < _network.Layers[i].NeuronsCount; j++)
+                result.Biases[i] = network.Layers[i].Biases.Clone();
+                for (int j = 0; j < network.Layers[i].NeuronsCount; j++)
                 {
                     result.Biases[i][j, 0] = delta[col++];
                 }
@@ -134,15 +168,5 @@ namespace NNLib.Training.LevenbergMarquardt
             return result;
         }
 
-    }
-
-    public class LevenbergMarquardtParams : BatchParams
-    {
-        /// <summary>
-        /// Lambda parameter
-        /// </summary>
-        public double lambda { get; set; } = 100000;
-
-        public double Eps { get; set; }
     }
 }
