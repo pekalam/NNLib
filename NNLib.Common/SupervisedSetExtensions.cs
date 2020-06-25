@@ -1,8 +1,8 @@
-﻿using MathNet.Numerics.LinearAlgebra;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib
+namespace NNLib.Common
 {
     public partial class SupervisedSet
     {
@@ -27,7 +27,7 @@ namespace NNLib
             }
         }
 
-        public static SupervisedSet FromArrays(double[][] input, double[][] target)
+        public static Common.SupervisedSet FromArrays(double[][] input, double[][] target)
         {
             ValidateInputAndTargetArrays(input, target);
             var inputVectors = new List<Matrix<double>>();
@@ -46,12 +46,12 @@ namespace NNLib
             }
             var defaultTargetVectorSet = new DefaultVectorSet(targetVectors);
 
-            return new SupervisedSet(defaultInputVectorSet, defaultTargetVectorSet);
+            return new Common.SupervisedSet(defaultInputVectorSet, defaultTargetVectorSet);
         }
 
-        public static SupervisedSet Empty()
+        public static Common.SupervisedSet Empty()
         {
-            return new SupervisedSet(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
+            return new Common.SupervisedSet(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
         }
     }
 }

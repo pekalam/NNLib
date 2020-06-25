@@ -1,7 +1,5 @@
 using System;
 using FluentAssertions;
-using NNLib.ActivationFunction;
-using NNLib.Training;
 using Xunit;
 using Xunit.Abstractions;
 

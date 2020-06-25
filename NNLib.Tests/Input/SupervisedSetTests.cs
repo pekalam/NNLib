@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
+using NNLib.Common;
 using Xunit;
 
 namespace NNLib.Tests

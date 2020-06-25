@@ -1,3 +1,4 @@
+using NNLib.Common;
 using M = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 namespace NNLib.Tests

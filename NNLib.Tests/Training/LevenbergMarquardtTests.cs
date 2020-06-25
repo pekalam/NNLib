@@ -1,7 +1,4 @@
 using System;
-using NNLib.ActivationFunction;
-using NNLib.Training;
-using NNLib.Training.LevenbergMarquardt;
 using Xunit;
 using Xunit.Abstractions;
 

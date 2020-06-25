@@ -1,6 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib.ActivationFunction
+namespace NNLib
 {
     public class SigmoidActivationFunction : IActivationFunction
     {

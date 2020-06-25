@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib.Training
+namespace NNLib
 {
     //todo remove
     public class BatchParams

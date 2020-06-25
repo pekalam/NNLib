@@ -1,7 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using NNLib.ActivationFunction;
-using NNLib.Training;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +20,7 @@ namespace NNLib.Tests
             TestAndGate(net, new GradientDescentAlgorithm( new GradientDescentParams()
             {
                 Momentum = 0.9, LearningRate = 0.2,
-            }), new QuadraticLossFunction(), new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(1));
+            }), new QuadraticLossFunction(), new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(1), varianceCheck: false);
         }
 
         [Fact]
@@ -32,7 +30,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.9,
                 LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 2}, TimeSpan.FromMinutes(1));
+            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 2}, TimeSpan.FromMinutes(1), varianceCheck: false);
         }
 
         [Fact]
@@ -42,7 +40,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.9,
                 LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 4}, TimeSpan.FromMinutes(2));
+            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 4}, TimeSpan.FromMinutes(2), varianceCheck: false);
         }
 
 
@@ -53,7 +51,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.9,
                 LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(1));
+            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(1), varianceCheck:false);
         }
 
         [Fact]
@@ -63,7 +61,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.9,
                 LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 2}, TimeSpan.FromMinutes(1));
+            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 2}, TimeSpan.FromMinutes(1), varianceCheck: false);
         }
 
         [Fact]
@@ -73,7 +71,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.9,
                 LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 4}, TimeSpan.FromMinutes(2));
+            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 4}, TimeSpan.FromMinutes(2), varianceCheck: false);
         }
     }
 }

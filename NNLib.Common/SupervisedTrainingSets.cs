@@ -1,12 +1,7 @@
 ﻿using System;
 
-namespace NNLib
+namespace NNLib.Common
 {
-    public enum SupervisedSetType
-    {
-        Training, Validation,Test
-    }
-
     public class SupervisedTrainingSets : IDisposable
     {
         public SupervisedSet TrainingSet { get; }

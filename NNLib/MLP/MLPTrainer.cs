@@ -1,16 +1,15 @@
-﻿using MathNet.Numerics.LinearAlgebra;
-using System;
+﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using NNLib.Training;
+using MathNet.Numerics.LinearAlgebra;
+using NNLib.Common;
 
 namespace NNLib
 {
     public class MLPTrainer
     {
-        private SupervisedSetType _currentSetType;
+        private DataSetType _currentSetType;
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
@@ -26,14 +25,14 @@ namespace NNLib
             LossFunction = lossFunction;
             Algorithm = algorithm;
 
-            CurrentSetType = SupervisedSetType.Training;
+            CurrentSetType = DataSetType.Training;
         }
 
         public ILossFunction LossFunction { get;  }
         public BatchTrainer BatchTrainer { get; }
         public SupervisedTrainingSets TrainingSets { get; }
 
-        public SupervisedSetType CurrentSetType
+        public DataSetType CurrentSetType
         {
             get => _currentSetType;
             set
@@ -41,10 +40,10 @@ namespace NNLib
                 _currentSetType = value;
                 BatchTrainer.TrainingSet = value switch
                 {
-                    SupervisedSetType.Training => TrainingSets.TrainingSet,
-                    SupervisedSetType.Validation => TrainingSets.ValidationSet ??
+                    DataSetType.Training => TrainingSets.TrainingSet,
+                    DataSetType.Validation => TrainingSets.ValidationSet ??
                                                     throw new NullReferenceException("Cannot assign empty validation set"),
-                    SupervisedSetType.Test => TrainingSets.TestSet ??
+                    DataSetType.Test => TrainingSets.TestSet ??
                                               throw new NullReferenceException("Cannot assign empty test set"),
                     _ => BatchTrainer.TrainingSet
                 };
@@ -59,7 +58,7 @@ namespace NNLib
 
         private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
-            void Validate(SupervisedSet set)
+            void Validate(Common.SupervisedSet set)
             {
                 if (network.Layers[0].InputsCount != set.Input[0].RowCount)
                 {

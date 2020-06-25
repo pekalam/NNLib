@@ -1,7 +1,7 @@
 ﻿using System;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib.Training.LevenbergMarquardt
+namespace NNLib
 {
     public static class JacobianApproximation
     {

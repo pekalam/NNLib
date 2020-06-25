@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Threading;
-using NNLib.Training;
+using NNLib.Common;
 
 namespace NNLib
 {
     public class BatchTrainer
     {
         private BatchParams _parameters;
-        private SupervisedSet _trainingSet;
+        private SupervisedSet? _trainingSet;
         private int _setIndex;
-        private LearningMethodResult[] _methodResults;
+        private LearningMethodResult[]? _methodResults;
 
         public BatchTrainer(BatchParams parameters)
         {
             _parameters = parameters;
         }
 
-        public SupervisedSet TrainingSet
+        public SupervisedSet? TrainingSet
         {
             get => _trainingSet;
             set
@@ -30,7 +30,7 @@ namespace NNLib
             }
         }
 
-        public BatchParams Parameters
+        public BatchParams? Parameters
         {
             get => _parameters;
             set

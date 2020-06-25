@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Statistics;
 using Moq;
-using NNLib.ActivationFunction;
-using NNLib.Training;
+using NNLib.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -89,7 +88,7 @@ namespace NNLib.Tests
         }
 
 
-        private void VerifyTrainingError(double target, MLPTrainer trainer, TimeSpan timeout, int samples = 7_000)
+        private void VerifyTrainingError(double target, MLPTrainer trainer, TimeSpan timeout, int samples, bool varianceCheck)
         {
             var src = new CancellationTokenSource(timeout);
 
@@ -113,12 +112,12 @@ namespace NNLib.Tests
                 }
             }
 
-            CheckVariance(sampleList);
+            if(varianceCheck) CheckVariance(sampleList);
             Assert.True(sampleList.First() - sampleList.Last() > 0.0d, "Error is not decreasing");
         }
 
         private async Task<Task> VerifyTrainingErrorAsync(double target, MLPTrainer trainer, TimeSpan timeout,
-            int samples = 7_000)
+            int samples, bool varianceCheck)
         {
             var src = new CancellationTokenSource(timeout);
 
@@ -142,27 +141,27 @@ namespace NNLib.Tests
                 }
             }
 
-            CheckVariance(sampleList);
+            if (varianceCheck) CheckVariance(sampleList);
             Assert.True(sampleList.First() - sampleList.Last() > 0.0d, "Error is not decreasing");
 
             return Task.CompletedTask;
         }
 
         
-        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000)
+        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
         {
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
                 algorithm, lossFunction, batchParams);
 
-            VerifyTrainingError(0.01, trainer, timeout, samples);
+            VerifyTrainingError(0.01, trainer, timeout, samples, varianceCheck);
         }
 
-        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000)
+        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
         {
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
                 algorithm, lossFunction, batchParams);
 
-            await VerifyTrainingErrorAsync(0.01, trainer, timeout, samples);
+            await VerifyTrainingErrorAsync(0.01, trainer, timeout, samples, varianceCheck);
         }
         
     }

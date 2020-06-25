@@ -1,9 +1,9 @@
-﻿using MathNet.Numerics.LinearAlgebra;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib
+namespace NNLib.Common
 {
     internal class VectorSetEnumerator : IEnumerator<Matrix<double>>
     {

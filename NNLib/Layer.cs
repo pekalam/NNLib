@@ -1,5 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
+using NNLib.Common;
 
 namespace NNLib
 {
@@ -7,10 +8,10 @@ namespace NNLib
     {
         private INetwork _network;
 
-        internal event Action<Layer> NeuronsCountChanging;
-        internal event Action<Layer> InputsCountChanging;
-        internal event Action<Layer> NeuronsCountChanged;
-        internal event Action<Layer> InputsCountChanged;
+        internal event Action<Layer>? NeuronsCountChanging;
+        internal event Action<Layer>? InputsCountChanging;
+        internal event Action<Layer>? NeuronsCountChanged;
+        internal event Action<Layer>? InputsCountChanged;
 
         protected Layer(Matrix<double> weights, Matrix<double> biases,
             Matrix<double> output)

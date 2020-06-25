@@ -1,9 +1,9 @@
-﻿using MathNet.Numerics.LinearAlgebra;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using MathNet.Numerics.LinearAlgebra;
 
 [assembly: InternalsVisibleTo("NNLib.Tests")]
-namespace NNLib
+namespace NNLib.Common
 {
     public class DefaultVectorSet : IVectorSet
     {

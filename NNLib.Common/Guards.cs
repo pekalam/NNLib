@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+[assembly:InternalsVisibleTo("NNLib")]
+[assembly: InternalsVisibleTo("NNLib.Csv")]
 namespace NNLib
 {
     internal class Guards

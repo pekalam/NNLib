@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
 
-namespace NNLib.Training.LevenbergMarquardt
+namespace NNLib
 {
     public class LevenbergMarquardtAlgorithm : AlgorithmBase
     {
@@ -25,7 +21,7 @@ namespace NNLib.Training.LevenbergMarquardt
         
         public LevenbergMarquardtParams Params { get; set; }
 
-        public override void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
+        public override void Setup(Common.SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
         {
             k = 0;
             var max = Double.MinValue;

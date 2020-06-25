@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib
+namespace NNLib.Common
 {
     public partial class SupervisedSet : IDisposable
     {

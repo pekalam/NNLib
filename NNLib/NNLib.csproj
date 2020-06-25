@@ -10,13 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics" Version="4.9.1" />
-    <PackageReference Include="MathNet.Numerics.MKL.Win" Version="2.3.0" />
-    <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="2.3.0" />
-    <PackageReference Include="NuGet.CommandLine" Version="5.5.1">
+    <PackageReference Include="NuGet.CommandLine" Version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NNLib.Common\NNLib.Data.csproj" />
   </ItemGroup>
 
 </Project>

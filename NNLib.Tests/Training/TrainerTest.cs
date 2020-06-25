@@ -1,6 +1,5 @@
 using System;
-using NNLib.ActivationFunction;
-using NNLib.Training;
+using NNLib.Common;
 using Xunit;
 using Xunit.Abstractions;
 

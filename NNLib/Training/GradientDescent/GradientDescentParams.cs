@@ -1,5 +1,4 @@
 ﻿using System;
-using NNLib.Training;
 
 namespace NNLib
 {

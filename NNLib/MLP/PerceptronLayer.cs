@@ -1,7 +1,6 @@
-﻿using MathNet.Numerics.Distributions;
+﻿using System;
+using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib.ActivationFunction;
-using System;
 
 namespace NNLib
 {

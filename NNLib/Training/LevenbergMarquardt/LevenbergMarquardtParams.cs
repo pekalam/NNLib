@@ -1,4 +1,4 @@
-﻿namespace NNLib.Training.LevenbergMarquardt
+﻿namespace NNLib
 {
     public class LevenbergMarquardtParams
     { 

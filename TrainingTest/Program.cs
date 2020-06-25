@@ -1,6 +1,6 @@
 ﻿using NNLib;
-using NNLib.ActivationFunction;
 using System;
+using NNLib.Common;
 using NNLib.Tests;
 
 namespace TrainingTest
@@ -13,11 +13,15 @@ namespace TrainingTest
             var net = new MLPNetwork(new PerceptronLayer(2, 50, new SigmoidActivationFunction()),
                 new PerceptronLayer(50, 50, new SigmoidActivationFunction()),
                 new PerceptronLayer(50, 1, new SigmoidActivationFunction()));
-            var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                new GradientDescentParams()
+            var trainer = new MLPTrainer(net, 
+                new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
+                new GradientDescentAlgorithm(new GradientDescentParams()
                 {
-                    BatchSize = 1, LearningRate = 0.1, Momentum = 0.2,
-                }, lossFunction);
+                    LearningRate = 0.1, Momentum = 0.2,
+                }), 
+                lossFunction, 
+                new BatchParams() {BatchSize = 1}
+                );
 
 
             while (trainer.Error > 0.01)

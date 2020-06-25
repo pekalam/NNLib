@@ -1,5 +1,4 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
-using NNLib.Training;
 
 namespace NNLib
 {
@@ -28,7 +27,7 @@ namespace NNLib
             return delta;
         }
 
-        public override void Setup(SupervisedSet trainingData, MLPNetwork network,ILossFunction lossFunction)
+        public override void Setup(Common.SupervisedSet trainingData, MLPNetwork network,ILossFunction lossFunction)
         {
             _previousLearningMethodResult = null;
         }
