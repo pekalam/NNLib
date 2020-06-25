@@ -28,7 +28,7 @@ namespace NNLib
             return delta;
         }
 
-        public override void Setup(SupervisedSet trainingData, MLPNetwork network)
+        public override void Setup(SupervisedSet trainingData, MLPNetwork network,ILossFunction lossFunction)
         {
             _previousLearningMethodResult = null;
         }

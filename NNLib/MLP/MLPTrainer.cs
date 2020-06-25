@@ -29,7 +29,7 @@ namespace NNLib
             CurrentSetType = SupervisedSetType.Training;
         }
 
-        public ILossFunction LossFunction { get; set; }
+        public ILossFunction LossFunction { get;  }
         public BatchTrainer BatchTrainer { get; }
         public SupervisedTrainingSets TrainingSets { get; }
 
@@ -48,11 +48,12 @@ namespace NNLib
                                               throw new NullReferenceException("Cannot assign empty test set"),
                     _ => BatchTrainer.TrainingSet
                 };
+                Algorithm.Setup(BatchTrainer.TrainingSet, Network, LossFunction);
             }
         }
 
         public MLPNetwork Network { get; }
-        public AlgorithmBase Algorithm { get; set; }
+        public AlgorithmBase Algorithm { get;  }
 
         public double Error { get; private set; } = double.MaxValue;
 
