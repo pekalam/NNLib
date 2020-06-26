@@ -5,11 +5,47 @@ using Xunit.Abstractions;
 
 namespace NNLib.Tests
 {
-    public class GradientDescentTests : TrainerTestBase
+    public class TrainingAlgorithmsTests : TrainerTestBase
+    {
+        private static MLPNetwork[] _networks = new MLPNetwork[]
+        {
+            CreateNetwork(1, (2, new TanHActivationFunction()), (90, new TanHActivationFunction()), (1, new SigmoidActivationFunction()))
+        };
+
+        public TrainingAlgorithmsTests(ITestOutputHelper output) : base(output)
+        {
+        }
+
+        [Theory]
+        [InlineData(0, "sin.csv")]
+        public void GradientDescent_tests(int netNum, string fileName)
+        {
+            var net = _networks[netNum];
+            TestFromCsv(fileName, net, new GradientDescentAlgorithm(
+                new GradientDescentParams()
+                {
+                    LearningRate = 0.0001, Momentum = 0.1
+                }), new QuadraticLossFunction(), new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(2), samples: 20_000,varianceCheck:false);
+        }
+
+        [Theory]
+        [InlineData(0, "sin.csv")]
+        public void f(int netNum, string fileName)
+        {
+            var net = _networks[netNum];
+            TestFromCsv(fileName, net, new LevenbergMarquardtAlgorithm(
+                new LevenbergMarquardtParams()
+                {
+                    Eps = 0.01, DampingParamFactor = 1.1
+                }), new QuadraticLossFunction(), new BatchParams() { BatchSize = 1 }, TimeSpan.FromMinutes(2), samples: 1_000, varianceCheck: false);
+        }
+    }
+
+    public class GradientDescentANDTests : TrainerTestBase
     {
         MLPNetwork net;
 
-        public GradientDescentTests(ITestOutputHelper output) : base(output)
+        public GradientDescentANDTests(ITestOutputHelper output) : base(output)
         {
             net = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
         }

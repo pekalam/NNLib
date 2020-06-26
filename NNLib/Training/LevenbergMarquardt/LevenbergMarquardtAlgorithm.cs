@@ -8,7 +8,7 @@ namespace NNLib
     public class LevenbergMarquardtAlgorithm : AlgorithmBase
     {
         private const double MinDampingParameter = 1.0e-6d;
-        private const double MaxDampingParameter = 1.0e-6d;
+        private const double MaxDampingParameter = 1.0e+6d;
 
         private List<Matrix<double>> _prevLossFuncVal = new List<Matrix<double>>();
         private int k;
@@ -43,7 +43,7 @@ namespace NNLib
                     max = m;
                 }
             }
-            
+
             _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? MinDampingParameter : max);
         }
 
@@ -82,8 +82,8 @@ namespace NNLib
 
             if (y.Enumerate().Max() < Params.Eps)
             {
-                //zero
-                return result;
+                k++;
+                return result.Empty(network);
             }
 
             _prevLossFuncVal.Add(y);
@@ -91,31 +91,33 @@ namespace NNLib
             {
                 if (_prevLossFuncVal.Last().Enumerate().Sum() < y.Enumerate().Sum())
                 {
-                    _dampingParameter /= Params.DampingParameterFactor;
+                    _dampingParameter /= Params.DampingParamFactor;
                 }
                 else if (_dampingParameter < MaxDampingParameter)
                 {
                     var netCpy = network.Clone();
                     var cpyResults = LearningMethodResult.FromNetwork(netCpy);
                     netCpy.CalculateOutput(input);
-
+                    
                     Matrix<double> y2;
                     do
                     {
-                        _dampingParameter *= Params.DampingParameterFactor;
-
+                        _dampingParameter *= Params.DampingParamFactor;
+                    
                         if(_dampingParameter > MaxDampingParameter)
                         {
                             _dampingParameter = MaxDampingParameter;
                             break;
                         }
-
+                    
                         var e2 = lossFunction.Derivative(netCpy.Output, expected);
                         var J2 = JacobianApproximation.CalcJacobian(netCpy, lossFunction, input, expected);
                         var Jt2 = J2.Transpose();
                         var g2 = Jt2 * e2;
                         var JtJ2 = Jt2 * J2;
-                        var G2 = JtJ2 + _dampingParameter;
+                        var diag2 = Matrix<double>.Build.Dense(JtJ2.RowCount, JtJ2.ColumnCount, 0);
+                        diag2.SetDiagonal(JtJ2.Diagonal());
+                        var G2 = JtJ2 + _dampingParameter * diag2;
                         //todo infinity exc
                         var d2 = G2.PseudoInverse() * g2;
                         var delta2 = d2.RowSums();
@@ -142,10 +144,17 @@ namespace NNLib
             var Jt = J.Transpose();
             var g = Jt * e;
             var JtJ = Jt * J;
-            var G = JtJ + _dampingParameter;
+            var diag = Matrix<double>.Build.Dense(JtJ.RowCount, JtJ.ColumnCount, 0);
+            diag.SetDiagonal(JtJ.Diagonal());
+            var G = JtJ + _dampingParameter * diag;
             //todo infinity exc
             var d = G.PseudoInverse() * g;
             var delta = d.RowSums();
+
+            if (double.IsNaN(delta.Sum()))
+            {
+                return result.Empty(network);
+            }
             
             SetResults(result, delta, network);
 

@@ -16,7 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NNLib.Csv\NNLib.Csv.csproj" />
     <ProjectReference Include="..\NNLib\NNLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="sin.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

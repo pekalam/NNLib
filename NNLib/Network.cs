@@ -115,6 +115,40 @@ namespace NNLib
             }
         }
 
+        public Matrix<double> GetParameters()
+        {
+            var p = Matrix<double>.Build.Dense(Layers[^1].NeuronsCount, TotalSynapses + TotalBiases);
+            int col = 0;
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                var w = Layers[i].Weights;
+                for (int j = 0; j < w.RowCount; j++)
+                {
+                    for (int k = 0; k < w.ColumnCount; k++)
+                    {
+                        for (int l = 0; l < p.RowCount; l++)
+                        {
+                            p[l, col++] = w[j, k];
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                var b = Layers[i].Biases;
+                for (int j = 0; j < b.RowCount; j++)
+                {
+                    for (int k = 0; k < p.RowCount; k++)
+                    {
+                        p[k, col++] = b[j, 0];
+                    }
+                }
+            }
+
+            return p;
+        }
+
         public abstract void CalculateOutput(Matrix<double> input);
     }
 }

@@ -7,6 +7,7 @@ using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Statistics;
 using Moq;
 using NNLib.Common;
+using NNLib.Csv;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +22,7 @@ namespace NNLib.Tests
             _output = output;
         }
 
-        protected MLPNetwork CreateNetwork(int inputs,
+        protected static MLPNetwork CreateNetwork(int inputs,
             params (int neuronsCount, IActivationFunction activationFunction)[] layers)
         {
             var netLayers = new PerceptronLayer[layers.Length];
@@ -34,14 +35,13 @@ namespace NNLib.Tests
                 var layer = new PerceptronLayer(netLayers[i - 1].NeuronsCount, layers[i].neuronsCount,
                     layers[i].activationFunction);
                 netLayers[i] = layer;
-                i++;
             }
 
             var net = new MLPNetwork(netLayers);
             return net;
         }
 
-        protected (Mock<MLPNetwork> net, List<Mock<PerceptronLayer>> layerMocks) CreateMockNetwork(int inputs, params (int neuronsCount, IActivationFunction activationFunction)[] layers)
+        protected static (Mock<MLPNetwork> net, List<Mock<PerceptronLayer>> layerMocks) CreateMockNetwork(int inputs, params (int neuronsCount, IActivationFunction activationFunction)[] layers)
         {
             var netLayers = new PerceptronLayer[layers.Length];
             var inputLayer = new Mock<PerceptronLayer>(inputs, layers[0].neuronsCount, layers[0].activationFunction);
@@ -58,7 +58,6 @@ namespace NNLib.Tests
                 mockLayer.CallBase = true;
                 layerMocks.Add(mockLayer);
                 netLayers[i] = mockLayer.Object;
-                i++;
             }
 
             var net = new Mock<MLPNetwork>(netLayers);
@@ -74,16 +73,9 @@ namespace NNLib.Tests
             _output.WriteLine("Variance: " + variance);
             _output.WriteLine("Mean: " + mean);
 
-
-            int eq = 0;
-            for (int i = 0; i < m.Count; i++)
+            if (variance < 0.001)
             {
-                if (m[i] - variance*2 <= mean && m[i] + variance*2 >= mean) eq++;
-            }
-
-            if (eq >= m.Count / 3)
-            {
-                Assert.False(true, $"({eq}/{m.Count}) error values are equal or same as {mean}");
+                Assert.False(true, $"Too low variance");
             }
         }
 
@@ -147,6 +139,14 @@ namespace NNLib.Tests
             return Task.CompletedTask;
         }
 
+        protected void TestFromCsv(string fileName, MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction,
+            BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
+        {
+            var trainer = new MLPTrainer(net, CsvFacade.LoadSets(fileName).sets,
+                algorithm, lossFunction, batchParams);
+
+            VerifyTrainingError(0.01, trainer, timeout, samples, varianceCheck);
+        }
         
         protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
         {

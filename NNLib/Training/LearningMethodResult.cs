@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
@@ -18,6 +19,16 @@ namespace NNLib
                 Weigths = new Matrix<double>[network.TotalLayers],
                 Biases = new Matrix<double>[network.TotalLayers],
             };
+        }
+
+        public LearningMethodResult Empty(MLPNetwork net)
+        {
+            for (int i = 0; i < Weigths.Length; i++)
+            {
+                Weigths[i] = Matrix<double>.Build.Dense(net.Layers[i].NeuronsCount, net.Layers[i].InputsCount, 0d);
+                Biases[i] = Matrix<double>.Build.Dense(net.Layers[i].NeuronsCount, 1, 0d);
+            }
+            return this;
         }
     }
 }
