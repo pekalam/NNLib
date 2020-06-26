@@ -24,8 +24,8 @@ namespace NNLib.Tests
             TestFromCsv(fileName, net, new GradientDescentAlgorithm(
                 new GradientDescentParams()
                 {
-                    LearningRate = 0.0001, Momentum = 0.1
-                }), new QuadraticLossFunction(), new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(2), samples: 20_000,varianceCheck:false);
+                    LearningRate = 0.0001, Momentum = 0.1, BatchParams = { BatchSize = 1 }
+                }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), samples: 20_000,varianceCheck:false);
         }
 
         [Theory]
@@ -37,7 +37,7 @@ namespace NNLib.Tests
                 new LevenbergMarquardtParams()
                 {
                     Eps = 0.01, DampingParamFactor = 1.1
-                }), new QuadraticLossFunction(), new BatchParams() { BatchSize = 1 }, TimeSpan.FromMinutes(2), samples: 1_000, varianceCheck: false);
+                }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), samples: 1_000, varianceCheck: false);
         }
     }
 
@@ -55,8 +55,8 @@ namespace NNLib.Tests
         {
             TestAndGate(net, new GradientDescentAlgorithm( new GradientDescentParams()
             {
-                Momentum = 0.9, LearningRate = 0.2,
-            }), new QuadraticLossFunction(), new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(1), varianceCheck: false);
+                Momentum = 0.3, LearningRate = 0.002,BatchParams = { BatchSize = 1}
+            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck: false);
         }
 
         [Fact]
@@ -64,9 +64,10 @@ namespace NNLib.Tests
         {
             TestAndGate(net,new GradientDescentAlgorithm(new GradientDescentParams()
             {
-                Momentum = 0.9,
-                LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 2}, TimeSpan.FromMinutes(1), varianceCheck: false);
+                Momentum = 0.3,
+                LearningRate = 0.002,
+                BatchParams = { BatchSize = 2 },
+            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck: false);
         }
 
         [Fact]
@@ -74,9 +75,10 @@ namespace NNLib.Tests
         {
             TestAndGate(net,new GradientDescentAlgorithm(new GradientDescentParams()
             {
-                Momentum = 0.9,
-                LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 4}, TimeSpan.FromMinutes(2), varianceCheck: false);
+                Momentum = 0.3,
+                LearningRate = 0.002,
+                BatchParams = { BatchSize = 4 },
+            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), varianceCheck: false);
         }
 
 
@@ -85,9 +87,10 @@ namespace NNLib.Tests
         {
             await TestAndGateAsync(net,new GradientDescentAlgorithm(new GradientDescentParams()
             {
-                Momentum = 0.9,
-                LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 1}, TimeSpan.FromMinutes(1), varianceCheck:false);
+                Momentum = 0.3,
+                LearningRate = 0.002,
+                BatchParams = { BatchSize = 1 },
+            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck:false);
         }
 
         [Fact]
@@ -95,9 +98,10 @@ namespace NNLib.Tests
         {
             await TestAndGateAsync(net,new GradientDescentAlgorithm(new GradientDescentParams()
             {
-                Momentum = 0.9,
-                LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 2}, TimeSpan.FromMinutes(1), varianceCheck: false);
+                Momentum = 0.3,
+                LearningRate = 0.002,
+                BatchParams = { BatchSize = 2 },
+            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck: false);
         }
 
         [Fact]
@@ -105,9 +109,10 @@ namespace NNLib.Tests
         {
             await TestAndGateAsync(net,new GradientDescentAlgorithm(new GradientDescentParams()
             {
-                Momentum = 0.9,
-                LearningRate = 0.2,
-            }), new QuadraticLossFunction(),new BatchParams(){BatchSize = 4}, TimeSpan.FromMinutes(2), varianceCheck: false);
+                Momentum = 0.3,
+                LearningRate = 0.002,
+                BatchParams = { BatchSize = 2 },
+            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), varianceCheck: false);
         }
     }
 }

@@ -14,14 +14,13 @@ namespace NNLib
         public event Action? IterationEnd;
 
         public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, AlgorithmBase algorithm,
-            ILossFunction lossFunction, BatchParams parameters)
+            ILossFunction lossFunction)
         {
             Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
             ValidateNetworkAndTrainingSets(network, trainingSets);
 
             Network = network;
             TrainingSets = trainingSets;
-            BatchTrainer = new BatchTrainer(parameters);
             LossFunction = lossFunction;
             Algorithm = algorithm;
 
@@ -29,7 +28,6 @@ namespace NNLib
         }
 
         public ILossFunction LossFunction { get;  }
-        public BatchTrainer BatchTrainer { get; }
         public SupervisedTrainingSets TrainingSets { get; }
 
         public DataSetType CurrentSetType
@@ -38,16 +36,16 @@ namespace NNLib
             set
             {
                 _currentSetType = value;
-                BatchTrainer.TrainingSet = value switch
+                var set = value switch
                 {
                     DataSetType.Training => TrainingSets.TrainingSet,
                     DataSetType.Validation => TrainingSets.ValidationSet ??
-                                                    throw new NullReferenceException("Cannot assign empty validation set"),
+                                              throw new NullReferenceException("Cannot assign empty validation set"),
                     DataSetType.Test => TrainingSets.TestSet ??
-                                              throw new NullReferenceException("Cannot assign empty test set"),
-                    _ => BatchTrainer.TrainingSet
+                                        throw new NullReferenceException("Cannot assign empty test set"),
+                    _ => throw new ArgumentException()
                 };
-                Algorithm.Setup(BatchTrainer.TrainingSet, Network, LossFunction);
+                Algorithm.Setup(set, Network, LossFunction);
             }
         }
 
@@ -83,20 +81,6 @@ namespace NNLib
             }
         }
 
-        protected void UpdateWeightsAndBiasesWithDeltaRule(LearningMethodResult result)
-        {
-            if (result.Weigths.Length != result.Biases.Length)
-            {
-                throw new Exception();
-            }
-
-            for (int i = 0; i < result.Weigths.Length; i++)
-            {
-                Network.Layers[i].Weights.Subtract(result.Weigths[i], Network.Layers[i].Weights);
-                Network.Layers[i].Biases.Subtract(result.Biases[i], Network.Layers[i].Biases);
-            }
-        }
-
         private void CheckTrainingCancelationIsRequested(in CancellationToken ct)
         {
             if (ct.IsCancellationRequested)
@@ -127,29 +111,26 @@ namespace NNLib
 
         private bool DoIterationInternal(in CancellationToken ct)
         {
-            var result = BatchTrainer.DoIteration(Network, LossFunction, Algorithm, ct);
+            var result = Algorithm.DoIteration(ct);
 
             CheckTrainingCancelationIsRequested(ct);
 
-            if (result != null)
-            {
-                UpdateWeightsAndBiasesWithDeltaRule(result);
-                return true;
-            }
-
             IterationEnd?.Invoke();
-            return false;
+            return result;
         }
 
         public void DoIteration(in CancellationToken ct = default)
         {
-            DoIterationInternal(ct);
+            if (DoIterationInternal(ct))
+            {
+                EpochEnd?.Invoke();
+                Error = CalculateNetworkError(ct);
+            }
         }
 
         public double DoEpoch(in CancellationToken ct = default)
         {
-            var result = BatchTrainer.DoEpoch(Network, LossFunction, Algorithm, ct);
-            UpdateWeightsAndBiasesWithDeltaRule(result);
+            while (!DoIterationInternal(ct)) { }
             EpochEnd?.Invoke();
             Error = CalculateNetworkError(ct);
 

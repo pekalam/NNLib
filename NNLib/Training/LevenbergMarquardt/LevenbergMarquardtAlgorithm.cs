@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
@@ -23,6 +24,8 @@ namespace NNLib
 
         public override void Setup(Common.SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
         {
+            BatchTrainer = null;
+
             k = 0;
             var max = Double.MinValue;
             for (int i = 0; i < trainingData.Input.Count; i++)
@@ -73,12 +76,19 @@ namespace NNLib
             }
         }
 
-        public override LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected,
+        public override int Iterations => k;
+        public override bool DoIteration(in CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        private LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected,
             ILossFunction lossFunction)
         {
             var result = LearningMethodResult.FromNetwork(network);
             network.CalculateOutput(input);
             var y = lossFunction.Function(network.Output, expected);
+            _prevLossFuncVal.Add(y);
 
             if (y.Enumerate().Max() < Params.Eps)
             {
@@ -86,7 +96,6 @@ namespace NNLib
                 return result.Empty(network);
             }
 
-            _prevLossFuncVal.Add(y);
             if (k >= 1 && _dampingParameter > 0.0d)
             {
                 if (_prevLossFuncVal.Last().Enumerate().Sum() < y.Enumerate().Sum())

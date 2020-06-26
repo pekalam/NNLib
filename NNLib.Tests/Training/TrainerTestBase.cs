@@ -139,27 +139,26 @@ namespace NNLib.Tests
             return Task.CompletedTask;
         }
 
-        protected void TestFromCsv(string fileName, MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction,
-            BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
+        protected void TestFromCsv(string fileName, MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
         {
             var trainer = new MLPTrainer(net, CsvFacade.LoadSets(fileName).sets,
-                algorithm, lossFunction, batchParams);
+                algorithm, lossFunction);
 
             VerifyTrainingError(0.01, trainer, timeout, samples, varianceCheck);
         }
         
-        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
+        protected void TestAndGate(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
         {
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                algorithm, lossFunction, batchParams);
+                algorithm, lossFunction);
 
             VerifyTrainingError(0.01, trainer, timeout, samples, varianceCheck);
         }
 
-        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, BatchParams batchParams, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
+        protected async Task TestAndGateAsync(MLPNetwork net, AlgorithmBase algorithm, ILossFunction lossFunction, TimeSpan timeout, int samples = 7000, bool varianceCheck = true)
         {
             var trainer = new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
-                algorithm, lossFunction, batchParams);
+                algorithm, lossFunction);
 
             await VerifyTrainingErrorAsync(0.01, trainer, timeout, samples, varianceCheck);
         }

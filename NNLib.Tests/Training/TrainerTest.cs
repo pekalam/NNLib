@@ -18,7 +18,7 @@ namespace NNLib.Tests
                 {
                     LearningRate = 0.9,
                     Momentum = 0.1
-                }), new QuadraticLossFunction(), new BatchParams());
+                }), new QuadraticLossFunction());
         }
 
         [Fact]

@@ -40,5 +40,7 @@ namespace NNLib
                 _momentum = value;
             }
         }
+
+        public BatchParams BatchParams { get; set; } = new BatchParams();
     }
 }

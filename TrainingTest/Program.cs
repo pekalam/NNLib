@@ -17,11 +17,10 @@ namespace TrainingTest
                 new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
                 new GradientDescentAlgorithm(new GradientDescentParams()
                 {
-                    LearningRate = 0.1, Momentum = 0.2,
+                    LearningRate = 0.1, Momentum = 0.2,BatchParams = { BatchSize = 1}
                 }), 
-                lossFunction, 
-                new BatchParams() {BatchSize = 1}
-                );
+                lossFunction
+            );
 
 
             while (trainer.Error > 0.01)

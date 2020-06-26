@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using MathNet.Numerics.LinearAlgebra;
 using NNLib.Common;
 
 namespace NNLib
@@ -96,16 +97,14 @@ namespace NNLib
             return result;
         }
 
-        public LearningMethodResult? DoIteration(MLPNetwork network, ILossFunction lossFunction, AlgorithmBase algorithm, in CancellationToken ct = default)
+        public LearningMethodResult? DoIteration(Func<Matrix<double>, Matrix<double>, LearningMethodResult> func, in CancellationToken ct = default)
         {
             var input = _trainingSet.Input[_setIndex];
             var expected = _trainingSet.Target[_setIndex];
 
-            network.CalculateOutput(input);
-
             CheckTrainingCancelationIsRequested(ct);
 
-            var result = algorithm.CalculateDelta(network, input, expected, lossFunction);
+            var result = func(input, expected);
             _methodResults[Iterations] = result;
 
             _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
@@ -122,15 +121,15 @@ namespace NNLib
             return null;
         }
 
-        public LearningMethodResult DoEpoch(MLPNetwork network, ILossFunction lossFunction, AlgorithmBase algorithm, in CancellationToken ct = default)
+        public LearningMethodResult DoEpoch(Func<Matrix<double>, Matrix<double>, LearningMethodResult> func, in CancellationToken ct = default)
         {
             for (int i = 0; i < IterationsPerEpoch - 1; i++)
             {
                 CheckTrainingCancelationIsRequested(ct);
-                DoIteration(network, lossFunction, algorithm, ct);
+                DoIteration(func, ct);
             }
             CheckTrainingCancelationIsRequested(ct);
-            var result = DoIteration(network, lossFunction,algorithm, ct);
+            var result = DoIteration(func, ct);
             return result;
         }
     }
