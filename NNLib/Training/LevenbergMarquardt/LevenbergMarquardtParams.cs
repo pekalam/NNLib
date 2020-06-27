@@ -4,7 +4,7 @@
     { 
         public double Eps { get; set; }
 
-        public double DampingParamFactor { get; set; } = 10;
-
+        public double DampingParamIncFactor { get; set; } = 12;
+        public double DampingParamDecFactor { get; set; } = 0.15;
     }
 }

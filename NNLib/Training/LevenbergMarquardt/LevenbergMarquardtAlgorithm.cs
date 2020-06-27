@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
+using NNLib.Common;
 
 namespace NNLib
 {
@@ -10,8 +11,12 @@ namespace NNLib
     {
         private const double MinDampingParameter = 1.0e-6d;
         private const double MaxDampingParameter = 1.0e+6d;
+        private SupervisedSet _trainingData;
+        private MLPNetwork _network;
+        private ILossFunction _lossFunction;
 
-        private List<Matrix<double>> _prevLossFuncVal = new List<Matrix<double>>();
+        private double _previousError;
+        private Matrix<double>? _previousE = null;
         private int k;
         private double _dampingParameter;
 
@@ -22,12 +27,15 @@ namespace NNLib
         
         public LevenbergMarquardtParams Params { get; set; }
 
-        public override void Setup(Common.SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
+        public override void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
         {
+            _lossFunction = lossFunction;
+            _network = network;
+            _trainingData = trainingData;
             BatchTrainer = null;
 
             k = 0;
-            var max = Double.MinValue;
+            /*var max = Double.MinValue;
             for (int i = 0; i < trainingData.Input.Count; i++)
             {
                 var input = trainingData.Input[i];
@@ -47,7 +55,8 @@ namespace NNLib
                 }
             }
 
-            _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? MinDampingParameter : max);
+            _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? MinDampingParameter : max);*/
+            _dampingParameter = 1000;
         }
 
         private void SetResults(LearningMethodResult result, Vector<double> delta, MLPNetwork network)
@@ -77,98 +86,120 @@ namespace NNLib
         }
 
         public override int Iterations => k;
-        public override bool DoIteration(in CancellationToken ct)
+        
+        private void UpdateWeightsAndBiasesWithDeltaRule(LearningMethodResult result)
         {
-            throw new NotImplementedException();
+            if (result.Weigths.Length != result.Biases.Length)
+            {
+                throw new Exception();
+            }
+        
+            for (int i = 0; i < result.Weigths.Length; i++)
+            {
+                _network.Layers[i].Weights.Subtract(result.Weigths[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Subtract(result.Biases[i], _network.Layers[i].Biases);
+            }
         }
 
-        private LearningMethodResult CalculateDelta(MLPNetwork network, Matrix<double> input, Matrix<double> expected,
-            ILossFunction lossFunction)
+        private void ResetWeightsAndBiases(LearningMethodResult result)
         {
-            var result = LearningMethodResult.FromNetwork(network);
-            network.CalculateOutput(input);
-            var y = lossFunction.Function(network.Output, expected);
-            _prevLossFuncVal.Add(y);
-
-            if (y.Enumerate().Max() < Params.Eps)
+            if (result.Weigths.Length != result.Biases.Length)
             {
-                k++;
-                return result.Empty(network);
+                throw new Exception();
             }
 
-            if (k >= 1 && _dampingParameter > 0.0d)
+            for (int i = 0; i < result.Weigths.Length; i++)
             {
-                if (_prevLossFuncVal.Last().Enumerate().Sum() < y.Enumerate().Sum())
+                _network.Layers[i].Weights.Add(result.Weigths[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Add(result.Biases[i], _network.Layers[i].Biases);
+            }
+        }
+
+        private double CalcError(Matrix<double> E)
+        {
+            return E.PointwisePower(2).Enumerate().Sum() / _network.Layers[^1].NeuronsCount;
+        }
+        
+        public override bool DoIteration(in CancellationToken ct = default)
+        {
+            var result = LearningMethodResult.FromNetwork(_network);
+            double error;
+            do
+            {
+                if(ct.IsCancellationRequested) throw new TrainingCanceledException();
+                
+                var E = _previousE ?? CalcE();
+
+                var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _trainingData, E);
+                var Jt = J.Transpose();
+                var g = Jt * E;
+                var JtJ = Jt * J;
+                var diag = Matrix<double>.Build.Dense(JtJ.RowCount, JtJ.ColumnCount, 0);
+                diag.SetDiagonal(JtJ.Diagonal());
+                var G = JtJ + _dampingParameter * diag;
+                //todo infinity exc
+                var d = G.PseudoInverse() * g;
+                var delta = d.RowSums();
+
+                if (double.IsNaN(delta.Sum()))
                 {
-                    _dampingParameter /= Params.DampingParamFactor;
+                    throw new ArgumentException("NaN");
                 }
-                else if (_dampingParameter < MaxDampingParameter)
+
+                SetResults(result, delta, _network);
+                UpdateWeightsAndBiasesWithDeltaRule(result);
+
+
+                E = CalcE();
+                error = CalcError(E);
+                _previousE = E;
+
+                if (k >= 1)
                 {
-                    var netCpy = network.Clone();
-                    var cpyResults = LearningMethodResult.FromNetwork(netCpy);
-                    netCpy.CalculateOutput(input);
-                    
-                    Matrix<double> y2;
-                    do
+                    if (error >= _previousError)
                     {
-                        _dampingParameter *= Params.DampingParamFactor;
-                    
-                        if(_dampingParameter > MaxDampingParameter)
-                        {
-                            _dampingParameter = MaxDampingParameter;
-                            break;
-                        }
-                    
-                        var e2 = lossFunction.Derivative(netCpy.Output, expected);
-                        var J2 = JacobianApproximation.CalcJacobian(netCpy, lossFunction, input, expected);
-                        var Jt2 = J2.Transpose();
-                        var g2 = Jt2 * e2;
-                        var JtJ2 = Jt2 * J2;
-                        var diag2 = Matrix<double>.Build.Dense(JtJ2.RowCount, JtJ2.ColumnCount, 0);
-                        diag2.SetDiagonal(JtJ2.Diagonal());
-                        var G2 = JtJ2 + _dampingParameter * diag2;
-                        //todo infinity exc
-                        var d2 = G2.PseudoInverse() * g2;
-                        var delta2 = d2.RowSums();
-                    
-                        SetResults(cpyResults, delta2, netCpy);
-                    
-                        for (int i = 0; i < cpyResults.Weigths.Length; i++)
-                        {
-                            netCpy.Layers[i].Weights.Subtract(cpyResults.Weigths[i], netCpy.Layers[i].Weights);
-                            netCpy.Layers[i].Biases.Subtract(cpyResults.Biases[i], netCpy.Layers[i].Biases);
-                        }
-                        netCpy.CalculateOutput(input);
-                        y2 = lossFunction.Function(netCpy.Output, expected);
-                    } while (_prevLossFuncVal.Last().Enumerate().Sum() > y2.Enumerate().Sum());
+                        _dampingParameter *= Params.DampingParamIncFactor;
+                        //if (_dampingParameter > MaxDampingParameter) _dampingParameter = MaxDampingParameter;
+                        ResetWeightsAndBiases(result);
+                    }
+                    else
+                    {
+                        _dampingParameter *= Params.DampingParamDecFactor;
+                        //if (_dampingParameter < MinDampingParameter) _dampingParameter = MinDampingParameter;
+                        break;
+                    }
+                }
+                else break;
+
+            } while (true);
+            k++;
+            _previousError = error;
+
+
+
+
+            return true;
+        }
+
+        private Matrix<double> CalcE()
+        {
+            var E = new double[_network.Layers[^1].NeuronsCount, _trainingData.Target.Count];
+            for (int i = 0; i < _trainingData.Input.Count; i++)
+            {
+                var input = _trainingData.Input[i];
+                var target = _trainingData.Target[i];
+                
+                _network.CalculateOutput(input);
+                var y = _lossFunction.Derivative(_network.Output, target);
+
+                for (int j = 0; j < y.RowCount; j++)
+                {
+                    E[j, i] = y[j, 0];
 
                 }
             }
-            k++;
 
-            if (_dampingParameter < 0.0d) _dampingParameter = 0.0d;
-
-            var e = lossFunction.Derivative(network.Output, expected);
-            var J = JacobianApproximation.CalcJacobian(network, lossFunction, input, expected);
-            var Jt = J.Transpose();
-            var g = Jt * e;
-            var JtJ = Jt * J;
-            var diag = Matrix<double>.Build.Dense(JtJ.RowCount, JtJ.ColumnCount, 0);
-            diag.SetDiagonal(JtJ.Diagonal());
-            var G = JtJ + _dampingParameter * diag;
-            //todo infinity exc
-            var d = G.PseudoInverse() * g;
-            var delta = d.RowSums();
-
-            if (double.IsNaN(delta.Sum()))
-            {
-                return result.Empty(network);
-            }
-            
-            SetResults(result, delta, network);
-
-
-            return result;
+            return Matrix<double>.Build.DenseOfArray(E).Transpose();
         }
 
     }
