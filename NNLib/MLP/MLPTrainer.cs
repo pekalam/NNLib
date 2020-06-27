@@ -10,6 +10,7 @@ namespace NNLib
     public class MLPTrainer
     {
         private DataSetType _currentSetType;
+        private AlgorithmBase _algorithm;
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
@@ -22,7 +23,7 @@ namespace NNLib
             Network = network;
             TrainingSets = trainingSets;
             LossFunction = lossFunction;
-            Algorithm = algorithm;
+            _algorithm = algorithm;
 
             CurrentSetType = DataSetType.Training;
         }
@@ -36,23 +37,36 @@ namespace NNLib
             set
             {
                 _currentSetType = value;
-                var set = value switch
-                {
-                    DataSetType.Training => TrainingSets.TrainingSet,
-                    DataSetType.Validation => TrainingSets.ValidationSet ??
-                                              throw new NullReferenceException("Cannot assign empty validation set"),
-                    DataSetType.Test => TrainingSets.TestSet ??
-                                        throw new NullReferenceException("Cannot assign empty test set"),
-                    _ => throw new ArgumentException()
-                };
-                Algorithm.Setup(set, Network, LossFunction);
+                Algorithm.Setup(GetCurrentSet(), Network, LossFunction);
             }
         }
 
-        public MLPNetwork Network { get; }
-        public AlgorithmBase Algorithm { get;  }
+        private SupervisedSet GetCurrentSet()
+        {
+            return _currentSetType switch
+            {
+                DataSetType.Training => TrainingSets.TrainingSet,
+                DataSetType.Validation => TrainingSets.ValidationSet ??
+                                          throw new NullReferenceException("Cannot assign empty validation set"),
+                DataSetType.Test => TrainingSets.TestSet ??
+                                    throw new NullReferenceException("Cannot assign empty test set"),
+                _ => throw new ArgumentException()
+            };
+        }
 
-        public double Error { get; private set; } = double.MaxValue;
+        public MLPNetwork Network { get; }
+
+        public AlgorithmBase Algorithm
+        {
+            get => _algorithm;
+            set
+            {
+                _algorithm = value;
+                _algorithm.Setup(GetCurrentSet(), Network, LossFunction);
+            }
+        }
+
+        public double Error { get; private set; } = double.NaN;
 
         private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {

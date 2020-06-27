@@ -1,10 +1,15 @@
-﻿namespace NNLib
+﻿using System;
+
+namespace NNLib
 {
-    public class LevenbergMarquardtParams
+    public class LevenbergMarquardtParams : ICloneable
     { 
-        public double Eps { get; set; }
 
         public double DampingParamIncFactor { get; set; } = 12;
         public double DampingParamDecFactor { get; set; } = 0.15;
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

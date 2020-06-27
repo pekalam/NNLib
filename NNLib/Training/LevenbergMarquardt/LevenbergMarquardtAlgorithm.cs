@@ -143,7 +143,7 @@ namespace NNLib
 
                 if (double.IsNaN(delta.Sum()))
                 {
-                    throw new ArgumentException("NaN");
+                    throw new AlgorithmFailed("delta contains NaN");
                 }
 
                 SetResults(result, delta, _network);
@@ -159,13 +159,13 @@ namespace NNLib
                     if (error >= _previousError)
                     {
                         _dampingParameter *= Params.DampingParamIncFactor;
-                        //if (_dampingParameter > MaxDampingParameter) _dampingParameter = MaxDampingParameter;
+                        if (_dampingParameter > MaxDampingParameter) _dampingParameter = new Random().NextDouble() + MinDampingParameter;
                         ResetWeightsAndBiases(result);
                     }
                     else
                     {
                         _dampingParameter *= Params.DampingParamDecFactor;
-                        //if (_dampingParameter < MinDampingParameter) _dampingParameter = MinDampingParameter;
+                        if (_dampingParameter < MinDampingParameter) _dampingParameter = new Random().NextDouble() + MinDampingParameter;
                         break;
                     }
                 }
@@ -174,9 +174,6 @@ namespace NNLib
             } while (true);
             k++;
             _previousError = error;
-
-
-
 
             return true;
         }
