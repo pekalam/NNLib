@@ -7,7 +7,7 @@ namespace NNLib
     public abstract class AlgorithmBase
     {
         public abstract void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction);
-
+        public abstract void ResetIterations();
         public BatchTrainer? BatchTrainer { get; protected set; }
 
         public abstract int Iterations { get; }

@@ -36,7 +36,7 @@ namespace NNLib.Tests
             TestFromCsv(fileName, net, new LevenbergMarquardtAlgorithm(
                 new LevenbergMarquardtParams()
                 {
-                    Eps = 0.01, DampingParamIncFactor = 10, DampingParamDecFactor = 0.1
+                    DampingParamIncFactor = 10, DampingParamDecFactor = 0.1
                 }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), samples: 1_000, varianceCheck: false);
         }
     }

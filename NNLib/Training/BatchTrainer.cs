@@ -73,6 +73,8 @@ namespace NNLib
             Iterations = IterationsPerEpoch = CurrentBatch = _setIndex = 0;
         }
 
+        public void Reset() => ResetTrainingVars();
+
         public int Iterations { get; private set; }
         public int IterationsPerEpoch { get; private set; }
         public int CurrentBatch { get; private set; }

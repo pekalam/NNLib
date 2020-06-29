@@ -1,13 +1,14 @@
 using System;
+using FluentAssertions;
 using NNLib.Common;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NNLib.Tests
 {
-    public class TrainerTest : TrainerTestBase
+    public class MLPTrainerTest : TrainerTestBase
     {
-        public TrainerTest(ITestOutputHelper output) : base(output)
+        public MLPTrainerTest(ITestOutputHelper output) : base(output)
         {
         }
         
@@ -35,6 +36,25 @@ namespace NNLib.Tests
             var (net3, _) = CreateMockNetwork(1, (2, new LinearActivationFunction()), (10, new SigmoidActivationFunction()));
 
             Assert.Throws<Exception>(() => CreateBasicAndGateTrainer(net3.Object));
+        }
+
+        [Fact]
+        public void Epoch_and_iterations_props_return_valid_results()
+        {
+            var net = CreateNetwork(2, (1, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var trainer = CreateBasicAndGateTrainer(net);
+
+            trainer.DoEpoch();
+            trainer.Epochs.Should().Be(1);
+            trainer.Iterations.Should().Be(0);
+            
+            trainer.DoIteration();
+            trainer.Iterations.Should().Be(1);
+            trainer.Epochs.Should().Be(1);
+            
+            trainer.ResetEpochs();
+            trainer.Iterations.Should().Be(0);
+            trainer.Epochs.Should().Be(0);
         }
     }
 }

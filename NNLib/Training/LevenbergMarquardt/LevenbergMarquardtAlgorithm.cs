@@ -59,6 +59,11 @@ namespace NNLib
             _dampingParameter = 1000;
         }
 
+        public override void ResetIterations()
+        {
+            k = 0;
+        }
+
         private void SetResults(LearningMethodResult result, Vector<double> delta, MLPNetwork network)
         {
             int col = 0;

@@ -67,6 +67,14 @@ namespace NNLib
         }
 
         public double Error { get; private set; } = double.NaN;
+        public int Epochs { get; private set; }
+        public int Iterations => Algorithm.Iterations;
+
+        public void ResetEpochs()
+        {
+            Epochs = 0;
+            Algorithm.ResetIterations();
+        }
 
         private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
@@ -137,6 +145,7 @@ namespace NNLib
         {
             if (DoIterationInternal(ct))
             {
+                Epochs++;
                 EpochEnd?.Invoke();
                 Error = CalculateNetworkError(ct);
             }
@@ -145,6 +154,7 @@ namespace NNLib
         public double DoEpoch(in CancellationToken ct = default)
         {
             while (!DoIterationInternal(ct)) { }
+            Epochs++;
             EpochEnd?.Invoke();
             Error = CalculateNetworkError(ct);
 

@@ -9,6 +9,7 @@ namespace NNLib
         private LearningMethodResult? _previousLearningMethodResult;
         private MLPNetwork _network;
         private ILossFunction _lossFunction;
+        private int _iterations;
 
         public GradientDescentAlgorithm(GradientDescentParams parameters)
         {
@@ -16,7 +17,7 @@ namespace NNLib
         }
 
         public GradientDescentParams Params { get; set; }
-        public override int Iterations => BatchTrainer.Iterations;
+        public override int Iterations => _iterations;
 
         public override void Setup(Common.SupervisedSet trainingData, MLPNetwork network,ILossFunction lossFunction)
         {
@@ -27,6 +28,12 @@ namespace NNLib
             {
                 TrainingSet = trainingData,Parameters = Params.BatchParams,
             };
+        }
+
+        public override void ResetIterations()
+        {
+            _iterations = 0;
+            BatchTrainer?.Reset();
         }
 
 
@@ -93,6 +100,7 @@ namespace NNLib
         public override bool DoIteration(in CancellationToken ct = default)
         { 
             var result = BatchTrainer.DoIteration(CalculateDelta);
+            _iterations = BatchTrainer.Iterations;
             if (result != null)
             {
                 UpdateWeightsAndBiasesWithDeltaRule(result);
