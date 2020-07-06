@@ -21,19 +21,19 @@ namespace NNLib
                 for (int j = 0; j < network.TotalLayers; j++)
                 {
                     var w = network.Layers[j].Weights;
-                    for (int k = 0; k < w.RowCount; k++)
+                    for (int k = 0; k < w.ColumnCount; k++)
                     {
-                        for (int l = 0; l < w.ColumnCount; l++)
+                        for (int l = 0; l < w.RowCount; l++)
                         {
-                            var pw = w[k, l];
+                            var pw = w[l,k];
                             var del = StepSize * (1 + Math.Abs(pw));
-                            w[k, l] += del;
+                            w[l,k] += del;
                             network.CalculateOutput(input);
                             var y1 = lossFunction.Derivative(network.Output, expected);
 
                             for (int i = 0; i < y1.RowCount; i++)
                             {
-                                y1[i,0] -= E[s, i];
+                                y1[i,0] -= E[s,i];
                             }
                             
                             var d = y1.Divide(del);
@@ -42,7 +42,7 @@ namespace NNLib
                                 J[i, colPos] = d[i, 0];
                             }
 
-                            w[k, l] = pw;
+                            w[l,k] = pw;
                             colPos++;
                         }
                     }
@@ -61,7 +61,7 @@ namespace NNLib
                         
                         for (int k = 0; k < y1.RowCount; k++)
                         {
-                            y1[k,0] -= E[s, k];
+                            y1[k,0] -= E[s,k];
                         }
                         
                         var d = y1.Divide(del);

@@ -70,7 +70,7 @@ namespace NNLib
 
         private void ResetTrainingVars()
         {
-            Iterations = IterationsPerEpoch = CurrentBatch = _setIndex = 0;
+            Iterations = CurrentBatch = _setIndex = 0;
         }
 
         public void Reset() => ResetTrainingVars();

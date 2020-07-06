@@ -15,7 +15,7 @@ namespace NNLib.Tests
 {
     public class TrainerTestBase
     {
-        private readonly ITestOutputHelper _output;
+        protected readonly ITestOutputHelper _output;
 
         public TrainerTestBase(ITestOutputHelper output)
         {

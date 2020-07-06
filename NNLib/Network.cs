@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using MathNet.Numerics.LinearAlgebra.Storage;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace NNLib
@@ -122,14 +123,15 @@ namespace NNLib
             for (int i = 0; i < Layers.Count; i++)
             {
                 var w = Layers[i].Weights;
-                for (int j = 0; j < w.RowCount; j++)
+                for (int j = 0; j < w.ColumnCount; j++)
                 {
-                    for (int k = 0; k < w.ColumnCount; k++)
+                    for (int k = 0; k < w.RowCount; k++)
                     {
                         for (int l = 0; l < p.RowCount; l++)
                         {
-                            p[l, col++] = w[j, k];
+                            p[l, col] = w[k, j];
                         }
+                        col++;
                     }
                 }
             }
@@ -141,10 +143,15 @@ namespace NNLib
                 {
                     for (int k = 0; k < p.RowCount; k++)
                     {
-                        p[k, col++] = b[j, 0];
+                        p[k, col] = b[j, 0];
                     }
+
+                    col++;
                 }
             }
+
+
+
 
             return p;
         }

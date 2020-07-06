@@ -11,5 +11,18 @@ namespace NNLib
         {
             return MemberwiseClone();
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+
+            if (obj is LevenbergMarquardtParams o)
+            {
+                return DampingParamIncFactor == o.DampingParamIncFactor &&
+                       DampingParamDecFactor == o.DampingParamDecFactor;
+            }
+
+            return false;
+        }
     }
 }

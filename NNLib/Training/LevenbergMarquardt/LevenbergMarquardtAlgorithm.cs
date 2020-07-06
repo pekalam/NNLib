@@ -11,6 +11,7 @@ namespace NNLib
     {
         private const double MinDampingParameter = 1.0e-6d;
         private const double MaxDampingParameter = 1.0e+6d;
+        private const int MaxIterations = 500;
         private SupervisedSet _trainingData;
         private MLPNetwork _network;
         private ILossFunction _lossFunction;
@@ -35,27 +36,24 @@ namespace NNLib
             BatchTrainer = null;
 
             k = 0;
-            /*var max = Double.MinValue;
-            for (int i = 0; i < trainingData.Input.Count; i++)
-            {
-                var input = trainingData.Input[i];
-                var target = trainingData.Target[i];
-                
-                network.CalculateOutput(input);
-                var e = lossFunction.Derivative(network.Output, target);
-                var J = JacobianApproximation.CalcJacobian(network, lossFunction, input, target);
-                var Jt = J.Transpose();
-                var g = Jt * e;
-                var JtJ = Jt * J;
-                var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real);
 
-                if (m > max)
-                {
-                    max = m;
-                }
-            }
-
-            _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? MinDampingParameter : max);*/
+            // var max = Double.MinValue;
+            //
+            //
+            // var E = _previousE ?? CalcE();
+            //
+            // var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _trainingData, E);
+            // var Jt = J.Transpose();
+            // var g = Jt * E;
+            // var JtJ = Jt * J;
+            // var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real);
+            //
+            // if (m > max)
+            // {
+            //     max = m;
+            // }
+            //
+            //  _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? MinDampingParameter : max);
             _dampingParameter = 1000;
         }
 
@@ -70,11 +68,11 @@ namespace NNLib
             for (int i = 0; i < network.TotalLayers; i++)
             {
                 result.Weigths[i] = network.Layers[i].Weights.Clone();
-                for (int j = 0; j < network.Layers[i].NeuronsCount; j++)
+                for (int j = 0; j < network.Layers[i].InputsCount; j++)
                 {
-                    for (int k = 0; k < network.Layers[i].InputsCount; k++)
+                    for (int k = 0; k < network.Layers[i].NeuronsCount; k++)
                     {
-                        result.Weigths[i][j, k] = delta[col++];
+                        result.Weigths[i][k, j] = delta[col++];
                     }
                 }
                 
@@ -129,6 +127,7 @@ namespace NNLib
         {
             var result = LearningMethodResult.FromNetwork(_network);
             double error;
+            int it = 0;
             do
             {
                 if(ct.IsCancellationRequested) throw new TrainingCanceledException();
@@ -146,11 +145,6 @@ namespace NNLib
                 var d = G.PseudoInverse() * g;
                 var delta = d.RowSums();
 
-                if (double.IsNaN(delta.Sum()))
-                {
-                    throw new AlgorithmFailed("delta contains NaN");
-                }
-
                 SetResults(result, delta, _network);
                 UpdateWeightsAndBiasesWithDeltaRule(result);
 
@@ -159,7 +153,7 @@ namespace NNLib
                 error = CalcError(E);
                 _previousE = E;
 
-                if (k >= 1)
+                if (k >= 1 && ++it < MaxIterations)
                 {
                     if (error >= _previousError)
                     {

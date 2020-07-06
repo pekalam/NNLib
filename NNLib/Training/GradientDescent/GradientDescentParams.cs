@@ -44,7 +44,23 @@ namespace NNLib
         public BatchParams BatchParams { get; set; } = new BatchParams();
         public object Clone()
         {
-            return MemberwiseClone();
+            return new GradientDescentParams()
+            {
+                Momentum = _momentum,BatchParams = new BatchParams() { BatchSize = BatchParams.BatchSize},LearningRate = _learningRate,
+            };
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+
+            if (obj is GradientDescentParams o)
+            {
+                return Momentum == o.Momentum && LearningRate == o.LearningRate &&
+                       o.BatchParams.BatchSize == o.BatchParams.BatchSize;
+            }
+
+            return false;
         }
     }
 }
