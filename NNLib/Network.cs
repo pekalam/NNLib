@@ -156,6 +156,14 @@ namespace NNLib
             return p;
         }
 
+        public void RebuildMatrices()
+        {
+            foreach (var layer in _layers)
+            {
+                layer.RebuildMatrices();
+            }
+        }
+
         public abstract void CalculateOutput(Matrix<double> input);
     }
 }

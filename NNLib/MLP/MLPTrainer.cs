@@ -66,11 +66,12 @@ namespace NNLib
             }
         }
 
-        public double Error { get; private set; } = double.NaN;
+        public double Error { get; private set; } = double.PositiveInfinity;
         public int Epochs { get; private set; }
         public int Iterations => Algorithm.Iterations;
         public void ResetEpochs()
         {
+            Error = double.PositiveInfinity;
             Epochs = 0;
             Algorithm.ResetIterations();
         }

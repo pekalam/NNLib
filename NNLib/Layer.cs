@@ -76,6 +76,16 @@ namespace NNLib
             }
         }
 
+        public void RebuildMatrices()
+        {
+            var n = NeuronsCount;
+            var i = InputsCount;
+            Weights = Biases = Output = null;
+            BuildMatrices(i, n);
+        }
+
+        public RandomGenerator RandomGenerator { get; set; }
+
         protected abstract void BuildMatrices(int inputsCount, int neuronsCount);
 
         public void RandomizeW()

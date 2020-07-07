@@ -59,6 +59,69 @@ namespace NNLib.Tests
             l3.InputsCount.Should().Be(3);
         }
 
+        [Fact]
+        public void NeuronsCount_when_changed_does_not_change_existing_weights_and_biases()
+        {
+            var l = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var w1 = l.Weights.Clone();
+            var b1 = l.Biases.Clone();
+            l.NeuronsCount += 1;
+            l.Weights.RowCount.Should().Be(3);
+
+            for (int i = 0; i < w1.RowCount; i++)
+            {
+                for (int j = 0; j < w1.ColumnCount; j++)
+                {
+                    l.Weights[i, j].Should().Be(w1[i, j]);
+                }
+
+                l.Biases[i, 0].Should().Be(b1[i, 0]);
+            }
+
+            l.NeuronsCount -= 2;
+            l.Weights.RowCount.Should().Be(1);
+
+            for (int i = 0; i < l.Weights.RowCount; i++)
+            {
+                for (int j = 0; j < l.Weights.ColumnCount; j++)
+                {
+                    l.Weights[i, j].Should().Be(w1[i, j]);
+                }
+                l.Biases[i, 0].Should().Be(b1[i, 0]);
+            }
+        }
+
+        [Fact]
+        public void InputsCount_when_changed_does_not_change_existing_weights_and_biases()
+        {
+            var l = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var w1 = l.Weights.Clone();
+            var b1 = l.Biases.Clone();
+            l.InputsCount += 1;
+            l.Weights.ColumnCount.Should().Be(3);
+
+            for (int i = 0; i < w1.RowCount; i++)
+            {
+                for (int j = 0; j < w1.ColumnCount; j++)
+                {
+                    l.Weights[i, j].Should().Be(w1[i, j]);
+                }
+
+                l.Biases[i, 0].Should().Be(b1[i, 0]);
+            }
+
+            l.InputsCount -= 2;
+            l.Weights.ColumnCount.Should().Be(1);
+
+            for (int i = 0; i < l.Weights.RowCount; i++)
+            {
+                for (int j = 0; j < l.Weights.ColumnCount; j++)
+                {
+                    l.Weights[i, j].Should().Be(w1[i, j]);
+                }
+                l.Biases[i, 0].Should().Be(b1[i, 0]);
+            }
+        }
 
         [Fact]
         public void CalculateOutput_calculates_valid_output()
@@ -184,6 +247,27 @@ namespace NNLib.Tests
             l3.InputsCount.Should().Be(2);
             l3.NeuronsCount.Should().Be(1);
             net.TotalLayers.Should().Be(2);
+        }
+
+        [Fact]
+        public void RebuildMatrices_creates_new_matrices()
+        {
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            
+            var w1 = l.Weights.Clone();
+            var b1 = l.Biases.Clone();
+            
+            l.RebuildMatrices();
+
+            for (int i = 0; i < w1.RowCount; i++)
+            {
+                for (int j = 0; j < w1.ColumnCount; j++)
+                {
+                    l.Weights[i, j].Should().NotBe(w1[i, j]);
+                }
+
+                l.Biases[i, 0].Should().NotBe(b1[i, 0]);
+            }
         }
     }
 }

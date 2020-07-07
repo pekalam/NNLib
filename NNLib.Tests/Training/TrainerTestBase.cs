@@ -41,29 +41,6 @@ namespace NNLib.Tests
             return net;
         }
 
-        protected static (Mock<MLPNetwork> net, List<Mock<PerceptronLayer>> layerMocks) CreateMockNetwork(int inputs, params (int neuronsCount, IActivationFunction activationFunction)[] layers)
-        {
-            var netLayers = new PerceptronLayer[layers.Length];
-            var inputLayer = new Mock<PerceptronLayer>(inputs, layers[0].neuronsCount, layers[0].activationFunction);
-
-            var layerMocks = new List<Mock<PerceptronLayer>>();
-
-            netLayers[0] = inputLayer.Object;
-
-            
-            for(int i = 1; i < layers.Length; i++)
-            {
-                var mockLayer = new Mock<PerceptronLayer>(netLayers[i - 1].NeuronsCount, layers[i].neuronsCount,
-                    layers[i].activationFunction);
-                mockLayer.CallBase = true;
-                layerMocks.Add(mockLayer);
-                netLayers[i] = mockLayer.Object;
-            }
-
-            var net = new Mock<MLPNetwork>(netLayers);
-            net.CallBase = true;
-            return (net, layerMocks);
-        }
 
         private void CheckVariance(List<double> samples)
         {
