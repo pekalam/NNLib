@@ -11,7 +11,8 @@ namespace LMTest
             var net = new MLPNetwork(new []
             {
                 new PerceptronLayer(1,10, new TanHActivationFunction()),
-                new PerceptronLayer(10,1,new TanHActivationFunction()), 
+                new PerceptronLayer(10,10, new TanHActivationFunction()),
+                new PerceptronLayer(10,1,new LinearActivationFunction()), 
             });
 
             var trainer = new MLPTrainer(net, CsvFacade.LoadSets("sin.csv").sets, new LevenbergMarquardtAlgorithm(new LevenbergMarquardtParams()), new QuadraticLossFunction());

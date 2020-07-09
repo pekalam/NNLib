@@ -25,7 +25,7 @@ namespace NNLib.Tests
                 new GradientDescentParams()
                 {
                     LearningRate = 0.0001, Momentum = 0.1, BatchParams = { BatchSize = 1 }
-                }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), samples: 20_000,varianceCheck:false);
+                }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
         [Theory]
@@ -36,8 +36,8 @@ namespace NNLib.Tests
             TestFromCsv(fileName, net, new LevenbergMarquardtAlgorithm(
                 new LevenbergMarquardtParams()
                 {
-                    DampingParamIncFactor = 10, DampingParamDecFactor = 0.1
-                }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), samples: 1_000, varianceCheck: false);
+                    DampingParamIncFactor = 11, DampingParamDecFactor = 0.1
+                }), new QuadraticLossFunction(), TimeSpan.FromSeconds(60), epochs: 1_000);
         }
     }
 
@@ -56,7 +56,7 @@ namespace NNLib.Tests
             TestAndGate(net, new GradientDescentAlgorithm( new GradientDescentParams()
             {
                 Momentum = 0.3, LearningRate = 0.002,BatchParams = { BatchSize = 1}
-            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck: false);
+            }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace NNLib.Tests
                 Momentum = 0.3,
                 LearningRate = 0.002,
                 BatchParams = { BatchSize = 2 },
-            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck: false);
+            }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace NNLib.Tests
                 Momentum = 0.3,
                 LearningRate = 0.002,
                 BatchParams = { BatchSize = 4 },
-            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), varianceCheck: false);
+            }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
 
@@ -90,7 +90,7 @@ namespace NNLib.Tests
                 Momentum = 0.3,
                 LearningRate = 0.002,
                 BatchParams = { BatchSize = 1 },
-            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck:false);
+            }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace NNLib.Tests
                 Momentum = 0.3,
                 LearningRate = 0.002,
                 BatchParams = { BatchSize = 2 },
-            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(1), varianceCheck: false);
+            }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace NNLib.Tests
                 Momentum = 0.3,
                 LearningRate = 0.002,
                 BatchParams = { BatchSize = 2 },
-            }), new QuadraticLossFunction(), TimeSpan.FromMinutes(2), varianceCheck: false);
+            }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
     }
 }

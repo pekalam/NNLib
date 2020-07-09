@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NNLib.Tests", "NNLib.Tests\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestApps", "TestApps", "{01DAB98F-F788-4406-8916-65DFF310A1A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrainingTest", "TrainingTest\TrainingTest.csproj", "{134BFA7E-05B0-4EE5-83A3-73406FDBC9FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GDTest", "TrainingTest\GDTest.csproj", "{134BFA7E-05B0-4EE5-83A3-73406FDBC9FE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NNLib.Data", "NNLib.Common\NNLib.Data.csproj", "{82DDDD53-DBFA-4229-B22F-D7D9ACC98EF5}"
 EndProject
@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NNLib.Csv", "NNLib.Csv\NNLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NNLib.Csv.Tests", "NNLib.Csv.Tests\NNLib.Csv.Tests.csproj", "{CF8A9A3B-1028-4529-80C1-F2E7C5794A98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMTest", "LMTest\LMTest.csproj", "{AFD613A8-9B92-4129-A0A1-DD6A5F49FEF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LMTest", "LMTest\LMTest.csproj", "{AFD613A8-9B92-4129-A0A1-DD6A5F49FEF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

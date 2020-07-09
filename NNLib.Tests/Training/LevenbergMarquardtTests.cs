@@ -16,7 +16,7 @@ namespace NNLib.Tests
         [Fact]
         public void MLP_approximates_AND_gate_with_online_GD()
         {
-            TestAndGate(net, new LevenbergMarquardtAlgorithm(new LevenbergMarquardtParams()), new QuadraticLossFunction(),  TimeSpan.FromMinutes(1), 20_000);
+            TestAndGate(net, new LevenbergMarquardtAlgorithm(new LevenbergMarquardtParams()), new QuadraticLossFunction(),  TimeSpan.FromSeconds(60), 1_000);
         }
     }
 }

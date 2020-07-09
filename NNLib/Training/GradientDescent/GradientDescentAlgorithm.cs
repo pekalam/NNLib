@@ -42,8 +42,9 @@ namespace NNLib
         {
             var outputDerivative = layer.ActivationFunction.DerivativeY(layer.Output);
             var delta = next.PointwiseMultiply(outputDerivative);
-            var biasesDelta = delta.Multiply(Params.LearningRate);
-            var weightsDelta = delta.TransposeAndMultiply(input).Multiply(Params.LearningRate);
+            var deltaLr = delta.Multiply(Params.LearningRate);
+            var biasesDelta = deltaLr;
+            var weightsDelta = deltaLr.TransposeAndMultiply(input);
 
             result.Weigths[layerInd] = weightsDelta;
             result.Biases[layerInd] = biasesDelta;
@@ -69,6 +70,8 @@ namespace NNLib
         private LearningMethodResult CalculateDelta(Matrix<double> input, Matrix<double> expected)
         {
             var learningResult = LearningMethodResult.FromNetwork(_network);
+
+            _network.CalculateOutput(input);
 
             Matrix<double> next = _lossFunction.Derivative(_network.Layers[^1].Output, expected);
             for (int i = _network.Layers.Count - 1; i >= 0; --i)
@@ -101,6 +104,10 @@ namespace NNLib
         { 
             var result = BatchTrainer.DoIteration(CalculateDelta);
             _iterations = BatchTrainer.Iterations;
+
+
+
+
             if (result != null)
             {
                 UpdateWeightsAndBiasesWithDeltaRule(result);

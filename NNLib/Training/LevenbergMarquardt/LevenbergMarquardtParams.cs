@@ -5,7 +5,7 @@ namespace NNLib
     public class LevenbergMarquardtParams : ICloneable
     { 
 
-        public double DampingParamIncFactor { get; set; } = 12;
+        public double DampingParamIncFactor { get; set; } = 11;
         public double DampingParamDecFactor { get; set; } = 0.15;
         public object Clone()
         {

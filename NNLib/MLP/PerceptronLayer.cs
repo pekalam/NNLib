@@ -80,7 +80,7 @@ namespace NNLib
             {
                 Weights = BuildWeightsMatrix(inputsCount, neuronsCount, RandomGenerator);
                 Biases = BuildBiasesMatrix(inputsCount, neuronsCount, RandomGenerator);
-                Output = BuildOutputMatrix(inputsCount, neuronsCount, RandomGenerator);
+                //Output = BuildOutputMatrix(inputsCount, neuronsCount, RandomGenerator);
             }
             else
             {
@@ -105,6 +105,7 @@ namespace NNLib
                     {
                         Weights = Weights.InsertRow(Weights.RowCount, RandomGenerator.GenerateRowVec(InputsCount));
                         Biases = Biases.InsertRow(Biases.RowCount, RandomGenerator.GenerateColVec(1));
+                        //Output = Output.InsertRow(Output.RowCount, RandomGenerator.GenerateColVec(1));
                     }
                 }
                 else if (neuronsCount < NeuronsCount)
@@ -113,6 +114,7 @@ namespace NNLib
                     {
                         Weights = Weights.RemoveRow(Weights.RowCount - 1);
                         Biases = Biases.RemoveRow(Biases.RowCount - 1);
+                        //Output = Output.RemoveRow(Output.RowCount - 1);
                     }
                 }
             }
@@ -120,18 +122,22 @@ namespace NNLib
 
         public override void CalculateOutput(Matrix<double> input)
         {
-            if (input.ColumnCount != 1)
-            {
-                throw new ArgumentException();
-            }
-
             if (input.RowCount != InputsCount)
             {
                 throw new ArgumentException();
             }
 
-            Weights.Multiply(input, Output);
-            Output.Add(Biases, Output);
+            Output = Weights.Multiply(input);
+
+            if (input.ColumnCount == 1)
+            {
+                Output.Add(Biases, Output);
+            }
+            else
+            {
+                Output.Add(Biases * Matrix<double>.Build.Dense(1, Output.ColumnCount, 1), Output);
+            }
+
             Output = ActivationFunction.Function(Output);
         }
     }

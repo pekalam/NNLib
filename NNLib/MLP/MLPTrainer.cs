@@ -9,7 +9,6 @@ namespace NNLib
 {
     public class MLPTrainer
     {
-        private DataSetType _currentSetType;
         private AlgorithmBase _algorithm;
         public event Action? EpochEnd;
         public event Action? IterationEnd;
@@ -24,45 +23,19 @@ namespace NNLib
             TrainingSets = trainingSets;
             LossFunction = lossFunction;
             _algorithm = algorithm;
-
-            CurrentSetType = DataSetType.Training;
+            _algorithm.Setup(TrainingSets.TrainingSet, network, lossFunction);
         }
 
         public ILossFunction LossFunction { get;  }
         public SupervisedTrainingSets TrainingSets { get; }
-
-        public DataSetType CurrentSetType
-        {
-            get => _currentSetType;
-            set
-            {
-                _currentSetType = value;
-                Algorithm.Setup(GetCurrentSet(), Network, LossFunction);
-            }
-        }
-
-        private SupervisedSet GetCurrentSet()
-        {
-            return _currentSetType switch
-            {
-                DataSetType.Training => TrainingSets.TrainingSet,
-                DataSetType.Validation => TrainingSets.ValidationSet ??
-                                          throw new NullReferenceException("Cannot assign empty validation set"),
-                DataSetType.Test => TrainingSets.TestSet ??
-                                    throw new NullReferenceException("Cannot assign empty test set"),
-                _ => throw new ArgumentException()
-            };
-        }
-
         public MLPNetwork Network { get; }
-
         public AlgorithmBase Algorithm
         {
             get => _algorithm;
             set
             {
                 _algorithm = value;
-                _algorithm.Setup(GetCurrentSet(), Network, LossFunction);
+                _algorithm.Setup(TrainingSets.TrainingSet, Network, LossFunction);
             }
         }
 
@@ -78,7 +51,7 @@ namespace NNLib
 
         private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
-            void Validate(Common.SupervisedSet set)
+            void Validate(SupervisedSet set)
             {
                 if (network.Layers[0].InputsCount != set.Input[0].RowCount)
                 {
