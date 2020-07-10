@@ -17,7 +17,7 @@ namespace NNLib
             ILossFunction lossFunction)
         {
             Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
-            ValidateNetworkAndTrainingSets(network, trainingSets);
+            ValidateNetworkAndDataSets(network, trainingSets);
 
             Network = network;
             TrainingSets = trainingSets;
@@ -49,7 +49,7 @@ namespace NNLib
             Algorithm.ResetIterations();
         }
 
-        private void ValidateNetworkAndTrainingSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
+        private void ValidateNetworkAndDataSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
             void Validate(SupervisedSet set)
             {
@@ -84,23 +84,23 @@ namespace NNLib
             }
         }
 
-        private double CalculateNetworkError(in CancellationToken ct)
+        private double CalculateNetworkError(in CancellationToken ct, SupervisedSet set)
         {
             CheckTrainingCancelationIsRequested(ct);
 
             var totalDelta = Matrix<double>.Build.Dense(Network.Layers.Last().NeuronsCount, 1);
-            for (int i = 0; i < TrainingSets.TrainingSet.Input.Count; ++i)
+            for (int i = 0; i < set.Input.Count; ++i)
             {
-                Network.CalculateOutput(TrainingSets.TrainingSet.Input[i]);
+                Network.CalculateOutput(set.Input[i]);
 
                 CheckTrainingCancelationIsRequested(ct);
 
                 var err = LossFunction.Function(Network.Output,
-                    TrainingSets.TrainingSet.Target[i]);
+                    set.Target[i]);
                 totalDelta.Add(err, totalDelta);
             }
 
-            var sum = totalDelta.ColumnSums()[0];
+            var sum = totalDelta.ColumnSums().Sum();
             return sum;
         }
 
@@ -120,7 +120,7 @@ namespace NNLib
             {
                 Epochs++;
                 EpochEnd?.Invoke();
-                Error = CalculateNetworkError(ct);
+                Error = CalculateNetworkError(ct, TrainingSets.TrainingSet);
             }
         }
 
@@ -129,7 +129,7 @@ namespace NNLib
             while (!DoIterationInternal(ct)) { }
             Epochs++;
             EpochEnd?.Invoke();
-            Error = CalculateNetworkError(ct);
+            Error = CalculateNetworkError(ct, TrainingSets.TrainingSet);
 
 
             return Error;
@@ -138,6 +138,26 @@ namespace NNLib
         public Task<double> DoEpochAsync(CancellationToken ct = default)
         {
             return Task.Run(() => { return DoEpoch(ct); }, ct);
+        }
+
+        public double RunValidation(in CancellationToken ct = default)
+        {
+            if (TrainingSets.ValidationSet == null)
+            {
+                throw new NullReferenceException("Null validation set");
+            }
+
+            return CalculateNetworkError(ct, TrainingSets.ValidationSet);
+        }
+
+        public double RunTest(in CancellationToken ct = default)
+        {
+            if (TrainingSets.TestSet == null)
+            {
+                throw new NullReferenceException("Null validation set");
+            }
+
+            return CalculateNetworkError(ct, TrainingSets.TestSet);
         }
     }
 }

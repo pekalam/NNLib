@@ -103,10 +103,7 @@ namespace NNLib
         public override bool DoIteration(in CancellationToken ct = default)
         { 
             var result = BatchTrainer.DoIteration(CalculateDelta);
-            _iterations = BatchTrainer.Iterations;
-
-
-
+            _iterations++;
 
             if (result != null)
             {

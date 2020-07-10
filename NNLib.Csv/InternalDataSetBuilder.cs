@@ -15,47 +15,13 @@ namespace NNLib.Csv
             _divider = divider;
         }
 
-
-        private int CalculateRowCountInPage(string fileName, int pageSize)
-        {
-            var rowSz = _fileAnalyzer.GetRowSizeApproximation(fileName);
-
-            int pageSz = pageSize / rowSz;
-            return pageSz;
-        }
-
-        private List<FilePart> PartitionDataSet(List<long> fileNewLinePositions, int pageSize, long start)
-        {
-            var parts = new List<FilePart>();
-            int i = 0;
-            foreach (var pos in fileNewLinePositions)
-            {
-                i++;
-
-                if (i == pageSize)
-                {
-                    parts.Add(new FilePart(start, pos, i));
-                    start = pos;
-                    i = 0;
-                }
-            }
-
-            if (i != 0)
-            {
-                parts.Add(new FilePart(start, fileNewLinePositions[^1], i));
-            }
-
-            return parts;
-        }
-
         public DataSetInfo[] CreatePartitionedDataSets(string fileName, DataSetDivisionOptions divisionOpt)
         {
             Log.Logger.Debug("Creating partitioned dataSet from file: {fileName} with options {@options}", fileName,
                 divisionOpt);
 
             var positions = _fileAnalyzer.GetDataItemsNewLinePositions(fileName);
-            var rowCountInPage = CalculateRowCountInPage(fileName, divisionOpt.PageSize);
-            Log.Logger.Debug("Row count per page: {@count}", rowCountInPage);
+            Log.Logger.Debug("Row count: {@count}", positions.Count);
 
             var variableNames = _fileAnalyzer.GetVariableNames(fileName);
             Log.Logger.Debug("File {file} has following variables: {@vars}", fileName, variableNames);
@@ -68,12 +34,12 @@ namespace NNLib.Csv
             long previousStart = 0;
             for (int i = 0; i < setInfos.Length; i++)
             {
-                var fileParts = PartitionDataSet(divisions[i].positions, rowCountInPage, previousStart);
-                Log.Logger.Debug("{count} file parts for {type} starting at {start} with {n} dataItems end: {end}", fileParts.Count,
-                    divisions[i].setType, fileParts[0].Offset, fileParts[0].DataItems, fileParts[0].End);
+                var filePart = new FilePart(previousStart, divisions[i].positions[^1], divisions[i].positions.Count);
+                Log.Logger.Debug("file part for {type} starting at {start} with {n} dataItems end: {end}",
+                    divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
                 previousStart = divisions[i].positions[^1];
                 var setInfo =
-                    new DataSetInfo(fileParts, divisions[i].positions.Count, rowCountInPage, divisions[i].setType,
+                    new DataSetInfo(filePart, divisions[i].positions.Count, -0, divisions[i].setType,
                         variableNames);
                 setInfos[i] = setInfo;
             }

@@ -122,17 +122,5 @@ namespace NNLib
 
             return null;
         }
-
-        public LearningMethodResult DoEpoch(Func<Matrix<double>, Matrix<double>, LearningMethodResult> func, in CancellationToken ct = default)
-        {
-            for (int i = 0; i < IterationsPerEpoch - 1; i++)
-            {
-                CheckTrainingCancelationIsRequested(ct);
-                DoIteration(func, ct);
-            }
-            CheckTrainingCancelationIsRequested(ct);
-            var result = DoIteration(func, ct);
-            return result;
-        }
     }
 }

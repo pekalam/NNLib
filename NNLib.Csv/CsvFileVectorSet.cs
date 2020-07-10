@@ -26,7 +26,12 @@ namespace NNLib.Csv
         public Matrix<double> this[int index]
         {
             get => FileReader.ReadAt(_targetSet, index);
-            set => throw new NotImplementedException();
+            set => FileReader.WriteAt(_targetSet, index, value);
+        }
+
+        public CsvFileVectorSet Copy(CsvFileDataSetReader fileReader)
+        {
+            return new CsvFileVectorSet(fileReader, Count, _targetSet);
         }
 
         public int Count { get; }

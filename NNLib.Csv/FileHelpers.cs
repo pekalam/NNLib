@@ -10,12 +10,11 @@ namespace NNLib.Csv
         private const char NULL = (char)0;
 
         //TODO async enumerable
-        public static (int, List<long>) CountLinesAndGetPositions(string fileName)
+        public static List<long> CountLinesAndGetPositions(string fileName)
         {
             using var fs = File.OpenRead(fileName);
 
             var linePositions = new List<long>();
-            var lineCount = 0;
 
             var byteBuffer = new byte[1024 * 1024];
             var detectedEOL = NULL;
@@ -33,14 +32,12 @@ namespace NNLib.Csv
                     {
                         if (currentChar == detectedEOL)
                         {
-                            lineCount++;
                             linePositions.Add(pos + i);
                         }
                     }
                     else if (currentChar == LF || currentChar == CR)
                     {
                         detectedEOL = currentChar;
-                        lineCount++;
                         linePositions.Add(pos + i);
                     }
                 }
@@ -50,10 +47,9 @@ namespace NNLib.Csv
 
             if (currentChar != LF && currentChar != CR && currentChar != NULL)
             {
-                lineCount++;
                 linePositions.Add(pos - 1);
             }
-            return (lineCount, linePositions);
+            return linePositions;
         }
     }
 }

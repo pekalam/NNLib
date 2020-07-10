@@ -57,7 +57,5 @@ namespace NNLib.Common
                 ValidatePercentage();
             }
         }
-
-        public int PageSize { get; set; } = 1024 * 1024;
     }
 }
