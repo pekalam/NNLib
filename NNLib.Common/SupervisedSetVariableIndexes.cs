@@ -10,10 +10,14 @@ namespace NNLib.Common
         public ImmutableArray<int> InputVarIndexes { get; }
         public ImmutableArray<int> TargetVarIndexes { get; }
 
-        private SupervisedSetVariableIndexes(int[] inputVarIndexes, int[] targetVarIndexes, int[] ingored) : this(inputVarIndexes, targetVarIndexes)
+        public SupervisedSetVariableIndexes(int[] inputVarIndexes, int[] targetVarIndexes, int[] ingored) : this(inputVarIndexes, targetVarIndexes)
         {
             Ignored = ingored.ToImmutableArray();
         }
+
+        private SupervisedSetVariableIndexes(ImmutableArray<int> inputVarIndexes, ImmutableArray<int> targetVarIndexes,
+            ImmutableArray<int> ingored) => (InputVarIndexes, TargetVarIndexes, Ignored) =
+            (inputVarIndexes, targetVarIndexes, ingored);
 
         public SupervisedSetVariableIndexes(int[] inputVarIndexes, int[] targetVarIndexes)
         {
@@ -129,5 +133,7 @@ namespace NNLib.Common
 
             return new SupervisedSetVariableIndexes(newInputVars.ToArray(), newTargetVars.ToArray(), newIgnored.ToArray());
         }
+
+        public SupervisedSetVariableIndexes Clone() => new SupervisedSetVariableIndexes(InputVarIndexes, TargetVarIndexes, Ignored);
     }
 }

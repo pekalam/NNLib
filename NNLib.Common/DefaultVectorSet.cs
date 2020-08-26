@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra;
 
@@ -24,6 +25,11 @@ namespace NNLib.Common
         
         public void Dispose()
         {
+        }
+
+        public DefaultVectorSet Clone()
+        {
+            return new DefaultVectorSet(_setOfVectors.Select(m => m.Clone()).ToList());
         }
     }
 }

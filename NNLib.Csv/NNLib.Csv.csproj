@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Marek Pękala</Copyright>
+    <Description>Part of NNLib library. Adds support for reading csv files.</Description>
+    <Authors>Marek Pękala</Authors>
   </PropertyGroup>
 
   <ItemGroup>

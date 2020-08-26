@@ -46,8 +46,9 @@ namespace NNLib
         }
 
         private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double> output,
-            IActivationFunction activationFunction) : base(weights, biases, output)
+            IActivationFunction activationFunction, RandomGenerator randomGenerator) : base(weights, biases, output)
         {
+            RandomGenerator = randomGenerator;
             ActivationFunction = activationFunction;
         }
 
@@ -72,7 +73,7 @@ namespace NNLib
 
 
         internal PerceptronLayer Clone() =>
-            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output.Clone(), ActivationFunction);
+            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output.Clone(), ActivationFunction, RandomGenerator);
 
         protected override void BuildMatrices(int inputsCount, int neuronsCount)
         {

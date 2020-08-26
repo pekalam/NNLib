@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <Description>NNLib library implements neural networks. It supports gradient descent and Levenberg–Marquardt algorithms.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Marek Pękala</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Marek Pękala</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

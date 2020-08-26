@@ -173,9 +173,7 @@ namespace NNLib.Tests
 
             for (int i = 0; i < net.TotalLayers; i++)
             {
-                net.Layers[i].Weights.CompareTo(net2.Layers[i].Weights).Should().BeTrue();
-                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeTrue();
-                net.Layers[i].Output.CompareTo(net2.Layers[i].Output).Should().BeTrue();
+                net2.Layers[i].Should().BeEquivalentTo(net.Layers[i]);
             }
 
             input[0, 0] = 10;
