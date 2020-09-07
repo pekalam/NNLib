@@ -267,5 +267,48 @@ namespace NNLib.Tests
                 l.Biases[i, 0].Should().NotBe(b1[i, 0]);
             }
         }
+
+        [Fact]
+        public void InsertAfter_inserts_new_layer_after_given_index()
+        {
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
+
+            var toInsert = net.InsertAfter(2);
+
+            toInsert.InputsCount.Should().Be(1);
+            toInsert.NeuronsCount.Should().Be(1);
+            net.Layers[^1].Should().BeSameAs(toInsert);
+
+            toInsert=net.InsertAfter(0);
+
+            toInsert.InputsCount.Should().Be(8);
+            toInsert.NeuronsCount.Should().Be(8);
+            net.Layers[1].Should().BeSameAs(toInsert);
+
+        }
+
+
+        [Fact]
+        public void InsertBefore_inserts_new_layer_before_given_index()
+        {
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var net = new MLPNetwork(l, l2, l3);
+
+            var toInsert = net.InsertBefore(2);
+
+            toInsert.NeuronsCount.Should().Be(2);
+            toInsert.InputsCount.Should().Be(2);
+            net.Layers[^2].Should().BeSameAs(toInsert);
+            
+            toInsert=net.InsertBefore(0);
+            toInsert.NeuronsCount.Should().Be(1);
+            toInsert.InputsCount.Should().Be(1);
+            net.Layers[0].Should().BeSameAs(toInsert);
+        }
     }
 }

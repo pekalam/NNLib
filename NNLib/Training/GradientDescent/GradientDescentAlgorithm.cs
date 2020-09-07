@@ -24,9 +24,9 @@ namespace NNLib
             _previousLearningMethodResult = null;
             _lossFunction = lossFunction;
             _network = network;
-            BatchTrainer = new BatchTrainer(Params.BatchParams)
+            BatchTrainer = new BatchTrainer(Params.BatchSize)
             {
-                TrainingSet = trainingData,Parameters = Params.BatchParams,
+                TrainingSet = trainingData,
             };
         }
 

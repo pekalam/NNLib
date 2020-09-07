@@ -46,10 +46,10 @@ namespace NNLib.Tests
 
             trainer.DoEpoch();
             trainer.Epochs.Should().Be(1);
-            trainer.Iterations.Should().Be(0);
+            trainer.Iterations.Should().Be(4);
             
             trainer.DoIteration();
-            trainer.Iterations.Should().Be(1);
+            trainer.Iterations.Should().Be(5);
             trainer.Epochs.Should().Be(1);
             
             trainer.ResetEpochs();

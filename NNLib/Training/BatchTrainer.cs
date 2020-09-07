@@ -7,14 +7,14 @@ namespace NNLib
 {
     public class BatchTrainer
     {
-        private BatchParams _parameters;
+        private int _batchSize;
         private SupervisedSet? _trainingSet;
         private int _setIndex;
         private LearningMethodResult[]? _methodResults;
 
-        public BatchTrainer(BatchParams parameters)
+        public BatchTrainer(int batchSize)
         {
-            _parameters = parameters;
+            _batchSize = batchSize;
         }
 
         public SupervisedSet? TrainingSet
@@ -22,37 +22,23 @@ namespace NNLib
             get => _trainingSet;
             set
             {
-                Guards._NotNull(_parameters);
+                Guards._NotNull(_batchSize);
                 ValidateParamsForSet(value);
                 ResetTrainingVars();
-                IterationsPerEpoch = value.Input.Count / _parameters.BatchSize;
+                IterationsPerEpoch = value.Input.Count / _batchSize;
                 _methodResults = new LearningMethodResult[IterationsPerEpoch];
                 _trainingSet = value;
             }
         }
 
-        public BatchParams? Parameters
-        {
-            get => _parameters;
-            set
-            {
-                Guards._NotNull(_trainingSet);
-                ValidateParamsForSet(_trainingSet);
-                ResetTrainingVars();
-                IterationsPerEpoch = _trainingSet.Input.Count / value.BatchSize;
-                _methodResults = new LearningMethodResult[IterationsPerEpoch];
-                _parameters = value;
-            }
-        }
-
         private void ValidateParamsForSet(SupervisedSet set)
         {
-            if (_parameters.BatchSize > set.Input.Count)
+            if (_batchSize > set.Input.Count)
             {
-                throw new ArgumentException($"Invalid batch size {_parameters.BatchSize} for training set with count {set.Input.Count}");
+                throw new ArgumentException($"Invalid batch size {_batchSize} for training set with count {set.Input.Count}");
             }
 
-            if (set.Input.Count % _parameters.BatchSize != 0)
+            if (set.Input.Count % _batchSize != 0)
             {
                 //TODO
                 throw new ArgumentException($"Cannot divide training set");
@@ -111,7 +97,7 @@ namespace NNLib
 
             _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
 
-            CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _parameters.BatchSize);
+            CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _batchSize);
 
             Iterations++;
             if (Iterations == IterationsPerEpoch)

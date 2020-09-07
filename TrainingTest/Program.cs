@@ -23,7 +23,7 @@ namespace TrainingTest
 				new SupervisedTrainingSets(CsvFacade.LoadSets("E:\\sin.csv").sets.TrainingSet),
 				new GradientDescentAlgorithm(new GradientDescentParams()
 				{
-					LearningRate = 0.001, Momentum = 0.0, BatchParams = {BatchSize = 37}
+					LearningRate = 0.001, Momentum = 0.0, BatchSize = 37,
 				}),
 				lossFunction
 			);

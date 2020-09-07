@@ -8,6 +8,7 @@
     <Copyright>Marek Pękala</Copyright>
     <Description>Part of NNLib library. Adds support for reading csv files.</Description>
     <Authors>Marek Pękala</Authors>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NNLib.Common\NNLib.Data.csproj" />
+    <ProjectReference Include="..\NNLib\NNLib.csproj" />
   </ItemGroup>
 
 </Project>

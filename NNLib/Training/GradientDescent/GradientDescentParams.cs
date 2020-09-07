@@ -6,6 +6,7 @@ namespace NNLib
     {
         private double _learningRate = 0.001;
         private double _momentum = 0;
+        private int _batchSize = 1;
 
         public double LearningRate
         {
@@ -45,13 +46,25 @@ namespace NNLib
             }
         }
 
-        public BatchParams BatchParams { get; set; } = new BatchParams();
+
+        public int BatchSize
+        {
+            get => _batchSize;
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new InvalidOperationException();
+                }
+                _batchSize = value;
+            }
+        }
 
         public object Clone()
         {
             return new GradientDescentParams()
             {
-                Momentum = _momentum, BatchParams = new BatchParams() {BatchSize = BatchParams.BatchSize},
+                Momentum = _momentum, BatchSize = _batchSize,
                 LearningRate = _learningRate,
             };
         }
@@ -63,7 +76,7 @@ namespace NNLib
             if (obj is GradientDescentParams o)
             {
                 return Momentum == o.Momentum && LearningRate == o.LearningRate &&
-                       BatchParams.BatchSize == o.BatchParams.BatchSize;
+                       BatchSize == o.BatchSize;
             }
 
             return false;

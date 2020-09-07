@@ -24,7 +24,7 @@ namespace NNLib.Tests
             TestFromCsv(fileName, net, new GradientDescentAlgorithm(
                 new GradientDescentParams()
                 {
-                    LearningRate = 0.0001, Momentum = 0.1, BatchParams = { BatchSize = 1 }
+                    LearningRate = 0.0001, Momentum = 0.1, BatchSize = 1
                 }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
@@ -55,7 +55,7 @@ namespace NNLib.Tests
         {
             TestAndGate(net, new GradientDescentAlgorithm( new GradientDescentParams()
             {
-                Momentum = 0.3, LearningRate = 0.002,BatchParams = { BatchSize = 1}
+                Momentum = 0.3, LearningRate = 0.002,BatchSize = 1
             }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
@@ -66,7 +66,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.3,
                 LearningRate = 0.002,
-                BatchParams = { BatchSize = 2 },
+                BatchSize = 2 
             }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
@@ -77,7 +77,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.3,
                 LearningRate = 0.002,
-                BatchParams = { BatchSize = 4 },
+                BatchSize = 4
             }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
@@ -89,7 +89,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.3,
                 LearningRate = 0.002,
-                BatchParams = { BatchSize = 1 },
+                BatchSize = 1,
             }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
@@ -100,7 +100,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.3,
                 LearningRate = 0.002,
-                BatchParams = { BatchSize = 2 },
+                BatchSize = 2,
             }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
 
@@ -111,7 +111,7 @@ namespace NNLib.Tests
             {
                 Momentum = 0.3,
                 LearningRate = 0.002,
-                BatchParams = { BatchSize = 2 },
+                BatchSize = 2,
             }), new QuadraticLossFunction(), TimeSpan.FromSeconds(5), epochs: 1_000);
         }
     }

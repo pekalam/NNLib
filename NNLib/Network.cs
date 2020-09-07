@@ -23,7 +23,7 @@ namespace NNLib
 
     public abstract class Network<T> : INetwork<T> where T : Layer
     {
-        private readonly List<T> _layers;
+        protected readonly List<T> _layers;
 
         protected Network(params T[] layers)
         {
@@ -31,7 +31,7 @@ namespace NNLib
             {
                 throw new ArgumentException();
             }
-            ValidateLayersInputsAndOutputs(layers);
+            ValidateLayersInputsAndOutputs(layers.ToList());
 
             _layers = new List<T>(layers);
             foreach (var layer in _layers)
@@ -51,10 +51,10 @@ namespace NNLib
         public int TotalNeurons => _layers.Sum(layer => layer.NeuronsCount);
         public int TotalSynapses => _layers.Sum(l => l.InputsCount * l.NeuronsCount);
         public int TotalBiases => TotalNeurons;
-        
+
         public void AddLayer(T layer)
         {
-            ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToArray());
+            ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToList());
             _layers.Add(layer);
             layer.AssignNetwork(this);
             AssignEventHandlers(layer);
@@ -75,7 +75,7 @@ namespace NNLib
             _layers.RemoveAt(ind);
         }
 
-        private void AssignEventHandlers(Layer layer)
+        protected void AssignEventHandlers(Layer layer)
         {
             layer.NeuronsCountChanged += LayerOnNeuronsCountChanged;
         }
@@ -95,7 +95,7 @@ namespace NNLib
             }
         }
 
-        private void ValidateLayersInputsAndOutputs(T[] layers)
+        private void ValidateLayersInputsAndOutputs(List<T> layers)
         {
             if (layers[0].InputsCount == 0)
             {
@@ -107,7 +107,7 @@ namespace NNLib
                 throw new ArgumentException("NeuronsCount cannot be equal to 0");
             }
 
-            for (int i = 1; i < layers.Length; i++)
+            for (int i = 1; i < layers.Count; i++)
             {
                 if (layers[i].InputsCount != layers[i - 1].NeuronsCount)
                 {

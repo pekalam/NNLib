@@ -14,10 +14,9 @@ namespace NNLib.Tests
             _net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }
 
-        private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters, BatchParams batchParams)
+        private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters)
         {
             var algorithm = new GradientDescentAlgorithm(parameters);
-            parameters.BatchParams = batchParams;
             algorithm.Setup(TrainingTestUtils.AndGateSet(), _net, new QuadraticLossFunction());
             return algorithm;
         }
@@ -29,9 +28,10 @@ namespace NNLib.Tests
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
+                BatchSize = 4,
             };
             
-            var trainer = CreateBatchTrainer(learningParams, new BatchParams(){BatchSize = 4});
+            var trainer = CreateBatchTrainer(learningParams);
             trainer.Iterations.Should().Be(0);
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(1);
             trainer.BatchTrainer.CurrentBatch.Should().Be(0);
@@ -62,9 +62,10 @@ namespace NNLib.Tests
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
+                BatchSize = 10
             };
 
-            Assert.Throws<ArgumentException>(() => CreateBatchTrainer(learningParams, new BatchParams(){BatchSize = 10}));
+            Assert.Throws<ArgumentException>(() => CreateBatchTrainer(learningParams));
         }
 
         [Fact]
@@ -74,8 +75,9 @@ namespace NNLib.Tests
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
+                BatchSize = 4
             };
-            var trainer = CreateBatchTrainer(learningParams, new BatchParams(){BatchSize = 4});
+            var trainer = CreateBatchTrainer(learningParams);
 
             trainer.Iterations.Should().Be(0);
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(1);
@@ -84,7 +86,7 @@ namespace NNLib.Tests
             var result = trainer.DoIteration();
             
             result.Should().BeTrue();
-            trainer.Iterations.Should().Be(0);
+            trainer.Iterations.Should().Be(1);
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(1);
             trainer.BatchTrainer.CurrentBatch.Should().Be(0);
         }
@@ -96,8 +98,9 @@ namespace NNLib.Tests
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
+                BatchSize = 2
             };
-            var trainer = CreateBatchTrainer(learningParams, new BatchParams(){BatchSize = 2});
+            var trainer = CreateBatchTrainer(learningParams);
 
             trainer.Iterations.Should().Be(0);
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(2);
@@ -111,7 +114,7 @@ namespace NNLib.Tests
 
             result = trainer.DoIteration();
             result.Should().BeTrue();
-            trainer.Iterations.Should().Be(0);
+            trainer.Iterations.Should().Be(2);
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(2);
             trainer.BatchTrainer.CurrentBatch.Should().Be(0);
         }
@@ -124,8 +127,9 @@ namespace NNLib.Tests
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
+                BatchSize = 1
             };
-            var trainer = CreateBatchTrainer(learningParams, new BatchParams(){BatchSize = 1});
+            var trainer = CreateBatchTrainer(learningParams);
 
             trainer.Iterations.Should().Be(0);
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(4);
