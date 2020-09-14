@@ -6,11 +6,10 @@ namespace NNLib
 {
     public abstract class AlgorithmBase
     {
-        public abstract void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction);
-        public abstract void ResetIterations();
-        public BatchTrainer? BatchTrainer { get; protected set; }
+        internal abstract void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction);
+        internal abstract void Reset();
 
-        public abstract int Iterations { get; }
-        public abstract bool DoIteration(in CancellationToken ct = default);
+        internal abstract int Iterations { get; }
+        internal abstract bool DoIteration(in CancellationToken ct = default);
     }
 }

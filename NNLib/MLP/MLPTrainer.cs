@@ -10,6 +10,8 @@ namespace NNLib
     public class MLPTrainer
     {
         private AlgorithmBase _algorithm;
+        private SupervisedTrainingSets _trainingSets;
+
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
@@ -20,14 +22,23 @@ namespace NNLib
             ValidateNetworkAndDataSets(network, trainingSets);
 
             Network = network;
-            TrainingSets = trainingSets;
             LossFunction = lossFunction;
+            _trainingSets = trainingSets;
             _algorithm = algorithm;
             _algorithm.Setup(TrainingSets.TrainingSet, network, lossFunction);
         }
 
         public ILossFunction LossFunction { get;  }
-        public SupervisedTrainingSets TrainingSets { get; }
+        public SupervisedTrainingSets TrainingSets
+        {
+            get => _trainingSets;
+            set
+            {
+                ValidateNetworkAndDataSets(Network, value);
+                _trainingSets = value;
+                _algorithm.Setup(value.TrainingSet, Network, LossFunction);
+            }
+        }
         public MLPNetwork Network { get; }
         public AlgorithmBase Algorithm
         {
@@ -38,16 +49,9 @@ namespace NNLib
                 _algorithm.Setup(TrainingSets.TrainingSet, Network, LossFunction);
             }
         }
-
         public double Error { get; private set; } = double.PositiveInfinity;
         public int Epochs { get; private set; }
         public int Iterations => Algorithm.Iterations;
-        public void ResetEpochs()
-        {
-            Error = double.PositiveInfinity;
-            Epochs = 0;
-            Algorithm.ResetIterations();
-        }
 
         private void ValidateNetworkAndDataSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
         {
@@ -95,7 +99,7 @@ namespace NNLib
 
                 CheckTrainingCancelationIsRequested(ct);
 
-                var err = LossFunction.Function(Network.Output,
+                var err = LossFunction.Function(Network.Output!,
                     set.Target[i]);
                 totalDelta.Add(err, totalDelta);
             }
@@ -124,6 +128,13 @@ namespace NNLib
             }
         }
 
+        public void Reset()
+        {
+            Error = double.PositiveInfinity;
+            Epochs = 0;
+            Algorithm.Reset();
+        }
+
         public double DoEpoch(in CancellationToken ct = default)
         {
             while (!DoIterationInternal(ct)) { }
@@ -137,7 +148,7 @@ namespace NNLib
 
         public Task<double> DoEpochAsync(CancellationToken ct = default)
         {
-            return Task.Run(() => { return DoEpoch(ct); }, ct);
+            return Task.Run(() => DoEpoch(ct), ct);
         }
 
         public double RunValidation(in CancellationToken ct = default)

@@ -7,28 +7,20 @@ namespace NNLib
 {
     public class BatchTrainer
     {
-        private int _batchSize;
-        private SupervisedSet? _trainingSet;
+        private readonly int _batchSize;
+        private readonly SupervisedSet _trainingSet;
         private int _setIndex;
-        private LearningMethodResult[]? _methodResults;
+        private readonly LearningMethodResult[] _methodResults;
+        private int _iteration;
 
-        public BatchTrainer(int batchSize)
+        internal BatchTrainer(int batchSize, SupervisedSet trainingSet)
         {
             _batchSize = batchSize;
-        }
-
-        public SupervisedSet? TrainingSet
-        {
-            get => _trainingSet;
-            set
-            {
-                Guards._NotNull(_batchSize);
-                ValidateParamsForSet(value);
-                ResetTrainingVars();
-                IterationsPerEpoch = value.Input.Count / _batchSize;
-                _methodResults = new LearningMethodResult[IterationsPerEpoch];
-                _trainingSet = value;
-            }
+            Guards._GtZero(_batchSize);
+            ValidateParamsForSet(trainingSet);
+            IterationsPerEpoch = trainingSet.Input.Count / _batchSize;
+            _methodResults = new LearningMethodResult[IterationsPerEpoch];
+            _trainingSet = trainingSet;
         }
 
         private void ValidateParamsForSet(SupervisedSet set)
@@ -46,7 +38,7 @@ namespace NNLib
         }
 
 
-        private void CheckTrainingCancelationIsRequested(in CancellationToken ct)
+        private void CheckTrainingCancellationIsRequested(in CancellationToken ct)
         {
             if (ct.IsCancellationRequested)
             {
@@ -54,15 +46,7 @@ namespace NNLib
             }
         }
 
-        private void ResetTrainingVars()
-        {
-            Iterations = CurrentBatch = _setIndex = 0;
-        }
-
-        public void Reset() => ResetTrainingVars();
-
-        public int Iterations { get; private set; }
-        public int IterationsPerEpoch { get; private set; }
+        public int IterationsPerEpoch { get; }
         public int CurrentBatch { get; private set; }
 
         private LearningMethodResult EndEpoch()
@@ -71,9 +55,9 @@ namespace NNLib
 
             for (int i = 1; i < _methodResults.Length; i++)
             {
-                for (int j = 0; j < result.Weigths.Length; j++)
+                for (int j = 0; j < result.Weights.Length; j++)
                 {
-                    result.Weigths[j] = result.Weigths[j] + _methodResults[i].Weigths[j];
+                    result.Weights[j] = result.Weights[j] + _methodResults[i].Weights[j];
                 }
 
                 for (int j = 0; j < result.Biases.Length; j++)
@@ -90,23 +74,28 @@ namespace NNLib
             var input = _trainingSet.Input[_setIndex];
             var expected = _trainingSet.Target[_setIndex];
 
-            CheckTrainingCancelationIsRequested(ct);
+            CheckTrainingCancellationIsRequested(ct);
 
             var result = func(input, expected);
-            _methodResults[Iterations] = result;
+            _methodResults[_iteration] = result;
 
             _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
 
             CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _batchSize);
 
-            Iterations++;
-            if (Iterations == IterationsPerEpoch)
+            _iteration++;
+            if (_iteration == IterationsPerEpoch)
             {
-                Iterations = 0;
+                _iteration = 0;
                 return EndEpoch();
             }
 
             return null;
+        }
+
+        public void Reset()
+        {
+            _iteration = CurrentBatch = 0;
         }
     }
 }

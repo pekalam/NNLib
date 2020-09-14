@@ -52,9 +52,38 @@ namespace NNLib.Tests
             trainer.Iterations.Should().Be(5);
             trainer.Epochs.Should().Be(1);
             
-            trainer.ResetEpochs();
+            trainer.Reset();
             trainer.Iterations.Should().Be(0);
             trainer.Epochs.Should().Be(0);
+        }
+
+        [Fact]
+        public void Reset_resets_current_training_progress()
+        {
+            var net1 = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var trainer = CreateBasicAndGateTrainer(net1);
+            trainer.DoIteration();
+
+            trainer.Reset();
+
+            trainer.Iterations.Should().Be(0);
+            trainer.Epochs.Should().Be(0);
+            (trainer.Algorithm as GradientDescentAlgorithm).BatchTrainer.CurrentBatch.Should().Be(0);
+        }
+
+
+        [Fact]
+        public void TrainingSets_when_set_sets_new_batch_trainer()
+        {
+            var net1 = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var trainer = CreateBasicAndGateTrainer(net1);
+            trainer.DoIteration();
+
+            trainer.TrainingSets = new SupervisedTrainingSets(TrainingTestUtils.AndGateSet());
+
+            trainer.Iterations.Should().Be(0);
+            trainer.Epochs.Should().Be(0);
+            (trainer.Algorithm as GradientDescentAlgorithm).BatchTrainer.CurrentBatch.Should().Be(0);
         }
     }
 }

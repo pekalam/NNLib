@@ -31,12 +31,11 @@ namespace NNLib
         
         public LevenbergMarquardtParams Params { get; set; }
 
-        public override void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
+        internal override void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
         {
             _lossFunction = lossFunction;
             _network = network;
             _trainingData = trainingData;
-            BatchTrainer = null;
 
             T = Matrix<double>.Build.Dense(_network.Layers[^1].NeuronsCount, _trainingData.Target.Count);
             P = Matrix<double>.Build.Dense(_network.Layers[0].InputsCount, _trainingData.Input.Count);
@@ -68,7 +67,7 @@ namespace NNLib
             _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? 2 : max);
         }
 
-        public override void ResetIterations()
+        internal override void Reset()
         {
             k = 0;
         }
@@ -78,12 +77,12 @@ namespace NNLib
             int col = 0;
             for (int i = 0; i < network.TotalLayers; i++)
             {
-                result.Weigths[i] = network.Layers[i].Weights.Clone();
+                result.Weights[i] = network.Layers[i].Weights.Clone();
                 for (int j = 0; j < network.Layers[i].InputsCount; j++)
                 {
                     for (int k = 0; k < network.Layers[i].NeuronsCount; k++)
                     {
-                        result.Weigths[i][k, j] = delta[col++];
+                        result.Weights[i][k, j] = delta[col++];
                     }
                 }
                 
@@ -99,32 +98,32 @@ namespace NNLib
             }
         }
 
-        public override int Iterations => k;
+        internal override int Iterations => k;
         
         private void UpdateWeightsAndBiasesWithDeltaRule(LearningMethodResult result)
         {
-            if (result.Weigths.Length != result.Biases.Length)
+            if (result.Weights.Length != result.Biases.Length)
             {
                 throw new Exception();
             }
         
-            for (int i = 0; i < result.Weigths.Length; i++)
+            for (int i = 0; i < result.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Subtract(result.Weigths[i], _network.Layers[i].Weights);
+                _network.Layers[i].Weights.Subtract(result.Weights[i], _network.Layers[i].Weights);
                 _network.Layers[i].Biases.Subtract(result.Biases[i], _network.Layers[i].Biases);
             }
         }
 
         private void ResetWeightsAndBiases(LearningMethodResult result)
         {
-            if (result.Weigths.Length != result.Biases.Length)
+            if (result.Weights.Length != result.Biases.Length)
             {
                 throw new Exception();
             }
 
-            for (int i = 0; i < result.Weigths.Length; i++)
+            for (int i = 0; i < result.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Add(result.Weigths[i], _network.Layers[i].Weights);
+                _network.Layers[i].Weights.Add(result.Weights[i], _network.Layers[i].Weights);
                 _network.Layers[i].Biases.Add(result.Biases[i], _network.Layers[i].Biases);
             }
         }
@@ -134,7 +133,7 @@ namespace NNLib
             return E.PointwisePower(2).Enumerate().Sum() / _network.Layers[^1].NeuronsCount;
         }
 
-        public override bool DoIteration(in CancellationToken ct = default)
+        internal override bool DoIteration(in CancellationToken ct = default)
         {
             if (k == 0)
             {
