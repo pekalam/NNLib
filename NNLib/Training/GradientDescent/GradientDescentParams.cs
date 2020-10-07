@@ -71,15 +71,26 @@ namespace NNLib
 
         public override bool Equals(object? obj)
         {
-            if (obj == null) return false;
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((GradientDescentParams) obj);
+        }
 
-            if (obj is GradientDescentParams o)
+        protected bool Equals(GradientDescentParams other)
+        {
+            return _learningRate.Equals(other._learningRate) && _momentum.Equals(other._momentum) && _batchSize == other._batchSize;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
             {
-                return Momentum == o.Momentum && LearningRate == o.LearningRate &&
-                       BatchSize == o.BatchSize;
+                var hashCode = _learningRate.GetHashCode();
+                hashCode = (hashCode * 397) ^ _momentum.GetHashCode();
+                hashCode = (hashCode * 397) ^ _batchSize;
+                return hashCode;
             }
-
-            return false;
         }
     }
 }

@@ -12,17 +12,25 @@ namespace NNLib
             return MemberwiseClone();
         }
 
+        protected bool Equals(LevenbergMarquardtParams other)
+        {
+            return DampingParamIncFactor.Equals(other.DampingParamIncFactor) && DampingParamDecFactor.Equals(other.DampingParamDecFactor);
+        }
+
         public override bool Equals(object? obj)
         {
-            if (obj == null) return false;
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((LevenbergMarquardtParams) obj);
+        }
 
-            if (obj is LevenbergMarquardtParams o)
+        public override int GetHashCode()
+        {
+            unchecked
             {
-                return DampingParamIncFactor == o.DampingParamIncFactor &&
-                       DampingParamDecFactor == o.DampingParamDecFactor;
+                return (DampingParamIncFactor.GetHashCode() * 397) ^ DampingParamDecFactor.GetHashCode();
             }
-
-            return false;
         }
     }
 }

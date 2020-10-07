@@ -66,26 +66,26 @@ namespace NNLib.Csv
 
         public static SupervisedTrainingSets Copy(SupervisedTrainingSets sets)
         {
-            var readerCpy = (sets.TrainingSet.Input as CsvFileVectorSet)?.FileReader.Copy();
-            var trainingSet = new SupervisedSet((sets.TrainingSet.Input as CsvFileVectorSet).Copy(readerCpy),
-                (sets.TrainingSet.Target as CsvFileVectorSet).Copy(readerCpy));
+            var readerCpy = (sets.TrainingSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
+            var trainingSet = new SupervisedSet((sets.TrainingSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
+                (sets.TrainingSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
 
             var newSets = new SupervisedTrainingSets(trainingSet);
 
 
             if (sets.ValidationSet != null)
             {
-                readerCpy = (sets.ValidationSet.Input as CsvFileVectorSet)?.FileReader.Copy();
-                var validationSet = new SupervisedSet((sets.ValidationSet.Input as CsvFileVectorSet).Copy(readerCpy),
-                    (sets.ValidationSet.Target as CsvFileVectorSet).Copy(readerCpy));
+                readerCpy = (sets.ValidationSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
+                var validationSet = new SupervisedSet((sets.ValidationSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
+                    (sets.ValidationSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
                 newSets.ValidationSet = validationSet;
             }
 
             if (sets.TestSet != null)
             {
-                readerCpy = (sets.TestSet.Input as CsvFileVectorSet)?.FileReader.Copy();
-                var testSet = new SupervisedSet((sets.TestSet.Input as CsvFileVectorSet).Copy(readerCpy),
-                    (sets.TestSet.Target as CsvFileVectorSet).Copy(readerCpy));
+                readerCpy = (sets.TestSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
+                var testSet = new SupervisedSet((sets.TestSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
+                    (sets.TestSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
                 newSets.TestSet = testSet;
 
             }

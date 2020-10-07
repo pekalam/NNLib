@@ -32,7 +32,7 @@ namespace NNLib.Common
             _index = -1;
         }
 
-        public Matrix<double> Current { get; private set; }
+        public Matrix<double> Current { get; private set; } = null!;
 
         object? IEnumerator.Current => Current;
 

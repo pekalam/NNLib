@@ -34,7 +34,7 @@ namespace NNLib
         private IActivationFunction _activationFunction;
 
 
-        public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, RandomGenerator randomGenerator = null)
+        public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, RandomGenerator? randomGenerator = null)
             : base(BuildWeightsMatrix(inputsCount, neuronsCount, randomGenerator ?? new NormalRandomGenerator()),
                 BuildBiasesMatrix(inputsCount, neuronsCount, randomGenerator ?? new NormalRandomGenerator()), BuildOutputMatrix(inputsCount, neuronsCount,
                     randomGenerator ?? new NormalRandomGenerator()))
@@ -42,14 +42,14 @@ namespace NNLib
             Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(activationFunction);
 
             RandomGenerator = randomGenerator ?? new NormalRandomGenerator();
-            ActivationFunction = activationFunction;
+            _activationFunction = activationFunction;
         }
 
         private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double> output,
             IActivationFunction activationFunction, RandomGenerator randomGenerator) : base(weights, biases, output)
         {
             RandomGenerator = randomGenerator;
-            ActivationFunction = activationFunction;
+            _activationFunction = activationFunction;
         }
 
         public IActivationFunction ActivationFunction
@@ -61,6 +61,8 @@ namespace NNLib
                 _activationFunction = value;
             }
         }
+
+        public RandomGenerator RandomGenerator { get; set; }
 
         private static Matrix<double> BuildWeightsMatrix(int inputsCount, int neuronsCount, RandomGenerator randomGenerator) =>
             randomGenerator.GenerateMat(neuronsCount, inputsCount);
@@ -75,13 +77,12 @@ namespace NNLib
         internal PerceptronLayer Clone() =>
             new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output.Clone(), ActivationFunction, RandomGenerator);
 
-        protected override void BuildMatrices(int inputsCount, int neuronsCount)
+        protected override void BuildMatrices(int inputsCount, int neuronsCount, bool rebuildAll)
         {
-            if (Weights == null && Biases == null)
+            if (rebuildAll)
             {
                 Weights = BuildWeightsMatrix(inputsCount, neuronsCount, RandomGenerator);
                 Biases = BuildBiasesMatrix(inputsCount, neuronsCount, RandomGenerator);
-                //Output = BuildOutputMatrix(inputsCount, neuronsCount, RandomGenerator);
             }
             else
             {
@@ -106,7 +107,6 @@ namespace NNLib
                     {
                         Weights = Weights.InsertRow(Weights.RowCount, RandomGenerator.GenerateRowVec(InputsCount));
                         Biases = Biases.InsertRow(Biases.RowCount, RandomGenerator.GenerateColVec(1));
-                        //Output = Output.InsertRow(Output.RowCount, RandomGenerator.GenerateColVec(1));
                     }
                 }
                 else if (neuronsCount < NeuronsCount)
@@ -115,7 +115,6 @@ namespace NNLib
                     {
                         Weights = Weights.RemoveRow(Weights.RowCount - 1);
                         Biases = Biases.RemoveRow(Biases.RowCount - 1);
-                        //Output = Output.RemoveRow(Output.RowCount - 1);
                     }
                 }
             }

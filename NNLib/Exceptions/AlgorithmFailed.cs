@@ -9,10 +9,6 @@ namespace NNLib
         {
         }
 
-        protected AlgorithmFailed(SerializationInfo? info, StreamingContext context) : base(info, context)
-        {
-        }
-
         public AlgorithmFailed(string? message) : base(message)
         {
         }

@@ -29,7 +29,7 @@ namespace NNLib
                             var del = StepSize * (1 + Math.Abs(pw));
                             w[l,k] += del;
                             network.CalculateOutput(input);
-                            var y1 = lossFunction.Derivative(network.Output, expected);
+                            var y1 = lossFunction.Derivative(network.Output!, expected);
 
                             for (int i = 0; i < y1.RowCount; i++)
                             {
@@ -57,7 +57,7 @@ namespace NNLib
                         var del = StepSize * (1 + Math.Abs(pb));
                         b[i, 0] += del;
                         network.CalculateOutput(input);
-                        var y1 = lossFunction.Derivative(network.Output, expected);
+                        var y1 = lossFunction.Derivative(network.Output!, expected);
                         
                         for (int k = 0; k < y1.RowCount; k++)
                         {

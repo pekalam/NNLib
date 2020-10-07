@@ -6,7 +6,7 @@ namespace NNLib
 {
     public abstract class Layer
     {
-        private INetwork _network;
+        private INetwork? _network;
 
         internal event Action<Layer>? NeuronsCountChanging;
         internal event Action<Layer>? InputsCountChanging;
@@ -21,8 +21,6 @@ namespace NNLib
             Weights = weights;
             Output = output;
             Biases = biases;
-
-            HasBiases = biases != null;
         }
 
         public Matrix<double> Weights;
@@ -36,13 +34,12 @@ namespace NNLib
         {
             if (previous != null)
             {
-                BuildMatrices(previous.NeuronsCount, NeuronsCount);
+                BuildMatrices(previous.NeuronsCount, NeuronsCount, false);
             }
         }
 
-        public bool HasBiases { get; }
-        public bool IsOutputLayer => _network.BaseLayers[^1] == this;
-        public bool IsInputLayer => _network.BaseLayers[0] == this;
+        public bool IsOutputLayer => (_network ?? throw new Exception("Network not assigned")).BaseLayers[^1] == this;
+        public bool IsInputLayer => (_network ?? throw new Exception("Network not assigned")).BaseLayers[0] == this;
 
         public int NeuronsCount
         {
@@ -55,7 +52,7 @@ namespace NNLib
                 }
 
                 NeuronsCountChanging?.Invoke(this);
-                BuildMatrices(InputsCount, value);
+                BuildMatrices(InputsCount, value, false);
                 NeuronsCountChanged?.Invoke(this);
             }
         }
@@ -71,7 +68,7 @@ namespace NNLib
                 }
 
                 InputsCountChanging?.Invoke(this);
-                BuildMatrices(value, NeuronsCount);
+                BuildMatrices(value, NeuronsCount, false);
                 InputsCountChanged?.Invoke(this);
             }
         }
@@ -80,22 +77,10 @@ namespace NNLib
         {
             var n = NeuronsCount;
             var i = InputsCount;
-            Weights = Biases = Output = null;
-            BuildMatrices(i, n);
+            BuildMatrices(i, n, true);
         }
 
-        public RandomGenerator RandomGenerator { get; set; }
-
-        protected abstract void BuildMatrices(int inputsCount, int neuronsCount);
-
-        public void RandomizeW()
-        {
-
-        }
-
-        public void RandomizeB()
-        {
-        }
+        protected abstract void BuildMatrices(int inputsCount, int neuronsCount, bool rebuildAll);
 
         public abstract void CalculateOutput(Matrix<double> input);
     }
