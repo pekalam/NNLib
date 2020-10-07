@@ -156,11 +156,11 @@ namespace NNLib
             return p;
         }
 
-        public void RebuildMatrices()
+        public void ResetParameters()
         {
             foreach (var layer in _layers)
             {
-                layer.RebuildMatrices();
+                layer.ResetParameters();
             }
         }
 

@@ -1,54 +1,27 @@
 ﻿using System;
+using System.Diagnostics;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
-    public abstract class RandomGenerator
-    {
-        public abstract Matrix<double> GenerateMat(int r, int c);
-        public abstract Vector<double> GenerateColVec(int n);
-        public abstract Vector<double> GenerateRowVec(int n);
-    }
-
-    public class NormalRandomGenerator : RandomGenerator
-    {
-        public override Matrix<double> GenerateMat(int r, int c)
-        {
-            return Matrix<double>.Build.Random(r, c, new Normal());
-        }
-
-        public override Vector<double> GenerateColVec(int n)
-        {
-            return Matrix<double>.Build.Random(n, 1, new Normal()).Column(0);
-        }
-
-        public override Vector<double> GenerateRowVec(int n)
-        {
-            return Matrix<double>.Build.Random(1, n, new Normal()).Row(0);
-        }
-    }
+    
 
     public class PerceptronLayer : Layer
     {
         private IActivationFunction _activationFunction;
 
-
-        public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, RandomGenerator? randomGenerator = null)
-            : base(BuildWeightsMatrix(inputsCount, neuronsCount, randomGenerator ?? new NormalRandomGenerator()),
-                BuildBiasesMatrix(inputsCount, neuronsCount, randomGenerator ?? new NormalRandomGenerator()), BuildOutputMatrix(inputsCount, neuronsCount,
-                    randomGenerator ?? new NormalRandomGenerator()))
+        public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null)
+            : base(inputsCount, neuronsCount, matrixBuilder ?? new NormDistMatrixBuilder())
         {
             Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(activationFunction);
 
-            RandomGenerator = randomGenerator ?? new NormalRandomGenerator();
             _activationFunction = activationFunction;
         }
 
-        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double> output,
-            IActivationFunction activationFunction, RandomGenerator randomGenerator) : base(weights, biases, output)
+        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output,
+            IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new NormDistMatrixBuilder())
         {
-            RandomGenerator = randomGenerator;
             _activationFunction = activationFunction;
         }
 
@@ -62,63 +35,10 @@ namespace NNLib
             }
         }
 
-        public RandomGenerator RandomGenerator { get; set; }
-
-        private static Matrix<double> BuildWeightsMatrix(int inputsCount, int neuronsCount, RandomGenerator randomGenerator) =>
-            randomGenerator.GenerateMat(neuronsCount, inputsCount);
-
-        private static Matrix<double> BuildBiasesMatrix(int inputsCount, int neuronsCount, RandomGenerator randomGenerator) =>
-            randomGenerator.GenerateMat(neuronsCount, 1);
-
-        private static Matrix<double> BuildOutputMatrix(int inputsCount, int neuronsCount, RandomGenerator randomGenerator) =>
-            randomGenerator.GenerateMat(neuronsCount, 1);
-
 
         internal PerceptronLayer Clone() =>
-            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output.Clone(), ActivationFunction, RandomGenerator);
+            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), ActivationFunction);
 
-        protected override void BuildMatrices(int inputsCount, int neuronsCount, bool rebuildAll)
-        {
-            if (rebuildAll)
-            {
-                Weights = BuildWeightsMatrix(inputsCount, neuronsCount, RandomGenerator);
-                Biases = BuildBiasesMatrix(inputsCount, neuronsCount, RandomGenerator);
-            }
-            else
-            {
-                if (inputsCount > InputsCount)
-                {
-                    while (inputsCount != InputsCount)
-                    {
-                        Weights = Weights.InsertColumn(Weights.ColumnCount, RandomGenerator.GenerateColVec(NeuronsCount));
-                    }
-                }
-                else if (inputsCount < InputsCount)
-                {
-                    while (inputsCount != InputsCount)
-                    {
-                        Weights = Weights.RemoveColumn(Weights.ColumnCount - 1);
-                    }
-                }
-
-                if (neuronsCount > NeuronsCount)
-                {
-                    while (neuronsCount != NeuronsCount)
-                    {
-                        Weights = Weights.InsertRow(Weights.RowCount, RandomGenerator.GenerateRowVec(InputsCount));
-                        Biases = Biases.InsertRow(Biases.RowCount, RandomGenerator.GenerateColVec(1));
-                    }
-                }
-                else if (neuronsCount < NeuronsCount)
-                {
-                    while (neuronsCount != NeuronsCount)
-                    {
-                        Weights = Weights.RemoveRow(Weights.RowCount - 1);
-                        Biases = Biases.RemoveRow(Biases.RowCount - 1);
-                    }
-                }
-            }
-        }
 
         public override void CalculateOutput(Matrix<double> input)
         {

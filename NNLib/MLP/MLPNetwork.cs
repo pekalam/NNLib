@@ -34,8 +34,8 @@ namespace NNLib
             Matrix<double> prevLayerOutput = input;
             for (int l = 0; l < Layers.Count; ++l)
             {
-                Layers[l].CalculateOutput(prevLayerOutput);
-                prevLayerOutput = Layers[l].Output;
+                Layers[l].CalculateOutput(prevLayerOutput!);
+                prevLayerOutput = Layers[l].Output!;
             }
 
             Output = prevLayerOutput;

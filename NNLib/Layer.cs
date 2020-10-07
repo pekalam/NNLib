@@ -14,18 +14,34 @@ namespace NNLib
         internal event Action<Layer>? InputsCountChanged;
 
         protected Layer(Matrix<double> weights, Matrix<double> biases,
-            Matrix<double> output)
+            Matrix<double>? output, MatrixBuilder matrixBuilder)
         {
-            Guards._NotNull(weights).NotNull(output);
+            Guards._NotNull(weights);
 
             Weights = weights;
             Output = output;
             Biases = biases;
+
+            MatrixBuilder = matrixBuilder;
+            matrixBuilder.SetLayer(this);
         }
+
+#pragma warning disable 8618
+        protected Layer(int inputsCount, int neuronsCount, MatrixBuilder matrixBuilder)
+        {
+            Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(matrixBuilder);
+
+            MatrixBuilder = matrixBuilder;
+            matrixBuilder.SetLayer(this);
+            MatrixBuilder.BuildAllMatrices(neuronsCount, inputsCount);
+        }
+#pragma warning restore 8618
+
+        public MatrixBuilder MatrixBuilder { get; set; }
 
         public Matrix<double> Weights;
         public Matrix<double> Biases;
-        public Matrix<double> Output;
+        public Matrix<double>? Output;
 
 
         internal void AssignNetwork(INetwork network) => _network = network;
@@ -34,7 +50,7 @@ namespace NNLib
         {
             if (previous != null)
             {
-                BuildMatrices(previous.NeuronsCount, NeuronsCount, false);
+                MatrixBuilder.AdjustMatrices(NeuronsCount, previous.NeuronsCount);
             }
         }
 
@@ -52,7 +68,7 @@ namespace NNLib
                 }
 
                 NeuronsCountChanging?.Invoke(this);
-                BuildMatrices(InputsCount, value, false);
+                MatrixBuilder.AdjustMatrices(value, InputsCount);
                 NeuronsCountChanged?.Invoke(this);
             }
         }
@@ -68,19 +84,15 @@ namespace NNLib
                 }
 
                 InputsCountChanging?.Invoke(this);
-                BuildMatrices(value, NeuronsCount, false);
+                MatrixBuilder.AdjustMatrices(NeuronsCount, value);
                 InputsCountChanged?.Invoke(this);
             }
         }
 
-        public void RebuildMatrices()
+        public void ResetParameters()
         {
-            var n = NeuronsCount;
-            var i = InputsCount;
-            BuildMatrices(i, n, true);
+            MatrixBuilder.BuildAllMatrices(NeuronsCount, InputsCount);
         }
-
-        protected abstract void BuildMatrices(int inputsCount, int neuronsCount, bool rebuildAll);
 
         public abstract void CalculateOutput(Matrix<double> input);
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
 
@@ -37,10 +38,11 @@ namespace NNLib
             BatchTrainer?.Reset();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Matrix<double> CalcUpdate(int layerInd, PerceptronLayer layer, LearningMethodResult result,
             Matrix<double> input, Matrix<double> next)
         {
-            var outputDerivative = layer.ActivationFunction.DerivativeY(layer.Output);
+            var outputDerivative = layer.ActivationFunction.DerivativeY(layer.Output!);
             var delta = next.PointwiseMultiply(outputDerivative);
             var deltaLr = delta.Multiply(Params.LearningRate);
             var biasesDelta = deltaLr;
@@ -52,6 +54,7 @@ namespace NNLib
             return delta;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateWeightsAndBiasesWithDeltaRule(LearningMethodResult result)
         {
             Debug.Assert(_network != null, nameof(_network) + " != null");
@@ -76,12 +79,12 @@ namespace NNLib
 
             _network.CalculateOutput(input);
 
-            Matrix<double> next = _lossFunction.Derivative(_network.Layers[^1].Output, expected);
+            Matrix<double> next = _lossFunction.Derivative(_network.Layers[^1].Output!, expected);
             for (var i = _network.Layers.Count - 1; i >= 0; --i)
             {
                 var layer = _network.Layers[i];
 
-                var previousDelta = CalcUpdate(i, layer, learningResult, i > 0 ? _network.Layers[i - 1].Output : input, next);
+                var previousDelta = CalcUpdate(i, layer, learningResult, i > 0 ? _network.Layers[i - 1].Output! : input, next);
 
                 next = layer.Weights.TransposeThisAndMultiply(previousDelta);
 

@@ -15,6 +15,16 @@ namespace NNLib.Tests
             this.output = output;
         }
 
+        private MatrixBuilder GetMatBuilder(int num)
+        {
+            return num switch
+            {
+                0 => new NormDistMatrixBuilder(),
+                1 => new XavierMatrixBuilder(),
+                _ => throw new Exception(),
+            };
+        }
+
         [Fact]
         public void MLPNetwork_when_constructed_has_valid_props()
         {
@@ -29,10 +39,12 @@ namespace NNLib.Tests
             net.TotalSynapses.Should().Be(2 + 4 + 6);
         }
 
-        [Fact]
-        public void NeuronsCount_when_changed_neurons_count_in_layer_is_changed()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void NeuronsCount_when_changed_neurons_count_in_layer_is_changed(int matbuilder)
         {
-            var l = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             l.NeuronsCount += 1;
 
             l.Weights.RowCount.Should().Be(3);
@@ -47,79 +59,101 @@ namespace NNLib.Tests
         }
 
 
-        [Fact]
-        public void NeuronsCount_when_changed_neurons_count_in_layer_adjacent_layers_are_updated()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void NeuronsCount_when_changed_neurons_count_in_layer_adjacent_layers_are_updated(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 2, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(2, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             l2.NeuronsCount += 1;
             l3.InputsCount.Should().Be(3);
         }
 
-        [Fact]
-        public void NeuronsCount_when_changed_does_not_change_existing_weights_and_biases()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void NeuronsCount_when_changed_does_not_change_existing_weights_and_biases(int matbuilder)
         {
-            var l = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var w1 = l.Weights.Clone();
             var b1 = l.Biases.Clone();
             l.NeuronsCount += 1;
             l.Weights.RowCount.Should().Be(3);
 
-            for (int i = 0; i < w1.RowCount; i++)
+            if (matbuilder == 0)
             {
-                for (int j = 0; j < w1.ColumnCount; j++)
+                for (int i = 0; i < w1.RowCount; i++)
                 {
-                    l.Weights[i, j].Should().Be(w1[i, j]);
-                }
+                    for (int j = 0; j < w1.ColumnCount; j++)
+                    {
+                        l.Weights[i, j].Should().Be(w1[i, j]);
+                    }
 
-                l.Biases[i, 0].Should().Be(b1[i, 0]);
+                    l.Biases[i, 0].Should().Be(b1[i, 0]);
+                }
             }
+
 
             l.NeuronsCount -= 2;
             l.Weights.RowCount.Should().Be(1);
 
-            for (int i = 0; i < l.Weights.RowCount; i++)
+            if (matbuilder == 0)
             {
-                for (int j = 0; j < l.Weights.ColumnCount; j++)
+                for (int i = 0; i < l.Weights.RowCount; i++)
                 {
-                    l.Weights[i, j].Should().Be(w1[i, j]);
+                    for (int j = 0; j < l.Weights.ColumnCount; j++)
+                    {
+                        l.Weights[i, j].Should().Be(w1[i, j]);
+                    }
+                    l.Biases[i, 0].Should().Be(b1[i, 0]);
                 }
-                l.Biases[i, 0].Should().Be(b1[i, 0]);
             }
+
         }
 
-        [Fact]
-        public void InputsCount_when_changed_does_not_change_existing_weights_and_biases()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void InputsCount_when_changed_does_not_change_existing_weights_and_biases(int matbuilder)
         {
-            var l = new PerceptronLayer(2, 2, new LinearActivationFunction());
+            var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var w1 = l.Weights.Clone();
             var b1 = l.Biases.Clone();
             l.InputsCount += 1;
             l.Weights.ColumnCount.Should().Be(3);
 
-            for (int i = 0; i < w1.RowCount; i++)
+            if (matbuilder == 0)
             {
-                for (int j = 0; j < w1.ColumnCount; j++)
+                for (int i = 0; i < w1.RowCount; i++)
                 {
-                    l.Weights[i, j].Should().Be(w1[i, j]);
-                }
+                    for (int j = 0; j < w1.ColumnCount; j++)
+                    {
+                        l.Weights[i, j].Should().Be(w1[i, j]);
+                    }
 
-                l.Biases[i, 0].Should().Be(b1[i, 0]);
+                    l.Biases[i, 0].Should().Be(b1[i, 0]);
+                }
             }
+
 
             l.InputsCount -= 2;
             l.Weights.ColumnCount.Should().Be(1);
 
-            for (int i = 0; i < l.Weights.RowCount; i++)
+            if (matbuilder == 0)
             {
-                for (int j = 0; j < l.Weights.ColumnCount; j++)
+                for (int i = 0; i < l.Weights.RowCount; i++)
                 {
-                    l.Weights[i, j].Should().Be(w1[i, j]);
+                    for (int j = 0; j < l.Weights.ColumnCount; j++)
+                    {
+                        l.Weights[i, j].Should().Be(w1[i, j]);
+                    }
+
+                    l.Biases[i, 0].Should().Be(b1[i, 0]);
                 }
-                l.Biases[i, 0].Should().Be(b1[i, 0]);
             }
         }
 
@@ -155,12 +189,14 @@ namespace NNLib.Tests
             l.Output.RowCount.Should().Be(2);
         }
 
-        [Fact]
-        public void Clone_creates_deep_copy()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void Clone_creates_deep_copy(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 2, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(2, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             var input = Matrix<double>.Build.Dense(1, 1);
@@ -196,12 +232,14 @@ namespace NNLib.Tests
         }
 
 
-        [Fact]
-        public void RemoveLayer_removes_hidden_layer()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void RemoveLayer_removes_hidden_layer(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             net.RemoveLayer(l2);
@@ -213,12 +251,14 @@ namespace NNLib.Tests
             net.TotalLayers.Should().Be(2);
         }
 
-        [Fact]
-        public void RemoveLayer_removes_output_layer()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void RemoveLayer_removes_output_layer(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             net.RemoveLayer(l3);
@@ -230,12 +270,14 @@ namespace NNLib.Tests
             net.TotalLayers.Should().Be(2);
         }
 
-        [Fact]
-        public void RemoveLayer_removes_input_layer()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void RemoveLayer_removes_input_layer(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             net.RemoveLayer(l);
@@ -247,15 +289,17 @@ namespace NNLib.Tests
             net.TotalLayers.Should().Be(2);
         }
 
-        [Fact]
-        public void RebuildMatrices_creates_new_matrices()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void RebuildMatrices_creates_new_matrices(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             
             var w1 = l.Weights.Clone();
             var b1 = l.Biases.Clone();
             
-            l.RebuildMatrices();
+            l.ResetParameters();
 
             for (int i = 0; i < w1.RowCount; i++)
             {
@@ -268,12 +312,14 @@ namespace NNLib.Tests
             }
         }
 
-        [Fact]
-        public void InsertAfter_inserts_new_layer_after_given_index()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void InsertAfter_inserts_new_layer_after_given_index(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             var toInsert = net.InsertAfter(2);
@@ -291,12 +337,14 @@ namespace NNLib.Tests
         }
 
 
-        [Fact]
-        public void InsertBefore_inserts_new_layer_before_given_index()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        public void InsertBefore_inserts_new_layer_before_given_index(int matbuilder)
         {
-            var l = new PerceptronLayer(1, 8, new LinearActivationFunction());
-            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction());
-            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction());
+            var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l2 = new PerceptronLayer(8, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            var l3 = new PerceptronLayer(2, 1, new LinearActivationFunction(), GetMatBuilder(matbuilder));
             var net = new MLPNetwork(l, l2, l3);
 
             var toInsert = net.InsertBefore(2);
