@@ -32,16 +32,24 @@ namespace NNLib
             Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(matrixBuilder);
 
             MatrixBuilder = matrixBuilder;
-            matrixBuilder.SetLayer(this);
             MatrixBuilder.BuildAllMatrices(neuronsCount, inputsCount);
         }
 #pragma warning restore 8618
 
-        public MatrixBuilder MatrixBuilder { get; set; }
+        public MatrixBuilder MatrixBuilder
+        {
+            get => _matrixBuilder;
+            set
+            {
+                _matrixBuilder = value;
+                value.SetLayer(this);
+            }
+        }
 
         public Matrix<double> Weights;
         public Matrix<double> Biases;
         public Matrix<double>? Output;
+        private MatrixBuilder _matrixBuilder;
 
 
         internal void AssignNetwork(INetwork network) => _network = network;

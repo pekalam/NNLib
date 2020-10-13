@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.Common;
 
@@ -8,14 +9,15 @@ namespace NNLib
     {
         private const double StepSize = 0.001;
 
-        public static Matrix<double> CalcJacobian(MLPNetwork network, ILossFunction lossFunction, SupervisedSet set, Matrix<double> E)
+        public static Matrix<double> CalcJacobian(MLPNetwork network, ILossFunction lossFunction, IEnumerator<Matrix<double>> inputEnum, IEnumerator<Matrix<double>> targetEnum, SupervisedSet set, Matrix<double> E)
         {
             var J = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount * set.Target.Count, network.TotalSynapses + network.TotalBiases);
 
-            for (int s = 0; s < set.Input.Count; s++)
+            int s = 0;
+            while(!(!inputEnum.MoveNext() || !targetEnum.MoveNext()))
             {
-                var input = set.Input[s];
-                var expected = set.Target[s];
+                var input = inputEnum.Current;
+                var expected = targetEnum.Current;
 
                 int colPos = 0;
                 for (int j = 0; j < network.TotalLayers; j++)
@@ -25,7 +27,7 @@ namespace NNLib
                     {
                         for (int l = 0; l < w.RowCount; l++)
                         {
-                            var pw = w[l,k];
+                            var pw = w.At(l,k);
                             var del = StepSize * (1 + Math.Abs(pw));
                             w[l,k] += del;
                             network.CalculateOutput(input);
@@ -33,13 +35,13 @@ namespace NNLib
 
                             for (int i = 0; i < y1.RowCount; i++)
                             {
-                                y1[i,0] -= E[s,i];
+                                y1[i,0] -= E.At(s,i);
                             }
                             
                             var d = y1.Divide(del);
                             for (int i = 0; i < d.RowCount; i++)
                             {
-                                J[i, colPos] = d[i, 0];
+                                J[i, colPos] = d.At(i, 0);
                             }
 
                             w[l,k] = pw;
@@ -53,7 +55,7 @@ namespace NNLib
                     var b = network.Layers[j].Biases;
                     for (int i = 0; i < b.RowCount; i++)
                     {
-                        var pb = b[i, 0];
+                        var pb = b.At(i, 0);
                         var del = StepSize * (1 + Math.Abs(pb));
                         b[i, 0] += del;
                         network.CalculateOutput(input);
@@ -61,13 +63,13 @@ namespace NNLib
                         
                         for (int k = 0; k < y1.RowCount; k++)
                         {
-                            y1[k,0] -= E[s,k];
+                            y1[k,0] -= E.At(s,k);
                         }
                         
                         var d = y1.Divide(del);
                         for (int k = 0; k < d.RowCount; k++)
                         {
-                            J[k, colPos] = d[k, 0];
+                            J[k, colPos] = d.At(k, 0);
                         }
 
                         b[i, 0] = pb;
@@ -75,9 +77,11 @@ namespace NNLib
                     }
                 }
 
-
+                s++;
             }
             
+            inputEnum.Reset();
+            targetEnum.Reset();
             return J;
         }
     }

@@ -4,6 +4,21 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
+    public static class MLPNetworkExtensions
+    {
+        public static double CalculateOutput(this MLPNetwork network,double x)
+        {
+            if (network.Layers[0].InputsCount != 1 || network.Layers[^1].NeuronsCount != 1)
+            {
+                throw new Exception("Network must have 1 neuron at output and 1 on input layers");
+            }
+
+            network.CalculateOutput(Matrix<double>.Build.Dense(1, 1, x));
+
+            return network.Output!.At(0, 0);
+        }
+    }
+
     public class MLPNetwork : Network<PerceptronLayer>
     {
         public MLPNetwork(params PerceptronLayer[] perceptronLayers) : base(perceptronLayers)

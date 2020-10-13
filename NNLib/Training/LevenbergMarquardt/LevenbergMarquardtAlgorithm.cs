@@ -10,8 +10,8 @@ namespace NNLib
 {
     public class LevenbergMarquardtAlgorithm : AlgorithmBase
     {
-        private const double MinDampingParameter = 1.0e-6d;
-        private const double MaxDampingParameter = 1.0e+6d;
+        private const double MinDampingParameter = 1.0e-25;
+        private const double MaxDampingParameter = 1e25;
         private const int MaxIterations = 10;
         private SupervisedSet _trainingData;
         private MLPNetwork _network;
@@ -22,7 +22,10 @@ namespace NNLib
         private double _previousError;
         private Matrix<double>? _previousE = null;
         private int k;
-        private double _dampingParameter;
+        private double _dampingParameter = 0.1;
+
+        private IEnumerator<Matrix<double>> _inputEnum;
+        private IEnumerator<Matrix<double>> _targetEnum;
 
         public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams parameters)
         {
@@ -46,6 +49,9 @@ namespace NNLib
             }
 
             k = 0;
+
+            _inputEnum = trainingData.Input.GetEnumerator();
+            _targetEnum = trainingData.Target.GetEnumerator();
         }
 
         private void SetDampingParameter()
@@ -53,7 +59,7 @@ namespace NNLib
             var max = Double.MinValue;
             var E = _previousE ?? CalcE();
 
-            var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _trainingData, E);
+            var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _inputEnum,_targetEnum,_trainingData, E);
             var Jt = J.Transpose();
             var g = Jt * E;
             var JtJ = Jt * J;
@@ -130,15 +136,15 @@ namespace NNLib
 
         private double CalcError(Matrix<double> E)
         {
-            return E.PointwisePower(2).Enumerate().Sum() / _network.Layers[^1].NeuronsCount;
+            return E.PointwisePower(2).Enumerate().Sum(); /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
         }
 
         internal override bool DoIteration(in CancellationToken ct = default)
         {
-            if (k == 0)
-            {
-                SetDampingParameter();
-            }
+            // if (k == 0)
+            // {
+            //     SetDampingParameter();
+            // }
 
 
 
@@ -151,7 +157,7 @@ namespace NNLib
                 
                 var E = _previousE ?? CalcE();
 
-                var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _trainingData, E);
+                var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _inputEnum, _targetEnum, _trainingData, E);
 
                 if (ct.IsCancellationRequested) throw new TrainingCanceledException();
 
@@ -173,18 +179,25 @@ namespace NNLib
                 error = CalcError(E);
                 _previousE = E;
 
-                if (k >= 1 && ++it <= MaxIterations)
+                if (k >= 1)
                 {
                     if (error >= _previousError)
                     {
                         _dampingParameter *= Params.DampingParamIncFactor;
-                        if (_dampingParameter > MaxDampingParameter) _dampingParameter = MaxDampingParameter;
+                        if (_dampingParameter > MaxDampingParameter)
+                        {
+                            _dampingParameter = MaxDampingParameter; 
+                            break;
+                        }
                         ResetWeightsAndBiases(result);
                     }
                     else
                     {
                         _dampingParameter *= Params.DampingParamDecFactor;
-                        if (_dampingParameter < MinDampingParameter) _dampingParameter = MinDampingParameter;
+                        if (_dampingParameter < MinDampingParameter)
+                        {
+                            _dampingParameter = MinDampingParameter;
+                        }
                         break;
                     }
                 }

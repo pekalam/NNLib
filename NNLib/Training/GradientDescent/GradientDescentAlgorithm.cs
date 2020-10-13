@@ -29,7 +29,7 @@ namespace NNLib
             _lossFunction = lossFunction;
             _network = network;
             _iterations = 0;
-            BatchTrainer = new BatchTrainer(Params.BatchSize, trainingData);
+            BatchTrainer = new BatchTrainer(Params.BatchSize, trainingData, Params.Randomize);
         }
 
         internal override void Reset()

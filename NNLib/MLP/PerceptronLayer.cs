@@ -42,11 +42,6 @@ namespace NNLib
 
         public override void CalculateOutput(Matrix<double> input)
         {
-            if (input.RowCount != InputsCount)
-            {
-                throw new ArgumentException();
-            }
-
             Output = Weights.Multiply(input);
 
             if (input.ColumnCount == 1)

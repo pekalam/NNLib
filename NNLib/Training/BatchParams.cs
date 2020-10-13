@@ -1,6 +1,0 @@
-﻿using System;
-
-namespace NNLib
-{
-
-}

@@ -10,8 +10,8 @@ namespace NNLib
         {
         }
 
-        public Matrix<double>[] Weights { get; set; }
-        public Matrix<double>[] Biases { get; set; }
+        public Matrix<double>[] Weights;
+        public Matrix<double>[] Biases;
 
         public static LearningMethodResult FromNetwork(MLPNetwork network)
         {

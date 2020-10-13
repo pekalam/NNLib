@@ -8,7 +8,7 @@
     <Copyright>Marek Pękala</Copyright>
     <Description>Part of NNLib library. Adds support for reading csv files.</Description>
     <Authors>Marek Pękala</Authors>
-    <Version>1.0.5</Version>
+    <Version>1.0.51</Version>
   </PropertyGroup>
 
   <ItemGroup>

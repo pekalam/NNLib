@@ -23,7 +23,7 @@ namespace NNLib
         public override void BuildAllMatrices(int neuronsCount, int inputsCount)
         {
             Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal());
-            Layer.Biases = Matrix<double>.Build.Random(neuronsCount, 1, new Normal());
+            Layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
         }
 
         public override void AdjustMatrices(int neuronsCount, int inputsCount)
@@ -49,7 +49,7 @@ namespace NNLib
                 while (neuronsCount != Layer.NeuronsCount)
                 {
                     var Wrow = Matrix<double>.Build.Random(1, Layer.InputsCount, new Normal()).Row(0);
-                    var Brow = Matrix<double>.Build.Random(1, 1, new Normal()).Column(0);
+                    var Brow = Matrix<double>.Build.Dense(1, 1, 0).Column(0);
                     Layer.Weights = Layer.Weights.InsertRow(Layer.Weights.RowCount, Wrow);
                     Layer.Biases = Layer.Biases.InsertRow(Layer.Biases.RowCount, Brow);
                 }
@@ -70,14 +70,14 @@ namespace NNLib
     {
         public override void BuildAllMatrices(int neuronsCount, int inputsCount)
         {
-            var stddev = 1d / Math.Sqrt(inputsCount);
+            var stddev = 1d / inputsCount;
             Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
-            Layer.Biases = Matrix<double>.Build.Random(neuronsCount, 1, new Normal(0, stddev));
+            Layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
         }
 
         public override void AdjustMatrices(int neuronsCount, int inputsCount)
         {
-            var stddev = 1d / Math.Sqrt(inputsCount);
+            var stddev = 1d / inputsCount;
 
             if (inputsCount != Layer.InputsCount)
             {
@@ -87,7 +87,7 @@ namespace NNLib
             if (neuronsCount != Layer.NeuronsCount)
             {
                 Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
-                Layer.Biases = Matrix<double>.Build.Random(neuronsCount, 1, new Normal(0, stddev));
+                Layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
             }
         }
     }

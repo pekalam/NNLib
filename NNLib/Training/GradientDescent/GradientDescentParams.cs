@@ -60,6 +60,9 @@ namespace NNLib
             }
         }
 
+
+        public bool Randomize { get; set; }
+
         public object Clone()
         {
             return new GradientDescentParams()

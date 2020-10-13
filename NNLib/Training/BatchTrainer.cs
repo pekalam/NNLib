@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.Common;
@@ -9,11 +10,13 @@ namespace NNLib
     {
         private readonly int _batchSize;
         private readonly SupervisedSet _trainingSet;
-        private int _setIndex;
         private readonly LearningMethodResult[] _methodResults;
         private int _iteration;
 
-        internal BatchTrainer(int batchSize, SupervisedSet trainingSet)
+        private readonly IEnumerator<Matrix<double>> _inputEnum;
+        private readonly IEnumerator<Matrix<double>> _targetEnum;
+
+        internal BatchTrainer(int batchSize, SupervisedSet trainingSet, bool randomize = false)
         {
             _batchSize = batchSize;
             Guards._GtZero(_batchSize);
@@ -21,6 +24,9 @@ namespace NNLib
             IterationsPerEpoch = trainingSet.Input.Count / _batchSize;
             _methodResults = new LearningMethodResult[IterationsPerEpoch];
             _trainingSet = trainingSet;
+
+            _inputEnum = randomize ? new RandomVectorSetEnumerator(trainingSet.Input) : trainingSet.Input.GetEnumerator();
+            _targetEnum = randomize ? new RandomVectorSetEnumerator(trainingSet.Target) : trainingSet.Target.GetEnumerator();
         }
 
         private void ValidateParamsForSet(SupervisedSet set)
@@ -57,12 +63,12 @@ namespace NNLib
             {
                 for (int j = 0; j < result.Weights.Length; j++)
                 {
-                    result.Weights[j] = result.Weights[j] + _methodResults[i].Weights[j];
+                    result.Weights[j].Add(_methodResults[i].Weights[j], result.Weights[j]);
                 }
 
                 for (int j = 0; j < result.Biases.Length; j++)
                 {
-                    result.Biases[j] = result.Biases[j] + _methodResults[i].Biases[j];
+                    result.Biases[j].Add(_methodResults[i].Biases[j], result.Biases[j]);
                 }
             }
 
@@ -71,15 +77,21 @@ namespace NNLib
 
         public LearningMethodResult? DoIteration(Func<Matrix<double>, Matrix<double>, LearningMethodResult> func, in CancellationToken ct = default)
         {
-            var input = _trainingSet.Input[_setIndex];
-            var expected = _trainingSet.Target[_setIndex];
+            //var input = _trainingSet.Input[_setIndex];
+            //var expected = _trainingSet.Target[_setIndex];
+
+            if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
+            {
+                _inputEnum.Reset();
+                _targetEnum.Reset();
+            }
 
             CheckTrainingCancellationIsRequested(ct);
 
-            var result = func(input, expected);
+            var result = func(_inputEnum.Current, _targetEnum.Current);
             _methodResults[_iteration] = result;
 
-            _setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
+            //_setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
 
             CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _batchSize);
 
