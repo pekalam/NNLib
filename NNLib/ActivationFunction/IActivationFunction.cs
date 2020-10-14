@@ -5,6 +5,6 @@ namespace NNLib
     public interface IActivationFunction
     {
         Matrix<double> Function(Matrix<double> x);
-        Matrix<double> DerivativeY(Matrix<double> y);
+        Matrix<double> Derivative(Matrix<double> y);
     }
 }

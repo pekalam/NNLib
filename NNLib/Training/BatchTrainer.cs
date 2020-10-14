@@ -10,7 +10,7 @@ namespace NNLib
     {
         private readonly int _batchSize;
         private readonly SupervisedSet _trainingSet;
-        private readonly LearningMethodResult[] _methodResults;
+        private readonly ParametersUpdate[] _methodResults;
         private int _iteration;
 
         private readonly IEnumerator<Matrix<double>> _inputEnum;
@@ -22,7 +22,7 @@ namespace NNLib
             Guards._GtZero(_batchSize);
             ValidateParamsForSet(trainingSet);
             IterationsPerEpoch = trainingSet.Input.Count / _batchSize;
-            _methodResults = new LearningMethodResult[IterationsPerEpoch];
+            _methodResults = new ParametersUpdate[IterationsPerEpoch];
             _trainingSet = trainingSet;
 
             _inputEnum = randomize ? new RandomVectorSetEnumerator(trainingSet.Input) : trainingSet.Input.GetEnumerator();
@@ -55,7 +55,7 @@ namespace NNLib
         public int IterationsPerEpoch { get; }
         public int CurrentBatch { get; private set; }
 
-        private LearningMethodResult EndEpoch()
+        private ParametersUpdate EndEpoch()
         {
             var result = _methodResults[0];
 
@@ -75,7 +75,7 @@ namespace NNLib
             return result;
         }
 
-        public LearningMethodResult? DoIteration(Func<Matrix<double>, Matrix<double>, LearningMethodResult> func, in CancellationToken ct = default)
+        public ParametersUpdate? DoIteration(Func<Matrix<double>, Matrix<double>, ParametersUpdate> func, in CancellationToken ct = default)
         {
             //var input = _trainingSet.Input[_setIndex];
             //var expected = _trainingSet.Target[_setIndex];

@@ -35,6 +35,7 @@ namespace NNLib
             }
         }
 
+        public Matrix<double> Net;
 
         internal PerceptronLayer Clone() =>
             new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), ActivationFunction);
@@ -42,18 +43,18 @@ namespace NNLib
 
         public override void CalculateOutput(Matrix<double> input)
         {
-            Output = Weights.Multiply(input);
+            Net = Weights.Multiply(input);
 
             if (input.ColumnCount == 1)
             {
-                Output.Add(Biases, Output);
+                Net.Add(Biases, Net);
             }
             else
             {
-                Output.Add(Biases * Matrix<double>.Build.Dense(1, Output.ColumnCount, 1), Output);
+                Net.Add(Biases * Matrix<double>.Build.Dense(1, Net.ColumnCount, 1), Net);
             }
 
-            Output = ActivationFunction.Function(Output);
+            Output = ActivationFunction.Function(Net);
         }
     }
 }

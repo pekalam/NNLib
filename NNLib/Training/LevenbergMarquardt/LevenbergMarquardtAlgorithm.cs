@@ -78,7 +78,7 @@ namespace NNLib
             k = 0;
         }
 
-        private void SetResults(LearningMethodResult result, Vector<double> delta, MLPNetwork network)
+        private void SetResults(ParametersUpdate result, Vector<double> delta, MLPNetwork network)
         {
             int col = 0;
             for (int i = 0; i < network.TotalLayers; i++)
@@ -106,7 +106,7 @@ namespace NNLib
 
         internal override int Iterations => k;
         
-        private void UpdateWeightsAndBiasesWithDeltaRule(LearningMethodResult result)
+        private void UpdateWeightsAndBiasesWithDeltaRule(ParametersUpdate result)
         {
             if (result.Weights.Length != result.Biases.Length)
             {
@@ -120,17 +120,17 @@ namespace NNLib
             }
         }
 
-        private void ResetWeightsAndBiases(LearningMethodResult result)
+        private void ResetWeightsAndBiases(ParametersUpdate update)
         {
-            if (result.Weights.Length != result.Biases.Length)
+            if (update.Weights.Length != update.Biases.Length)
             {
                 throw new Exception();
             }
 
-            for (int i = 0; i < result.Weights.Length; i++)
+            for (int i = 0; i < update.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Add(result.Weights[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Add(result.Biases[i], _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Add(update.Weights[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Add(update.Biases[i], _network.Layers[i].Biases);
             }
         }
 
@@ -148,7 +148,7 @@ namespace NNLib
 
 
 
-            var result = LearningMethodResult.FromNetwork(_network);
+            var result = ParametersUpdate.FromNetwork(_network);
             double error;
             int it = 0;
             do

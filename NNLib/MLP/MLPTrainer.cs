@@ -104,7 +104,7 @@ namespace NNLib
                 totalDelta.Add(err, totalDelta);
             }
 
-            var sum = totalDelta.ColumnSums().Sum();
+            var sum = totalDelta.ColumnSums().Sum() / set.Input.Count;
             return sum;
         }
 
