@@ -17,7 +17,7 @@ namespace NNLib.Common
             }
         }
 
-        private void CheckGtZero(int percents)
+        private void CheckGtOrEqZero(int percents)
         {
             if (percents < 0)
             {
@@ -30,7 +30,7 @@ namespace NNLib.Common
             get => _trainingSetPercent;
             set
             {
-                CheckGtZero(value);
+                CheckGtOrEqZero(value);
                 _trainingSetPercent = value;
                 ValidatePercentage();
             }
@@ -41,7 +41,7 @@ namespace NNLib.Common
             get => _validationSetPercent;
             set
             {
-                CheckGtZero(value);
+                CheckGtOrEqZero(value);
                 _validationSetPercent = value;
                 ValidatePercentage();
             }
@@ -52,7 +52,7 @@ namespace NNLib.Common
             get => _testSetPercent;
             set
             {
-                CheckGtZero(value);
+                CheckGtOrEqZero(value);
                 _testSetPercent = value;
                 ValidatePercentage();
             }

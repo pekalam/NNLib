@@ -11,9 +11,9 @@ namespace NNLib
             return result;
         }
 
-        public Matrix<double> Derivative(Matrix<double> y)
+        public Matrix<double> Derivative(Matrix<double> x)
         {
-            var exp = y.Negate().PointwiseExp();
+            var exp = x.Negate().PointwiseExp();
             var s = 1 / (1 + exp);
             var result = s % (1 - s);
             return result;

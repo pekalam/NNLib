@@ -5,6 +5,9 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
+    /// <summary>
+    /// Base class for matrix builders which contain strategy for layer parameters initializaion.
+    /// </summary>
     public abstract class MatrixBuilder
     {
         protected Layer Layer = null!;
@@ -14,6 +17,9 @@ namespace NNLib
         }
 
         public abstract void BuildAllMatrices(int neuronsCount, int inputsCount);
+        /// <summary>
+        /// Adjust layer parameters if <see cref="neuronsCount"/> or <see cref="inputsCount"/> of network are changed.
+        /// </summary>
         public abstract void AdjustMatrices(int neuronsCount, int inputsCount);
     }
 

@@ -6,6 +6,9 @@ using NNLib.Common;
 
 namespace NNLib
 {
+    /// <summary>
+    /// Iterates over batches specified by parameter batch size. Calls training algorithm iteration method and sums parameter update results.
+    /// </summary>
     public class BatchTrainer
     {
         private readonly int _batchSize;
@@ -29,6 +32,9 @@ namespace NNLib
             _targetEnum = randomize ? new RandomVectorSetEnumerator(trainingSet.Target) : trainingSet.Target.GetEnumerator();
         }
 
+        public int IterationsPerEpoch { get; }
+        public int CurrentBatch { get; private set; }
+
         private void ValidateParamsForSet(SupervisedSet set)
         {
             if (_batchSize > set.Input.Count)
@@ -38,11 +44,9 @@ namespace NNLib
 
             if (set.Input.Count % _batchSize != 0)
             {
-                //TODO
                 throw new ArgumentException($"Cannot divide training set");
             }
         }
-
 
         private void CheckTrainingCancellationIsRequested(in CancellationToken ct)
         {
@@ -51,9 +55,6 @@ namespace NNLib
                 throw new TrainingCanceledException();
             }
         }
-
-        public int IterationsPerEpoch { get; }
-        public int CurrentBatch { get; private set; }
 
         private ParametersUpdate EndEpoch()
         {
@@ -75,11 +76,13 @@ namespace NNLib
             return result;
         }
 
-        public ParametersUpdate? DoIteration(Func<Matrix<double>, Matrix<double>, ParametersUpdate> func, in CancellationToken ct = default)
+        /// <summary>
+        /// Called by algorithm. Returns training vectors from current item in batch.
+        /// </summary>
+        /// <param name="func">Callback in which training vectors are returned to caller. Method must return update of parameters in order to sum next updates.</param>
+        /// <returns>Returns sum of parameter updates.</returns>
+        internal ParametersUpdate? DoIteration(Func<Matrix<double>, Matrix<double>, ParametersUpdate> func, in CancellationToken ct = default)
         {
-            //var input = _trainingSet.Input[_setIndex];
-            //var expected = _trainingSet.Target[_setIndex];
-
             if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
             {
                 _inputEnum.Reset();
@@ -90,8 +93,6 @@ namespace NNLib
 
             var result = func(_inputEnum.Current, _targetEnum.Current);
             _methodResults[_iteration] = result;
-
-            //_setIndex = (_setIndex + 1) % _trainingSet.Input.Count;
 
             CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _batchSize);
 
@@ -105,7 +106,7 @@ namespace NNLib
             return null;
         }
 
-        public void Reset()
+        internal void Reset()
         {
             _iteration = CurrentBatch = 0;
         }

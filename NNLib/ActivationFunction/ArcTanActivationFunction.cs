@@ -9,9 +9,9 @@ namespace NNLib
             return x.PointwiseAtan();
         }
 
-        public Matrix<double> Derivative(Matrix<double> y)
+        public Matrix<double> Derivative(Matrix<double> x)
         {
-            return 1 / (y.PointwisePower(2) + 1);
+            return 1 / (x.PointwisePower(2) + 1);
         }
     }
 }

@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace NNLib.Common
 {
+    /// <summary>
+    /// Used to choose input, target and ignored attributes of training data from csv file.
+    /// </summary>
     public class SupervisedSetVariableIndexes
     {
         public ImmutableArray<int> Ignored { get; }
@@ -16,8 +19,8 @@ namespace NNLib.Common
         }
 
         private SupervisedSetVariableIndexes(ImmutableArray<int> inputVarIndexes, ImmutableArray<int> targetVarIndexes,
-            ImmutableArray<int> ingored) => (InputVarIndexes, TargetVarIndexes, Ignored) =
-            (inputVarIndexes, targetVarIndexes, ingored);
+            ImmutableArray<int> ignored) => (InputVarIndexes, TargetVarIndexes, Ignored) =
+            (inputVarIndexes, targetVarIndexes, ignored);
 
         public SupervisedSetVariableIndexes(int[] inputVarIndexes, int[] targetVarIndexes)
         {

@@ -4,6 +4,9 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {
+    /// <summary>
+    /// Stores update calculated by algorithm for network parameters
+    /// </summary>
     public class ParametersUpdate
     {
         private ParametersUpdate()

@@ -13,6 +13,7 @@ namespace NNLib
         internal event Action<Layer>? NeuronsCountChanged;
         internal event Action<Layer>? InputsCountChanged;
 
+#pragma warning disable 8618
         protected Layer(Matrix<double> weights, Matrix<double> biases,
             Matrix<double>? output, MatrixBuilder matrixBuilder)
         {
@@ -25,6 +26,8 @@ namespace NNLib
             MatrixBuilder = matrixBuilder;
             matrixBuilder.SetLayer(this);
         }
+#pragma warning restore 8618
+
 
 #pragma warning disable 8618
         protected Layer(int inputsCount, int neuronsCount, MatrixBuilder matrixBuilder)

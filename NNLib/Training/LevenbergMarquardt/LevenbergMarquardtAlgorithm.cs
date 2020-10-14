@@ -229,7 +229,7 @@ namespace NNLib
             // }
 
             _network.CalculateOutput(P);
-            var E = _lossFunction.Derivative(_network.Output, T);
+            var E = _lossFunction.Derivative(_network.Output!, T);
 
 
             return E.Transpose();

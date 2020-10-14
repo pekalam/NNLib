@@ -2,9 +2,19 @@
 
 namespace NNLib
 {
+    /// <summary>
+    /// Interface implemented by loss functions
+    /// </summary>
     public interface ILossFunction
     {
-        Matrix<double> Function(Matrix<double> input, Matrix<double> expected);
-        Matrix<double> Derivative(Matrix<double> input, Matrix<double> expected);
+        /// <summary>
+        /// Calculates value of loss function
+        /// </summary>
+        Matrix<double> Function(Matrix<double> input, Matrix<double> target);
+        
+        /// <summary>
+        /// Calculates derivative with respect to <see cref="input"/> parameter
+        /// </summary>
+        Matrix<double> Derivative(Matrix<double> input, Matrix<double> target);
     }
 }

@@ -10,9 +10,9 @@ namespace NNLib
             return Matrix.Tanh(x);
         }
 
-        public Matrix<double> Derivative(Matrix<double> y)
+        public Matrix<double> Derivative(Matrix<double> x)
         {
-            return 1 - Matrix.Tanh(y).PointwisePower(2);
+            return 1 - Matrix.Tanh(x).PointwisePower(2);
         }
     }
 }

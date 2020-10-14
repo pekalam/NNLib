@@ -2,6 +2,9 @@
 
 namespace NNLib.Common
 {
+    /// <summary>
+    /// Contains input and target vector sets. Used by supervised training algorithms.
+    /// </summary>
     public partial class SupervisedSet : IDisposable
     {
         public IVectorSet Input { get; }

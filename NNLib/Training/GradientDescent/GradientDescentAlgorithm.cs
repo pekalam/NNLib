@@ -42,16 +42,12 @@ namespace NNLib
         private void UpdateWeightsAndBiasesWithDeltaRule(ParametersUpdate result)
         {
             Debug.Assert(_network != null, nameof(_network) + " != null");
+            Debug.Assert(result.Weights.Length == result.Biases.Length);
 
-            if (result.Weights.Length != result.Biases.Length)
-            {
-                throw new Exception();
-            }
-        
             for (int i = 0; i < result.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Subtract(result.Weights[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Subtract(result.Biases[i], _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Subtract(result.Weights[i] / Params.BatchSize, _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Subtract(result.Biases[i] / Params.BatchSize, _network.Layers[i].Biases);
             }
         }
 

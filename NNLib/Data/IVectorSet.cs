@@ -89,8 +89,14 @@ namespace NNLib.Common
         }
     }
 
+    /// <summary>
+    /// Contains set of vectors (input or target) from training data.
+    /// </summary>
     public interface IVectorSet : IDisposable
     {
+        /// <summary>
+        /// Returns vector from set with given index
+        /// </summary>
         Matrix<double> this[int index] { get; set; }
         int Count { get; }
 
