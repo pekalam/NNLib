@@ -8,14 +8,14 @@ using Xunit.Abstractions;
 
 namespace NNLib.Tests
 {
-    public class BatchTrainerTests : TrainerTestBase
+    public class BatchTrainerTests
     {
         private readonly MLPNetwork _net;
         private SupervisedSet _set;
 
-        public BatchTrainerTests(ITestOutputHelper output) : base(output)
+        public BatchTrainerTests()
         {
-            _net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
+            _net = TrainingTestUtils.CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }
 
         private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters)

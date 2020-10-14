@@ -226,7 +226,7 @@ namespace NNLib.Tests
             for (int i = 0; i < net.TotalLayers; i++)
             {
                 net.Layers[i].Weights.CompareTo(net2.Layers[i].Weights).Should().BeFalse();
-                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeFalse();
+                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeTrue();
                 net.Layers[i].Output.CompareTo(net2.Layers[i].Output).Should().BeFalse();
             }
         }
@@ -308,7 +308,6 @@ namespace NNLib.Tests
                     l.Weights[i, j].Should().NotBe(w1[i, j]);
                 }
 
-                l.Biases[i, 0].Should().NotBe(b1[i, 0]);
             }
         }
 

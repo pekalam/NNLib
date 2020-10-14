@@ -6,12 +6,8 @@ using Xunit.Abstractions;
 
 namespace NNLib.Tests
 {
-    public class MLPTrainerTest : TrainerTestBase
+    public class MLPTrainerTest
     {
-        public MLPTrainerTest(ITestOutputHelper output) : base(output)
-        {
-        }
-        
         private MLPTrainer CreateBasicAndGateTrainer(MLPNetwork net)
         {
             return new MLPTrainer(net, new SupervisedTrainingSets(TrainingTestUtils.AndGateSet()),
@@ -25,15 +21,15 @@ namespace NNLib.Tests
         [Fact]
         public void Ctor_throws_when_training_data_sizes_does_not_match_with_network_layers_size()
         {
-            var net1 = CreateNetwork(1, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var net1 = TrainingTestUtils.CreateNetwork(1, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
 
             Assert.Throws<Exception>(() => CreateBasicAndGateTrainer(net1));
 
-            var net2 = CreateNetwork(2, (2, new LinearActivationFunction()), (10, new SigmoidActivationFunction()));
+            var net2 = TrainingTestUtils.CreateNetwork(2, (2, new LinearActivationFunction()), (10, new SigmoidActivationFunction()));
 
             Assert.Throws<Exception>(() => CreateBasicAndGateTrainer(net2));
 
-            var net3 = CreateNetwork(1, (2, new LinearActivationFunction()), (10, new SigmoidActivationFunction()));
+            var net3 = TrainingTestUtils.CreateNetwork(1, (2, new LinearActivationFunction()), (10, new SigmoidActivationFunction()));
 
             Assert.Throws<Exception>(() => CreateBasicAndGateTrainer(net3));
         }
@@ -41,7 +37,7 @@ namespace NNLib.Tests
         [Fact]
         public void Epoch_and_iterations_props_return_valid_results()
         {
-            var net = CreateNetwork(2, (1, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var net = TrainingTestUtils.CreateNetwork(2, (1, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
             var trainer = CreateBasicAndGateTrainer(net);
 
             trainer.DoEpoch();
@@ -60,7 +56,7 @@ namespace NNLib.Tests
         [Fact]
         public void Reset_resets_current_training_progress()
         {
-            var net1 = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var net1 = TrainingTestUtils.CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
             var trainer = CreateBasicAndGateTrainer(net1);
             trainer.DoIteration();
 
@@ -75,7 +71,7 @@ namespace NNLib.Tests
         [Fact]
         public void TrainingSets_when_set_sets_new_batch_trainer()
         {
-            var net1 = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var net1 = TrainingTestUtils.CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
             var trainer = CreateBasicAndGateTrainer(net1);
             trainer.DoIteration();
 
