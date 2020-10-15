@@ -1,6 +1,11 @@
 using System;
 using FluentAssertions;
+using NNLib.ActivationFunction;
 using NNLib.Common;
+using NNLib.Data;
+using NNLib.LossFunction;
+using NNLib.MLP;
+using NNLib.Training.GradientDescent;
 using Xunit;
 using static NNLib.Tests.TrainingTestUtils;
 

@@ -1,6 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib
+namespace NNLib.ActivationFunction
 {
     /// <summary>
     /// Interface implemented by activation functions

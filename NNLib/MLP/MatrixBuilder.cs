@@ -1,9 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using MathNet.Numerics.Distributions;
+﻿using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib
+namespace NNLib.MLP
 {
     /// <summary>
     /// Base class for matrix builders which contain strategy for layer parameters initializaion.

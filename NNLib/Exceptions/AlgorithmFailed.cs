@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
-namespace NNLib
+namespace NNLib.Exceptions
 {
     public class AlgorithmFailed : Exception
     {

@@ -6,9 +6,14 @@ using System.Globalization;
 using System.IO;
 using CsvHelper;
 using MathNet.Numerics;
+using NNLib.ActivationFunction;
 using NNLib.Common;
 using NNLib.Csv;
+using NNLib.Data;
+using NNLib.LossFunction;
+using NNLib.MLP;
 using NNLib.Tests;
+using NNLib.Training.GradientDescent;
 
 namespace TrainingTest
 {

@@ -1,4 +1,7 @@
+using NNLib.ActivationFunction;
 using NNLib.Common;
+using NNLib.Data;
+using NNLib.MLP;
 using M = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 namespace NNLib.Tests

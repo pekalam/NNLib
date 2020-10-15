@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using NNLib.Common;
+using NNLib.Data;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace NNLib.Csv

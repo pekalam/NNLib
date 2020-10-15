@@ -1,6 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib
+namespace NNLib.LossFunction
 {
     /// <summary>
     /// Interface implemented by loss functions

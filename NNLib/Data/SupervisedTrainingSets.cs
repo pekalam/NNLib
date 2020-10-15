@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib.Common
+namespace NNLib.Data
 {
     public class SupervisedTrainingSets : IDisposable
     {

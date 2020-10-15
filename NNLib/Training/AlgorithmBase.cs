@@ -1,8 +1,9 @@
 ﻿using System.Threading;
-using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
+using NNLib.Data;
+using NNLib.LossFunction;
+using NNLib.MLP;
 
-namespace NNLib
+namespace NNLib.Training
 {
     public abstract class AlgorithmBase
     {

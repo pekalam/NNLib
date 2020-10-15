@@ -1,6 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib
+namespace NNLib.LossFunction
 {
     public class QuadraticLossFunction : ILossFunction
     {

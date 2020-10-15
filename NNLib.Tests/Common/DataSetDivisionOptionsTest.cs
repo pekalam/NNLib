@@ -1,5 +1,6 @@
 using System;
 using NNLib.Common;
+using NNLib.Data;
 using Xunit;
 
 namespace NNLib.Tests.Common

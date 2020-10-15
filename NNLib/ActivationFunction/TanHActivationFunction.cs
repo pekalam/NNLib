@@ -1,7 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 
-namespace NNLib
+namespace NNLib.ActivationFunction
 {
     public class TanHActivationFunction : IActivationFunction
     {

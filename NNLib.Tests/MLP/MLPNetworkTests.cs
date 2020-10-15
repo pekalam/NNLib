@@ -1,6 +1,8 @@
 using System;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
+using NNLib.ActivationFunction;
+using NNLib.MLP;
 using Xunit;
 using Xunit.Abstractions;
 

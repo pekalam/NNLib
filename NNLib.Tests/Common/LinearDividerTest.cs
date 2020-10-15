@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using NNLib.Common;
+using NNLib.Data;
 using Xunit;
 
 namespace NNLib.Tests.Common

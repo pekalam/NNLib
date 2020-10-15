@@ -3,6 +3,7 @@ using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Complex;
 using NNLib.Common;
+using NNLib.Data;
 using Xunit;
 
 namespace NNLib.Csv.Tests

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib.Common
+namespace NNLib.Data
 {
     internal class RandomVectorSetEnumerator : IEnumerator<Matrix<double>>
     {

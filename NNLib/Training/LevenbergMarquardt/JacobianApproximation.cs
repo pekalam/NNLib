@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
+using NNLib.Data;
+using NNLib.LossFunction;
+using NNLib.MLP;
 
-namespace NNLib
+namespace NNLib.Training.LevenbergMarquardt
 {
     public static class JacobianApproximation
     {

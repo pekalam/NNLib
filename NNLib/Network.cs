@@ -13,15 +13,8 @@ namespace NNLib
         IReadOnlyList<Layer> BaseLayers { get; }
     }
 
-    public interface INetwork<T> : INetwork where T : Layer
-    {
-        IReadOnlyList<T> Layers { get; }
-        int TotalLayers { get; }
-        int TotalNeurons { get; }
-    }
 
-
-    public abstract class Network<T> : INetwork<T> where T : Layer
+    public abstract class Network<T> : INetwork where T : Layer
     {
         protected readonly List<T> _layers;
 

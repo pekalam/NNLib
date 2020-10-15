@@ -1,7 +1,11 @@
 ﻿using System;
 using MathNet.Numerics;
 using NNLib;
+using NNLib.ActivationFunction;
 using NNLib.Csv;
+using NNLib.LossFunction;
+using NNLib.MLP;
+using NNLib.Training.LevenbergMarquardt;
 
 namespace LMTest
 {

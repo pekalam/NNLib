@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib
+namespace NNLib.Training.GradientDescent
 {
     public class GradientDescentParams : ICloneable
     {

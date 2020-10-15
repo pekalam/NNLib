@@ -1,6 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
-using NNLib.Common;
+using NNLib.MLP;
 
 namespace NNLib
 {

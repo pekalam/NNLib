@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
+using NNLib.Data;
+using NNLib.Exceptions;
 
-namespace NNLib
+namespace NNLib.Training.GradientDescent
 {
     /// <summary>
     /// Iterates over batches specified by parameter batch size. Calls training algorithm iteration method and sums parameter update results.

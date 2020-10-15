@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.Common;
+using NNLib.Data;
 
 [assembly: InternalsVisibleTo("Infrastructure.Data.Tests")]
 namespace NNLib.Csv

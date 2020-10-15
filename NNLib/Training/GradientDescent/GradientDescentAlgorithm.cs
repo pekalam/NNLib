@@ -1,10 +1,12 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
+using NNLib.Data;
+using NNLib.LossFunction;
+using NNLib.MLP;
 
-namespace NNLib
+namespace NNLib.Training.GradientDescent
 {
     public class GradientDescentAlgorithm : AlgorithmBase
     {
@@ -22,7 +24,7 @@ namespace NNLib
         public BatchTrainer? BatchTrainer { get; set; }
         internal override int Iterations => _iterations;
 
-        internal override void Setup(Common.SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
+        internal override void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
         {
             Guards._NotNull(trainingData).NotNull(network).NotNull(lossFunction);
             _previousLearningMethodResult = null;

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
+using NNLib.Data;
+using NNLib.Exceptions;
+using NNLib.LossFunction;
+using NNLib.MLP;
 
-namespace NNLib
+namespace NNLib.Training.LevenbergMarquardt
 {
     public class LevenbergMarquardtAlgorithm : AlgorithmBase
     {

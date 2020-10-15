@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
+using NNLib.ActivationFunction;
 
-namespace NNLib
+namespace NNLib.MLP
 {
     public static class MLPNetworkExtensions
     {

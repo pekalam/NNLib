@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib.Common
+namespace NNLib.Data
 {
     /// <summary>
     /// Contains input and target vector sets. Used by supervised training algorithms.

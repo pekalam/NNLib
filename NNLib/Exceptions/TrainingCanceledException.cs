@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib
+namespace NNLib.Exceptions
 {
     public class TrainingCanceledException : Exception
     {

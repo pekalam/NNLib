@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace NNLib.Common
+namespace NNLib.Data
 {
     public partial class SupervisedSet
     {
@@ -27,7 +27,7 @@ namespace NNLib.Common
             }
         }
 
-        public static Common.SupervisedSet FromArrays(double[][] input, double[][] target)
+        public static SupervisedSet FromArrays(double[][] input, double[][] target)
         {
             ValidateInputAndTargetArrays(input, target);
             var inputVectors = new List<Matrix<double>>();
@@ -46,12 +46,12 @@ namespace NNLib.Common
             }
             var defaultTargetVectorSet = new DefaultVectorSet(targetVectors);
 
-            return new Common.SupervisedSet(defaultInputVectorSet, defaultTargetVectorSet);
+            return new SupervisedSet(defaultInputVectorSet, defaultTargetVectorSet);
         }
 
-        public static Common.SupervisedSet Empty()
+        public static SupervisedSet Empty()
         {
-            return new Common.SupervisedSet(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
+            return new SupervisedSet(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
         }
     }
 }

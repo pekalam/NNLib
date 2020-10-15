@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNLib
+namespace NNLib.Training.LevenbergMarquardt
 {
     public class LevenbergMarquardtParams : ICloneable
     { 

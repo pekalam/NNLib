@@ -1,8 +1,9 @@
-﻿using System.Linq;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.MLP;
+
 #pragma warning disable 8618
 
-namespace NNLib
+namespace NNLib.Training
 {
     /// <summary>
     /// Stores update calculated by algorithm for network parameters

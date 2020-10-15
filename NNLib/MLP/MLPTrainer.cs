@@ -3,9 +3,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
+using NNLib.Data;
+using NNLib.Exceptions;
+using NNLib.LossFunction;
+using NNLib.Training;
 
-namespace NNLib
+namespace NNLib.MLP
 {
     public class MLPTrainer
     {

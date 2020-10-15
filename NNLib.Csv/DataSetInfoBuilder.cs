@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using NNLib.Common;
+using NNLib.Data;
 
 namespace NNLib.Csv
 {

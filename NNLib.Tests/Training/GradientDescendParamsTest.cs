@@ -1,4 +1,5 @@
 using System;
+using NNLib.Training.GradientDescent;
 using Xunit;
 
 namespace NNLib.Tests

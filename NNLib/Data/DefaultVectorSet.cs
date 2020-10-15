@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra;
 
 [assembly: InternalsVisibleTo("NNLib.Tests")]
-namespace NNLib.Common
+namespace NNLib.Data
 {
     public class DefaultVectorSet : IVectorSet
     {

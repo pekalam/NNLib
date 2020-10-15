@@ -1,9 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using MathNet.Numerics.Distributions;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.ActivationFunction;
 
-namespace NNLib
+namespace NNLib.MLP
 {
     
 
