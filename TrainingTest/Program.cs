@@ -36,7 +36,7 @@ namespace TrainingTest
                 new PerceptronLayer(20, 20, new SigmoidActivationFunction(), new XavierMatrixBuilder()),
                 new PerceptronLayer(20, 1, new LinearActivationFunction(), new XavierMatrixBuilder()));
             var trainer = new MLPTrainer(net,
-                new SupervisedTrainingSets(set),
+                new SupervisedTrainingData(set),
                 new GradientDescentAlgorithm(new GradientDescentParams()
                 {
                     LearningRate = 0.001, Momentum = 0.09, BatchSize = set.Input.Count,Randomize = true,

@@ -4,7 +4,7 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib.Data
 {
-    public partial class SupervisedSet
+    public partial class SupervisedTrainingSamples
     {
         private static void ValidateInputAndTargetArrays(double[][] input, double[][] target)
         {
@@ -27,7 +27,7 @@ namespace NNLib.Data
             }
         }
 
-        public static SupervisedSet FromArrays(double[][] input, double[][] target)
+        public static SupervisedTrainingSamples FromArrays(double[][] input, double[][] target)
         {
             ValidateInputAndTargetArrays(input, target);
             var inputVectors = new List<Matrix<double>>();
@@ -46,12 +46,12 @@ namespace NNLib.Data
             }
             var defaultTargetVectorSet = new DefaultVectorSet(targetVectors);
 
-            return new SupervisedSet(defaultInputVectorSet, defaultTargetVectorSet);
+            return new SupervisedTrainingSamples(defaultInputVectorSet, defaultTargetVectorSet);
         }
 
-        public static SupervisedSet Empty()
+        public static SupervisedTrainingSamples Empty()
         {
-            return new SupervisedSet(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
+            return new SupervisedTrainingSamples(new DefaultVectorSet(new List<Matrix<double>>()), new DefaultVectorSet(new List<Matrix<double>>()));
         }
     }
 }

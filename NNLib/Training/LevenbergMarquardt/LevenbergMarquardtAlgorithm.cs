@@ -15,7 +15,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private const double MinDampingParameter = 1.0e-25;
         private const double MaxDampingParameter = 1e25;
         private const int MaxIterations = 10;
-        private SupervisedSet _trainingData;
+        private SupervisedTrainingSamples _trainingData;
         private MLPNetwork _network;
         private ILossFunction _lossFunction;
         private Matrix<double> P;
@@ -36,24 +36,24 @@ namespace NNLib.Training.LevenbergMarquardt
         
         public LevenbergMarquardtParams Params { get; set; }
 
-        internal override void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction)
+        internal override void Setup(SupervisedTrainingSamples set, MLPNetwork network, ILossFunction lossFunction)
         {
             _lossFunction = lossFunction;
             _network = network;
-            _trainingData = trainingData;
+            _trainingData = set;
 
             T = Matrix<double>.Build.Dense(_network.Layers[^1].NeuronsCount, _trainingData.Target.Count);
             P = Matrix<double>.Build.Dense(_network.Layers[0].InputsCount, _trainingData.Input.Count);
-            for (int i = 0; i < trainingData.Input.Count; i++)
+            for (int i = 0; i < set.Input.Count; i++)
             {
-                P.SetColumn(i, trainingData.Input[i].Column(0));
-                T.SetColumn(i, trainingData.Target[i].Column(0));
+                P.SetColumn(i, set.Input[i].Column(0));
+                T.SetColumn(i, set.Target[i].Column(0));
             }
 
             k = 0;
 
-            _inputEnum = trainingData.Input.GetEnumerator();
-            _targetEnum = trainingData.Target.GetEnumerator();
+            _inputEnum = set.Input.GetEnumerator();
+            _targetEnum = set.Target.GetEnumerator();
         }
 
         private void SetDampingParameter()

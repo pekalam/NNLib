@@ -15,7 +15,7 @@ namespace NNLib.Tests
     {
         private MLPTrainer CreateBasicAndGateTrainer(MLPNetwork net)
         {
-            return new MLPTrainer(net, new SupervisedTrainingSets(AndGateSet()),
+            return new MLPTrainer(net, new SupervisedTrainingData(AndGateSet()),
                 new GradientDescentAlgorithm(new GradientDescentParams
                 {
                     LearningRate = 0.9,
@@ -80,7 +80,7 @@ namespace NNLib.Tests
             var trainer = CreateBasicAndGateTrainer(net1);
             trainer.DoIteration();
 
-            trainer.TrainingSets = new SupervisedTrainingSets(AndGateSet());
+            trainer.TrainingSets = new SupervisedTrainingData(AndGateSet());
 
             trainer.Iterations.Should().Be(0);
             trainer.Epochs.Should().Be(0);

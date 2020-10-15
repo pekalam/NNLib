@@ -13,37 +13,37 @@ namespace NNLib.Training.GradientDescent
     public class BatchTrainer
     {
         private readonly int _batchSize;
-        private readonly SupervisedSet _trainingSet;
+        private readonly SupervisedTrainingSamples _trainingTrainingSamples;
         private readonly ParametersUpdate[] _methodResults;
         private int _iteration;
 
         private readonly IEnumerator<Matrix<double>> _inputEnum;
         private readonly IEnumerator<Matrix<double>> _targetEnum;
 
-        internal BatchTrainer(int batchSize, SupervisedSet trainingSet, bool randomize = false)
+        internal BatchTrainer(int batchSize, SupervisedTrainingSamples trainingTrainingSamples, bool randomize = false)
         {
             _batchSize = batchSize;
             Guards._GtZero(_batchSize);
-            ValidateParamsForSet(trainingSet);
-            IterationsPerEpoch = trainingSet.Input.Count / _batchSize;
+            ValidateParamsForSet(trainingTrainingSamples);
+            IterationsPerEpoch = trainingTrainingSamples.Input.Count / _batchSize;
             _methodResults = new ParametersUpdate[IterationsPerEpoch];
-            _trainingSet = trainingSet;
+            _trainingTrainingSamples = trainingTrainingSamples;
 
-            _inputEnum = randomize ? new RandomVectorSetEnumerator(trainingSet.Input) : trainingSet.Input.GetEnumerator();
-            _targetEnum = randomize ? new RandomVectorSetEnumerator(trainingSet.Target) : trainingSet.Target.GetEnumerator();
+            _inputEnum = randomize ? new RandomVectorSetEnumerator(trainingTrainingSamples.Input) : trainingTrainingSamples.Input.GetEnumerator();
+            _targetEnum = randomize ? new RandomVectorSetEnumerator(trainingTrainingSamples.Target) : trainingTrainingSamples.Target.GetEnumerator();
         }
 
         public int IterationsPerEpoch { get; }
         public int CurrentBatch { get; private set; }
 
-        private void ValidateParamsForSet(SupervisedSet set)
+        private void ValidateParamsForSet(SupervisedTrainingSamples trainingSamples)
         {
-            if (_batchSize > set.Input.Count)
+            if (_batchSize > trainingSamples.Input.Count)
             {
-                throw new ArgumentException($"Invalid batch size {_batchSize} for training set with count {set.Input.Count}");
+                throw new ArgumentException($"Invalid batch size {_batchSize} for training set with count {trainingSamples.Input.Count}");
             }
 
-            if (set.Input.Count % _batchSize != 0)
+            if (trainingSamples.Input.Count % _batchSize != 0)
             {
                 throw new ArgumentException($"Cannot divide training set");
             }
@@ -95,7 +95,7 @@ namespace NNLib.Training.GradientDescent
             var result = func(_inputEnum.Current, _targetEnum.Current);
             _methodResults[_iteration] = result;
 
-            CurrentBatch = ++CurrentBatch % (_trainingSet.Input.Count / _batchSize);
+            CurrentBatch = ++CurrentBatch % (_trainingTrainingSamples.Input.Count / _batchSize);
 
             _iteration++;
             if (_iteration == IterationsPerEpoch)

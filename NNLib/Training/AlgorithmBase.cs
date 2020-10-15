@@ -7,7 +7,7 @@ namespace NNLib.Training
 {
     public abstract class AlgorithmBase
     {
-        internal abstract void Setup(SupervisedSet trainingData, MLPNetwork network, ILossFunction lossFunction);
+        internal abstract void Setup(SupervisedTrainingSamples set, MLPNetwork network, ILossFunction lossFunction);
         internal abstract void Reset();
 
         internal abstract int Iterations { get; }

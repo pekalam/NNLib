@@ -14,7 +14,7 @@ namespace NNLib.Tests
     public class BatchTrainerTests
     {
         private readonly MLPNetwork _net;
-        private SupervisedSet _set;
+        private Data.SupervisedTrainingSamples _trainingSamples;
 
         public BatchTrainerTests()
         {
@@ -24,7 +24,7 @@ namespace NNLib.Tests
         private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters)
         {
             var algorithm = new GradientDescentAlgorithm(parameters);
-            algorithm.Setup(_set = AndGateSet(), _net, new QuadraticLossFunction());
+            algorithm.Setup(_trainingSamples = AndGateSet(), _net, new QuadraticLossFunction());
             return algorithm;
         }
 
@@ -117,14 +117,14 @@ namespace NNLib.Tests
             trainer.BatchTrainer.IterationsPerEpoch.Should().Be(4);
             trainer.BatchTrainer.CurrentBatch.Should().Be(0);
 
-            for (int i = 0; i < _set.Input.Count; i++)
+            for (int i = 0; i < _trainingSamples.Input.Count; i++)
             {
 
                 trainer.BatchTrainer.IterationsPerEpoch.Should().Be(4);
-                trainer.BatchTrainer.CurrentBatch.Should().Be(i % _set.Input.Count);
+                trainer.BatchTrainer.CurrentBatch.Should().Be(i % _trainingSamples.Input.Count);
                 var result = trainer.DoIteration();
 
-                if (i == _set.Input.Count - 1)
+                if (i == _trainingSamples.Input.Count - 1)
                 {
                     result.Should().BeTrue();
                 }

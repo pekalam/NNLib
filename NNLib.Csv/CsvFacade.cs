@@ -7,7 +7,7 @@ namespace NNLib.Csv
 {
     public static class CsvFacade
     {
-        public static (SupervisedTrainingSets sets, string[] variableNames, SupervisedSetVariableIndexes indexes)
+        public static (SupervisedTrainingData sets, string[] variableNames, SupervisedSetVariableIndexes indexes)
             LoadSets(string fileName,
                 IDataSetDivider? divider = null, DataSetDivisionOptions? divisionOptions = null,
                 SupervisedSetVariableIndexes? variableIndexes = null)
@@ -30,18 +30,18 @@ namespace NNLib.Csv
             var trainingVecSet =
                 CsvVectorSetFactory.CreateCsvSupervisedVectorSet(fileName, variableIndexes,
                     setInfos.First(info => info.DataSetType == DataSetType.Training));
-            var sets = new SupervisedTrainingSets(new SupervisedSet(trainingVecSet.input, trainingVecSet.target));
+            var sets = new SupervisedTrainingData(new SupervisedTrainingSamples(trainingVecSet.input, trainingVecSet.target));
 
             foreach (var setInfo in setInfos.Where(i => i.DataSetType != DataSetType.Training))
             {
                 var vectorSets = CsvVectorSetFactory.CreateCsvSupervisedVectorSet(fileName, variableIndexes, setInfo);
                 if (setInfo.DataSetType == DataSetType.Test)
                 {
-                    sets.TestSet = new SupervisedSet(vectorSets.input, vectorSets.target);
+                    sets.TestSet = new SupervisedTrainingSamples(vectorSets.input, vectorSets.target);
                 }
                 else if (setInfo.DataSetType == DataSetType.Validation)
                 {
-                    sets.ValidationSet = new SupervisedSet(vectorSets.input, vectorSets.target);
+                    sets.ValidationSet = new SupervisedTrainingSamples(vectorSets.input, vectorSets.target);
                 }
             }
 
@@ -57,36 +57,36 @@ namespace NNLib.Csv
         }
 
         public static void ChangeVariableIndexes(SupervisedSetVariableIndexes variableIndexes,
-            SupervisedTrainingSets sets)
+            SupervisedTrainingData data)
         {
             //TODO double dispatch
-            (sets.TrainingSet.Input as CsvFileVectorSet)?.FileReader.ChangeVariables(variableIndexes);
-            (sets.TestSet?.Input as CsvFileVectorSet)?.FileReader.ChangeVariables(variableIndexes);
-            (sets.ValidationSet?.Input as CsvFileVectorSet)?.FileReader.ChangeVariables(variableIndexes);
+            (data.TrainingSet.Input as CsvFileVectorSet)?.FileReader.ChangeVariables(variableIndexes);
+            (data.TestSet?.Input as CsvFileVectorSet)?.FileReader.ChangeVariables(variableIndexes);
+            (data.ValidationSet?.Input as CsvFileVectorSet)?.FileReader.ChangeVariables(variableIndexes);
         }
 
-        public static SupervisedTrainingSets Copy(SupervisedTrainingSets sets)
+        public static SupervisedTrainingData Copy(SupervisedTrainingData data)
         {
-            var readerCpy = (sets.TrainingSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
-            var trainingSet = new SupervisedSet((sets.TrainingSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
-                (sets.TrainingSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
+            var readerCpy = (data.TrainingSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
+            var trainingSet = new SupervisedTrainingSamples((data.TrainingSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
+                (data.TrainingSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
 
-            var newSets = new SupervisedTrainingSets(trainingSet);
+            var newSets = new SupervisedTrainingData(trainingSet);
 
 
-            if (sets.ValidationSet != null)
+            if (data.ValidationSet != null)
             {
-                readerCpy = (sets.ValidationSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
-                var validationSet = new SupervisedSet((sets.ValidationSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
-                    (sets.ValidationSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
+                readerCpy = (data.ValidationSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
+                var validationSet = new SupervisedTrainingSamples((data.ValidationSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
+                    (data.ValidationSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
                 newSets.ValidationSet = validationSet;
             }
 
-            if (sets.TestSet != null)
+            if (data.TestSet != null)
             {
-                readerCpy = (sets.TestSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
-                var testSet = new SupervisedSet((sets.TestSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
-                    (sets.TestSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
+                readerCpy = (data.TestSet.Input as CsvFileVectorSet)?.FileReader.Copy()!;
+                var testSet = new SupervisedTrainingSamples((data.TestSet.Input as CsvFileVectorSet)!.Copy(readerCpy),
+                    (data.TestSet.Target as CsvFileVectorSet)!.Copy(readerCpy));
                 newSets.TestSet = testSet;
 
             }

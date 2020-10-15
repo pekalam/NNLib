@@ -13,32 +13,32 @@ namespace NNLib.MLP
     public class MLPTrainer
     {
         private AlgorithmBase _algorithm;
-        private SupervisedTrainingSets _trainingSets;
+        private SupervisedTrainingData _trainingData;
 
         public event Action? EpochEnd;
         public event Action? IterationEnd;
 
-        public MLPTrainer(MLPNetwork network, SupervisedTrainingSets trainingSets, AlgorithmBase algorithm,
+        public MLPTrainer(MLPNetwork network, SupervisedTrainingData trainingData, AlgorithmBase algorithm,
             ILossFunction lossFunction)
         {
-            Guards._NotNull(network).NotNull(trainingSets).NotNull(lossFunction);
-            ValidateNetworkAndDataSets(network, trainingSets);
+            Guards._NotNull(network).NotNull(trainingData).NotNull(lossFunction);
+            ValidateNetworkAndDataSets(network, trainingData);
 
             Network = network;
             LossFunction = lossFunction;
-            _trainingSets = trainingSets;
+            _trainingData = trainingData;
             _algorithm = algorithm;
             _algorithm.Setup(TrainingSets.TrainingSet, network, lossFunction);
         }
 
         public ILossFunction LossFunction { get;  }
-        public SupervisedTrainingSets TrainingSets
+        public SupervisedTrainingData TrainingSets
         {
-            get => _trainingSets;
+            get => _trainingData;
             set
             {
                 ValidateNetworkAndDataSets(Network, value);
-                _trainingSets = value;
+                _trainingData = value;
                 _algorithm.Setup(value.TrainingSet, Network, LossFunction);
             }
         }
@@ -56,9 +56,9 @@ namespace NNLib.MLP
         public int Epochs { get; private set; }
         public int Iterations => Algorithm.Iterations;
 
-        private void ValidateNetworkAndDataSets(MLPNetwork network, SupervisedTrainingSets trainingSets)
+        private void ValidateNetworkAndDataSets(MLPNetwork network, SupervisedTrainingData trainingData)
         {
-            void Validate(SupervisedSet set)
+            void Validate(SupervisedTrainingSamples set)
             {
                 if (network.Layers[0].InputsCount != set.Input[0].RowCount)
                 {
@@ -71,15 +71,15 @@ namespace NNLib.MLP
                 }
             }
 
-            Validate(trainingSets.TrainingSet);
-            if (trainingSets.ValidationSet != null)
+            Validate(trainingData.TrainingSet);
+            if (trainingData.ValidationSet != null)
             {
-                Validate(trainingSets.ValidationSet);
+                Validate(trainingData.ValidationSet);
             }
 
-            if (trainingSets.TestSet != null)
+            if (trainingData.TestSet != null)
             {
-                Validate(trainingSets.TestSet);
+                Validate(trainingData.TestSet);
             }
         }
 
@@ -91,23 +91,23 @@ namespace NNLib.MLP
             }
         }
 
-        private double CalculateNetworkError(in CancellationToken ct, SupervisedSet set)
+        private double CalculateNetworkError(in CancellationToken ct, SupervisedTrainingSamples trainingSamples)
         {
             CheckTrainingCancelationIsRequested(ct);
 
             var totalDelta = Matrix<double>.Build.Dense(Network.Layers.Last().NeuronsCount, 1);
-            for (int i = 0; i < set.Input.Count; ++i)
+            for (int i = 0; i < trainingSamples.Input.Count; ++i)
             {
-                Network.CalculateOutput(set.Input[i]);
+                Network.CalculateOutput(trainingSamples.Input[i]);
 
                 CheckTrainingCancelationIsRequested(ct);
 
                 var err = LossFunction.Function(Network.Output!,
-                    set.Target[i]);
+                    trainingSamples.Target[i]);
                 totalDelta.Add(err, totalDelta);
             }
 
-            var sum = totalDelta.ColumnSums().Sum() / set.Input.Count;
+            var sum = totalDelta.ColumnSums().Sum() / trainingSamples.Input.Count;
             return sum;
         }
 

@@ -11,9 +11,9 @@ namespace NNLib.Training.LevenbergMarquardt
     {
         private const double StepSize = 0.001;
 
-        public static Matrix<double> CalcJacobian(MLPNetwork network, ILossFunction lossFunction, IEnumerator<Matrix<double>> inputEnum, IEnumerator<Matrix<double>> targetEnum, SupervisedSet set, Matrix<double> E)
+        public static Matrix<double> CalcJacobian(MLPNetwork network, ILossFunction lossFunction, IEnumerator<Matrix<double>> inputEnum, IEnumerator<Matrix<double>> targetEnum, SupervisedTrainingSamples trainingSamples, Matrix<double> E)
         {
-            var J = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount * set.Target.Count, network.TotalSynapses + network.TotalBiases);
+            var J = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount * trainingSamples.Target.Count, network.TotalSynapses + network.TotalBiases);
 
             int s = 0;
             while(!(!inputEnum.MoveNext() || !targetEnum.MoveNext()))

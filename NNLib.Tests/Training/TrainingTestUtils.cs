@@ -27,7 +27,7 @@ namespace NNLib.Tests
             return net;
         }
 
-        public static SupervisedSet AndGateSet()
+        public static Data.SupervisedTrainingSamples AndGateSet()
         {
             var input = new[]
             {
@@ -45,7 +45,7 @@ namespace NNLib.Tests
                 new []{1d},
             };
 
-            return SupervisedSet.FromArrays(input, expected);
+            return Data.SupervisedTrainingSamples.FromArrays(input, expected);
         }
 
         public static bool CompareTo(this M m1, M m2)

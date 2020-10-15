@@ -5,12 +5,12 @@ namespace NNLib.Data
     /// <summary>
     /// Contains input and target vector sets. Used by supervised training algorithms.
     /// </summary>
-    public partial class SupervisedSet : IDisposable
+    public partial class SupervisedTrainingSamples : IDisposable
     {
         public IVectorSet Input { get; }
         public IVectorSet Target { get; }
 
-        public SupervisedSet(IVectorSet input, IVectorSet target)
+        public SupervisedTrainingSamples(IVectorSet input, IVectorSet target)
         {
             if (input.Count != target.Count)
             {

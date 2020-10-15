@@ -11,7 +11,7 @@ namespace NNLib.Csv.Tests
     public class SupervisedSetAccessTests : IDisposable
     {
         //class under test
-        private readonly SupervisedSet _trainingSet;
+        private readonly SupervisedTrainingSamples _trainingTrainingSamples;
 
         public SupervisedSetAccessTests()
         {
@@ -22,39 +22,39 @@ namespace NNLib.Csv.Tests
                 TrainingSetPercent = 100,
             }, new SupervisedSetVariableIndexes(new[] {0}, new[] {1}));
 
-            _trainingSet = trainingData.sets.TrainingSet;
+            _trainingTrainingSamples = trainingData.sets.TrainingSet;
         }
 
         [Fact]
         public void SupervisedSet_provides_read_access_to_vector_sets()
         {
-            for (int i = 0; i < _trainingSet.Input.Count; i++)
+            for (int i = 0; i < _trainingTrainingSamples.Input.Count; i++)
             {
-                _trainingSet.Input[i][0, 0].Should().Be(i + 1);
-                _trainingSet.Target[i][0, 0].Should().Be(i + 1);
+                _trainingTrainingSamples.Input[i][0, 0].Should().Be(i + 1);
+                _trainingTrainingSamples.Target[i][0, 0].Should().Be(i + 1);
             }
         }
 
         [Fact]
         public void SupervisedSet_provides_write_access_to_vector_sets()
         {
-            for (int i = 0; i < _trainingSet.Input.Count; i++)
+            for (int i = 0; i < _trainingTrainingSamples.Input.Count; i++)
             {
-                _trainingSet.Input[i] = Matrix<double>.Build.Dense(1,1,i*i);
-                _trainingSet.Target[i] = Matrix<double>.Build.Dense(1, 1, i * i + 1);
+                _trainingTrainingSamples.Input[i] = Matrix<double>.Build.Dense(1,1,i*i);
+                _trainingTrainingSamples.Target[i] = Matrix<double>.Build.Dense(1, 1, i * i + 1);
             }
 
-            for (int i = 0; i < _trainingSet.Input.Count; i++)
+            for (int i = 0; i < _trainingTrainingSamples.Input.Count; i++)
             {
-                _trainingSet.Input[i][0, 0].Should().Be(i * i);
-                _trainingSet.Target[i][0, 0].Should().Be(i * i + 1);
+                _trainingTrainingSamples.Input[i][0, 0].Should().Be(i * i);
+                _trainingTrainingSamples.Target[i][0, 0].Should().Be(i * i + 1);
             }
         }
 
         //TODO rm dispose
         public void Dispose()
         {
-            _trainingSet.Dispose();
+            _trainingTrainingSamples.Dispose();
         }
     }
 }
