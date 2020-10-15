@@ -8,11 +8,10 @@ namespace NNLib.Csv
 {
     internal class CsvFileVectorSet : IVectorSet
     {
-        internal readonly CsvFileDataSetReader FileReader;
+        internal readonly CsvVectorReader FileReader;
         private readonly bool _targetSet;
 
-        //Todo count
-        public CsvFileVectorSet(CsvFileDataSetReader fileReader, int vectorsCount, bool targetSet)
+        public CsvFileVectorSet(CsvVectorReader fileReader, int vectorsCount, bool targetSet)
         {
             if (vectorsCount <= 0)
             {
@@ -29,7 +28,7 @@ namespace NNLib.Csv
             set => FileReader.WriteAt(_targetSet, index, value);
         }
 
-        public CsvFileVectorSet Copy(CsvFileDataSetReader fileReader)
+        public CsvFileVectorSet Copy(CsvVectorReader fileReader)
         {
             return new CsvFileVectorSet(fileReader, Count, _targetSet);
         }
@@ -38,7 +37,6 @@ namespace NNLib.Csv
 
         public void Dispose()
         {
-            FileReader?.Dispose();
         }
     }
 }

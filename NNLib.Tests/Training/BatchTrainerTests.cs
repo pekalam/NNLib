@@ -1,10 +1,8 @@
 using System;
 using FluentAssertions;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Complex;
 using NNLib.Common;
 using Xunit;
-using Xunit.Abstractions;
+using static NNLib.Tests.TrainingTestUtils;
 
 namespace NNLib.Tests
 {
@@ -15,20 +13,20 @@ namespace NNLib.Tests
 
         public BatchTrainerTests()
         {
-            _net = TrainingTestUtils.CreateNetwork(2, (1, new SigmoidActivationFunction()));
+            _net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }
 
         private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters)
         {
             var algorithm = new GradientDescentAlgorithm(parameters);
-            algorithm.Setup(_set = TrainingTestUtils.AndGateSet(), _net, new QuadraticLossFunction());
+            algorithm.Setup(_set = AndGateSet(), _net, new QuadraticLossFunction());
             return algorithm;
         }
 
         [Fact]
         public void When_constructed_has_valid_state()
         {
-            var learningParams = new GradientDescentParams()
+            var learningParams = new GradientDescentParams
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
@@ -43,7 +41,7 @@ namespace NNLib.Tests
         [Fact]
         public void When_invalid_parameters_throws()
         {
-            var learningParams = new GradientDescentParams()
+            var learningParams = new GradientDescentParams
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
@@ -56,7 +54,7 @@ namespace NNLib.Tests
         [Fact]
         public void Batch_training_iteration_returns_epoch_result()
         {
-            var learningParams = new GradientDescentParams()
+            var learningParams = new GradientDescentParams
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
@@ -77,7 +75,7 @@ namespace NNLib.Tests
         [Fact]
         public void Mini_Batch_training_iterations_returns_epoch_result()
         {
-            var learningParams = new GradientDescentParams()
+            var learningParams = new GradientDescentParams
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
@@ -103,7 +101,7 @@ namespace NNLib.Tests
         [Fact]
         public void Online_training_iterations_returns_epoch_result()
         {
-            var learningParams = new GradientDescentParams()
+            var learningParams = new GradientDescentParams
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,

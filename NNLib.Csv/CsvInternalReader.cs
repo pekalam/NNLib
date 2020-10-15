@@ -8,22 +8,22 @@ using NNLib.Common;
 
 namespace NNLib.Csv
 {
-    internal interface ICsvInternalReader
+    internal interface ICsvReader
     {
         (Matrix<double> input, Matrix<double> target)[] ReadVectorSets(in FilePart filePart,
             SupervisedSetVariableIndexes setVariableIndexes);
     }
 
-    internal class CsvInternalReader : ICsvInternalReader
+    internal class CsvReader : ICsvReader
     {
         private readonly string _fileName;
 
-        public CsvInternalReader(string fileName)
+        public CsvReader(string fileName)
         {
             _fileName = fileName;
         }
 
-        private Matrix<double> ReadVector(CsvReader csv, in ImmutableArray<int> indices)
+        private Matrix<double> ReadVector(CsvHelper.CsvReader csv, in ImmutableArray<int> indices)
         {
             var vector = new double[indices.Length];
             int i = 0;
@@ -41,7 +41,7 @@ namespace NNLib.Csv
             using var fs = new FileStream(_fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
             fs.Seek(filePart.Offset, SeekOrigin.Begin);
             using var rdr = new StreamReader(fs);
-            using var csv = new CsvReader(rdr, CultureInfo.CurrentCulture);
+            using var csv = new CsvHelper.CsvReader(rdr, CultureInfo.CurrentCulture);
 
             if (filePart.Offset == 0)
             {

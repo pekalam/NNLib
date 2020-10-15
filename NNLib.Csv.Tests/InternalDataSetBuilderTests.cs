@@ -23,7 +23,7 @@ namespace NNLib.Csv.Tests
         public void CreatePartitionedDataSets_when_pageSize_eq_row_size_returns_valid_nummber_of_file_parts()
         {
             var builder =
-                new InternalDataSetBuilder(new LinearDataSetDivider());
+                new DataSetInfoBuilder(new LinearDataSetDivider());
 
             var setInfo = builder.CreatePartitionedDataSets(@"plik.csv", new DataSetDivisionOptions()
             {

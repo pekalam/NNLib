@@ -2,7 +2,7 @@
 
 namespace NNLib.Csv
 {
-    internal readonly struct FilePart
+    internal class FilePart
     {
         public FilePart(long offset, long end, int dataItems)
         {

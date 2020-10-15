@@ -17,7 +17,7 @@ namespace NNLib.Csv
                 TrainingSetPercent = 100, TestSetPercent = 0, ValidationSetPercent = 0
             };
 
-            var builder = new InternalDataSetBuilder(divider);
+            var builder = new DataSetInfoBuilder(divider);
 
             var setInfos = builder.CreatePartitionedDataSets(fileName, divisionOptions);
 

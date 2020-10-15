@@ -19,10 +19,11 @@ namespace NNLib
             _activationFunction = activationFunction;
         }
 
-        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output,
+        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output, Matrix<double>? net,
             IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new NormDistMatrixBuilder())
         {
             _activationFunction = activationFunction;
+            Net = net;
         }
 
         public IActivationFunction ActivationFunction
@@ -35,10 +36,10 @@ namespace NNLib
             }
         }
 
-        public Matrix<double> Net;
+        public Matrix<double>? Net;
 
         internal PerceptronLayer Clone() =>
-            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), ActivationFunction);
+            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), Net?.Clone(), ActivationFunction);
 
 
         public override void CalculateOutput(Matrix<double> input)

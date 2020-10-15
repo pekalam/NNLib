@@ -7,48 +7,40 @@ namespace NNLib.Csv
     {
         private const char CR = '\r';
         private const char LF = '\n';
-        private const char NULL = (char)0;
+        private const char NULL = '\0';
 
-        //TODO async enumerable
         public static List<long> CountLinesAndGetPositions(string fileName)
         {
             using var fs = File.OpenRead(fileName);
 
-            var linePositions = new List<long>();
+            var linePositions = new List<long>(3000);
+            var buffer = new byte[1024 * 1024];
 
-            var byteBuffer = new byte[1024 * 1024];
-            var detectedEOL = NULL;
-            var currentChar = NULL;
-
-            int bytesRead;
+            int read;
             long pos = 0L;
-            while ((bytesRead = fs.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
+            char previousChar = NULL, currentChar = NULL;
+            while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
             {
-                for (var i = 0; i < bytesRead; i++)
+                for (var i = 0; i < read; i++)
                 {
-                    currentChar = (char)byteBuffer[i];
+                    currentChar = (char)buffer[i];
 
-                    if (detectedEOL != NULL)
+                    if (currentChar == LF || currentChar == CR)
                     {
-                        if (currentChar == detectedEOL)
-                        {
-                            linePositions.Add(pos + i);
-                        }
-                    }
-                    else if (currentChar == LF || currentChar == CR)
-                    {
-                        detectedEOL = currentChar;
+                        if (currentChar == LF && previousChar == CR) continue;
+
+                        previousChar = currentChar;
                         linePositions.Add(pos + i);
                     }
                 }
 
-                pos += bytesRead;
+                pos += read;
             }
-
             if (currentChar != LF && currentChar != CR && currentChar != NULL)
             {
-                linePositions.Add(pos - 1);
+                linePositions.Add(pos);
             }
+
             return linePositions;
         }
     }

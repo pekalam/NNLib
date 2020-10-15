@@ -1,33 +1,32 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using NNLib.Common;
-using Serilog;
 
 namespace NNLib.Csv
 {
-    internal class InternalDataSetBuilder
+    internal class DataSetInfoBuilder
     {
-        private readonly CsvDataSetFileAnalyzer _fileAnalyzer;
+        private readonly CsvFileAnalyzer _fileAnalyzer= new CsvFileAnalyzer();
         private readonly IDataSetDivider _divider;
 
-        public InternalDataSetBuilder(IDataSetDivider divider)
+        public DataSetInfoBuilder(IDataSetDivider divider)
         {
-            _fileAnalyzer = new CsvDataSetFileAnalyzer();
             _divider = divider;
         }
 
         public DataSetInfo[] CreatePartitionedDataSets(string fileName, DataSetDivisionOptions divisionOpt)
         {
-            Log.Logger.Debug("Creating partitioned dataSet from file: {fileName} with options {@options}", fileName,
+            Debug.WriteLine("Creating partitioned dataSet from file: {0} with options {1}", fileName,
                 divisionOpt);
 
             var positions = _fileAnalyzer.GetDataItemsNewLinePositions(fileName);
-            Log.Logger.Debug("Row count: {@count}", positions.Count);
+            Debug.WriteLine("Row count: {0}", positions.Count);
 
             var variableNames = _fileAnalyzer.GetVariableNames(fileName);
-            Log.Logger.Debug("File {file} has following variables: {@vars}", fileName, variableNames);
+            Debug.WriteLine("File {0} has following variables: {1}", fileName, variableNames);
 
             var divisions = _divider.Divide(positions, divisionOpt);
-            Log.Logger.Debug("Divided file into {count} sets", divisions.Length);
+            Debug.WriteLine("Divided file into {0} sets", divisions.Length);
 
             var setInfos = new DataSetInfo[divisions.Length];
 
@@ -35,7 +34,7 @@ namespace NNLib.Csv
             for (int i = 0; i < setInfos.Length; i++)
             {
                 var filePart = new FilePart(previousStart, divisions[i].positions[^1], divisions[i].positions.Count);
-                Log.Logger.Debug("file part for {type} starting at {start} with {n} dataItems end: {end}",
+                Debug.WriteLine("file part for {0} starting at {1} with {2} dataItems end: {3}",
                     divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
                 previousStart = divisions[i].positions[^1];
                 var setInfo =
