@@ -1,4 +1,7 @@
-﻿using MathNet.Numerics.Distributions;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib.MLP
@@ -8,62 +11,85 @@ namespace NNLib.MLP
     /// </summary>
     public abstract class MatrixBuilder
     {
-        protected Layer Layer = null!;
-        internal void SetLayer(Layer layer)
-        {
-            Layer = layer;
-        }
-
-        public abstract void BuildAllMatrices(int neuronsCount, int inputsCount);
+        public abstract void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer);
         /// <summary>
         /// Adjust layer parameters if <see cref="neuronsCount"/> or <see cref="inputsCount"/> of network are changed.
         /// </summary>
-        public abstract void AdjustMatrices(int neuronsCount, int inputsCount);
+        public abstract void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer);
     }
 
 
+    public class DefaultNormDistMatrixBuilder : NormDistMatrixBuilder
+    {
+        public DefaultNormDistMatrixBuilder() : base(new NormDistMatrixBuilderOptions()
+        {
+            BMean = 0,BStdDev = 0, WMean =0, WStdDev = 1
+        })
+        {
+        }
+    }
+
+
+    public class NormDistMatrixBuilderOptions
+    {
+        public double WStdDev { get; set; }
+        public double WMean { get; set; }
+        public double BStdDev { get; set; }
+        public double BMean { get; set; }
+    }
+
+    /// <summary>
+    /// Sets values of weight and biases matrices as values from normal distribution
+    /// </summary>
     public class NormDistMatrixBuilder : MatrixBuilder
     {
-        public override void BuildAllMatrices(int neuronsCount, int inputsCount)
+        private readonly NormDistMatrixBuilderOptions _options;
+
+        public NormDistMatrixBuilder(NormDistMatrixBuilderOptions options)
         {
-            Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal());
-            Layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
+            _options = options;
         }
 
-        public override void AdjustMatrices(int neuronsCount, int inputsCount)
+        public override void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer)
         {
-            if (inputsCount > Layer.InputsCount)
+            layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(_options.WMean, _options.WStdDev));
+            layer.Biases = Matrix<double>.Build.Random(neuronsCount, 1, new Normal(_options.BMean, _options.BStdDev));
+        }
+
+        public override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)
+        {
+            if (inputsCount > layer.InputsCount)
             {
-                while (inputsCount != Layer.InputsCount)
+                while (inputsCount != layer.InputsCount)
                 {
-                    var col = Matrix<double>.Build.Random(Layer.NeuronsCount, 1, new Normal()).Column(0);
-                    Layer.Weights = Layer.Weights.InsertColumn(Layer.Weights.ColumnCount, col);
+                    var col = Matrix<double>.Build.Random(layer.NeuronsCount, 1, new Normal(_options.WMean, _options.WStdDev)).Column(0);
+                    layer.Weights = layer.Weights.InsertColumn(layer.Weights.ColumnCount, col);
                 }
             }
-            else if (inputsCount < Layer.InputsCount)
+            else if (inputsCount < layer.InputsCount)
             {
-                while (inputsCount != Layer.InputsCount)
+                while (inputsCount != layer.InputsCount)
                 {
-                    Layer.Weights = Layer.Weights.RemoveColumn(Layer.Weights.ColumnCount - 1);
+                    layer.Weights = layer.Weights.RemoveColumn(layer.Weights.ColumnCount - 1);
                 }
             }
 
-            if (neuronsCount > Layer.NeuronsCount)
+            if (neuronsCount > layer.NeuronsCount)
             {
-                while (neuronsCount != Layer.NeuronsCount)
+                while (neuronsCount != layer.NeuronsCount)
                 {
-                    var Wrow = Matrix<double>.Build.Random(1, Layer.InputsCount, new Normal()).Row(0);
+                    var Wrow = Matrix<double>.Build.Random(1, layer.InputsCount, new Normal(_options.WMean, _options.WStdDev)).Row(0);
                     var Brow = Matrix<double>.Build.Dense(1, 1, 0).Column(0);
-                    Layer.Weights = Layer.Weights.InsertRow(Layer.Weights.RowCount, Wrow);
-                    Layer.Biases = Layer.Biases.InsertRow(Layer.Biases.RowCount, Brow);
+                    layer.Weights = layer.Weights.InsertRow(layer.Weights.RowCount, Wrow);
+                    layer.Biases = layer.Biases.InsertRow(layer.Biases.RowCount, Brow);
                 }
             }
-            else if (neuronsCount < Layer.NeuronsCount)
+            else if (neuronsCount < layer.NeuronsCount)
             {
-                while (neuronsCount != Layer.NeuronsCount)
+                while (neuronsCount != layer.NeuronsCount)
                 {
-                    Layer.Weights = Layer.Weights.RemoveRow(Layer.Weights.RowCount - 1);
-                    Layer.Biases = Layer.Biases.RemoveRow(Layer.Biases.RowCount - 1);
+                    layer.Weights = layer.Weights.RemoveRow(layer.Weights.RowCount - 1);
+                    layer.Biases = layer.Biases.RemoveRow(layer.Biases.RowCount - 1);
                 }
             }
         }
@@ -72,26 +98,41 @@ namespace NNLib.MLP
 
     public class XavierMatrixBuilder : MatrixBuilder
     {
-        public override void BuildAllMatrices(int neuronsCount, int inputsCount)
+        private int FindFanOut(Layer layer)
         {
-            var stddev = 1d / inputsCount;
-            Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
-            Layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
-        }
-
-        public override void AdjustMatrices(int neuronsCount, int inputsCount)
-        {
-            var stddev = 1d / inputsCount;
-
-            if (inputsCount != Layer.InputsCount)
+            for (int i = 0; i < layer.Network!.BaseLayers.Count; i++)
             {
-                Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+                if (layer.Network.BaseLayers[i] == layer && i != layer.Network!.BaseLayers.Count - 1)
+                {
+                    return layer.Network.BaseLayers[i + 1].NeuronsCount;
+                }
             }
 
-            if (neuronsCount != Layer.NeuronsCount)
+            return layer.NeuronsCount;
+        }
+
+        public override void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer)
+        {
+            var fanout = FindFanOut(layer);
+            var stddev = Math.Sqrt(2d / (inputsCount + fanout));
+            layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+            layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
+        }
+
+        public override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)
+        {
+            var fanout = FindFanOut(layer);
+            var stddev = Math.Sqrt(2d / (inputsCount + fanout));
+
+            if (inputsCount != layer.InputsCount)
             {
-                Layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
-                Layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+            }
+
+            if (neuronsCount != layer.NeuronsCount)
+            {
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+                layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
             }
         }
     }

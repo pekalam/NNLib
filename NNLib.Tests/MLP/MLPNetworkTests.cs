@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices.ComTypes;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.ActivationFunction;
@@ -11,6 +12,9 @@ namespace NNLib.Tests
     public class MLPNetworkTests
     {
         private readonly ITestOutputHelper output;
+        private const int DefaultNormal = 0;
+        private const int Xavier = 1;
+        private const int Normal = 2;
 
         public MLPNetworkTests(ITestOutputHelper output)
         {
@@ -21,9 +25,13 @@ namespace NNLib.Tests
         {
             return num switch
             {
-                0 => new NormDistMatrixBuilder(),
-                1 => new XavierMatrixBuilder(),
-                _ => throw new Exception(),
+                DefaultNormal => new DefaultNormDistMatrixBuilder(),
+                Xavier => new XavierMatrixBuilder(),
+                Normal => new NormDistMatrixBuilder(new NormDistMatrixBuilderOptions()
+                {
+                    WMean = 0, BMean = 0, WStdDev = 0.1, BStdDev = 0.01,
+                }),
+            _ => throw new Exception(),
             };
         }
 
@@ -43,10 +51,11 @@ namespace NNLib.Tests
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
+        [InlineData(2)]
         public void NeuronsCount_when_changed_neurons_count_in_layer_is_changed(int matbuilder)
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            l.Initialize();
             l.NeuronsCount += 1;
 
             l.Weights.RowCount.Should().Be(3);
@@ -77,10 +86,11 @@ namespace NNLib.Tests
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
+        [InlineData(2)]
         public void NeuronsCount_when_changed_does_not_change_existing_weights_and_biases(int matbuilder)
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            l.Initialize();
             var w1 = l.Weights.Clone();
             var b1 = l.Biases.Clone();
             l.NeuronsCount += 1;
@@ -119,10 +129,11 @@ namespace NNLib.Tests
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
+        [InlineData(2)]
         public void InputsCount_when_changed_does_not_change_existing_weights_and_biases(int matbuilder)
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
+            l.Initialize();
             var w1 = l.Weights.Clone();
             var b1 = l.Biases.Clone();
             l.InputsCount += 1;
@@ -211,7 +222,11 @@ namespace NNLib.Tests
 
             for (int i = 0; i < net.TotalLayers; i++)
             {
-                net2.Layers[i].Should().BeEquivalentTo(net.Layers[i]);
+                net2.Layers[i].Should().BeEquivalentTo(net.Layers[i], opt =>
+                {
+                   return opt.Excluding(p => p.Network);
+                });
+                net2.Layers[i].Network.Should().NotBe(net.Layers[i].Network);
             }
 
             input[0, 0] = 10;
@@ -293,11 +308,12 @@ namespace NNLib.Tests
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
+        [InlineData(2)]
         public void RebuildMatrices_creates_new_matrices(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
-            
+            l.Initialize();
+
             var w1 = l.Weights.Clone();
             var b1 = l.Biases.Clone();
             

@@ -10,7 +10,7 @@ namespace NNLib.MLP
         private IActivationFunction _activationFunction;
 
         public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null)
-            : base(inputsCount, neuronsCount, matrixBuilder ?? new NormDistMatrixBuilder())
+            : base(inputsCount, neuronsCount, matrixBuilder ?? new DefaultNormDistMatrixBuilder())
         {
             Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(activationFunction);
 
@@ -18,7 +18,7 @@ namespace NNLib.MLP
         }
 
         private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output, Matrix<double>? net,
-            IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new NormDistMatrixBuilder())
+            IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new DefaultNormDistMatrixBuilder())
         {
             _activationFunction = activationFunction;
             Net = net;
@@ -37,7 +37,7 @@ namespace NNLib.MLP
         public Matrix<double>? Net;
 
         internal PerceptronLayer Clone() =>
-            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), Net?.Clone(), ActivationFunction);
+            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), Net?.Clone(), ActivationFunction, MatrixBuilder);
 
 
         public override void CalculateOutput(Matrix<double> input)

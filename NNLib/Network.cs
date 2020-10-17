@@ -22,7 +22,7 @@ namespace NNLib
         {
             if (layers.Length == 0)
             {
-                throw new ArgumentException();
+                throw new ArgumentException("Layers array must have length greater than 0");
             }
             ValidateLayersInputsAndOutputs(layers.ToList());
 
@@ -31,6 +31,10 @@ namespace NNLib
             {
                 layer.AssignNetwork(this);
                 AssignEventHandlers(layer);
+                if (!layer.IsInitialized)
+                {
+                    layer.Initialize();
+                }
             }
 
         }

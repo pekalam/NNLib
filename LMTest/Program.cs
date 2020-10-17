@@ -17,12 +17,12 @@ namespace LMTest
 
             var net = new MLPNetwork(new []
             {
-                new PerceptronLayer(1,10, new TanHActivationFunction()),
-                new PerceptronLayer(10,10, new TanHActivationFunction()),
-                new PerceptronLayer(10,1,new LinearActivationFunction()), 
+                new PerceptronLayer(1,10, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(10,10, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(10,1,new LinearActivationFunction(), new XavierMatrixBuilder()), 
             });
 
-            var trainer = new MLPTrainer(net, CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\sinus.csv").sets, new LevenbergMarquardtAlgorithm(new LevenbergMarquardtParams()), new QuadraticLossFunction());
+            var trainer = new MLPTrainer(net, CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\f-zloz-sin.csv").sets, new LevenbergMarquardtAlgorithm(new LevenbergMarquardtParams()), new QuadraticLossFunction());
 
             int i = 0;
             double err;
