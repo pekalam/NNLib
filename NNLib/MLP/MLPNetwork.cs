@@ -52,10 +52,10 @@ namespace NNLib.MLP
         public override void CalculateOutput(Matrix<double> input)
         {
             Matrix<double> prevLayerOutput = input;
-            for (int l = 0; l < Layers.Count; ++l)
+            for (int l = 0; l < _layers.Count; ++l)
             {
-                Layers[l].CalculateOutput(prevLayerOutput!);
-                prevLayerOutput = Layers[l].Output!;
+                _layers[l].CalculateOutput(prevLayerOutput!);
+                prevLayerOutput = _layers[l].Output!;
             }
 
             Output = prevLayerOutput;

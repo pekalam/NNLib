@@ -98,40 +98,25 @@ namespace NNLib.MLP
 
     public class XavierMatrixBuilder : MatrixBuilder
     {
-        private int FindFanOut(Layer layer)
-        {
-            for (int i = 0; i < layer.Network!.BaseLayers.Count; i++)
-            {
-                if (layer.Network.BaseLayers[i] == layer && i != layer.Network!.BaseLayers.Count - 1)
-                {
-                    return layer.Network.BaseLayers[i + 1].NeuronsCount;
-                }
-            }
-
-            return layer.NeuronsCount;
-        }
-
         public override void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer)
         {
-            var fanout = FindFanOut(layer);
-            var stddev = Math.Sqrt(2d / (inputsCount + fanout));
-            layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+            var a = Math.Sqrt(6d / (inputsCount + neuronsCount));
+            layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
             layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
         }
 
         public override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)
         {
-            var fanout = FindFanOut(layer);
-            var stddev = Math.Sqrt(2d / (inputsCount + fanout));
+            var a = Math.Sqrt(6d / (inputsCount + neuronsCount));
 
             if (inputsCount != layer.InputsCount)
             {
-                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
             }
 
             if (neuronsCount != layer.NeuronsCount)
             {
-                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new Normal(0, stddev));
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
                 layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
             }
         }
