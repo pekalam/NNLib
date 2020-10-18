@@ -21,7 +21,7 @@ namespace NNLib.Tests
                 new[] {1d, 1d},
             };
 
-            var expected = new double[][]
+            var target = new double[][]
             {
                 new[] {2d, 2d},
                 new[] {3d, 3d},
@@ -29,7 +29,7 @@ namespace NNLib.Tests
                 new[] {7d, 6d},
             };
 
-            var samples = Data.SupervisedTrainingSamples.FromArrays(input, expected);
+            var samples = Data.SupervisedTrainingSamples.FromArrays(input, target);
 
             samples.Input.Count.Should().Be(4);
             for (int i = 0; i < samples.Input.Count; i++)
@@ -49,7 +49,7 @@ namespace NNLib.Tests
                 samples.Target[i].RowCount.Should().Be(2);
                 for (int j = 0; j < samples.Target[i].RowCount; j++)
                 {
-                    samples.Target[i][j, 0].Should().Be(expected[i][j]);
+                    samples.Target[i][j, 0].Should().Be(target[i][j]);
                 }
             }
         }
@@ -65,6 +65,55 @@ namespace NNLib.Tests
             {
                 Matrix<double>.Build.Random(2,1),
             })));
+        }
+
+
+        [Fact]
+        public void ReadAllSamples_returns_matrices_with_all_samples()
+        {
+            var input = new double[][]
+            {
+                new[] {0d, 0d},
+                new[] {0d, 1d},
+                new[] {1d, 0d},
+                new[] {1d, 1d},
+            };
+
+            var target = new double[][]
+            {
+                new[] {2d},
+                new[] {3d},
+                new[] {4d},
+                new[] {7d},
+            };
+
+            var samples = Data.SupervisedTrainingSamples.FromArrays(input, target);
+
+
+            var (I,T) = samples.ReadAllSamples();
+
+            I.RowCount.Should().Be(2);
+            I.ColumnCount.Should().Be(4);
+
+            for (int i = 0; i < I.ColumnCount; i++)
+            {
+                for (int j = 0; j < I.RowCount; j++)
+                {
+                    I[j, i].Should().Be(input[i][j]);
+                }
+            }
+
+            T.RowCount.Should().Be(1);
+            T.ColumnCount.Should().Be(4);
+
+
+            for (int i = 0; i < T.ColumnCount; i++)
+            {
+                for (int j = 0; j < T.RowCount; j++)
+                {
+                    T[j, i].Should().Be(target[i][j]);
+                }
+            }
         }
     }
 }

@@ -55,6 +55,10 @@ namespace NNLib
             _layers.Add(layer);
             layer.AssignNetwork(this);
             AssignEventHandlers(layer);
+            if (!layer.IsInitialized)
+            {
+                layer.Initialize();
+            }
         }
 
         public void RemoveLayer(T layer)

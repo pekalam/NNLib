@@ -37,6 +37,10 @@ namespace NNLib.MLP
             _layers.Insert(ind, layer);
             layer.AssignNetwork(this);
             AssignEventHandlers(layer);
+            if (!layer.IsInitialized)
+            {
+                layer.Initialize();
+            }
 
             return layer;
         }

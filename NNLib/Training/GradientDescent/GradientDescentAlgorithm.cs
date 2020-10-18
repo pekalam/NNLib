@@ -63,7 +63,7 @@ namespace NNLib.Training.GradientDescent
             Matrix<double> delta1W1 = _lossFunction.Derivative(_network.Layers[^1].Output!, expected);
             for (var i = _network.Layers.Count - 1; i >= 0; --i)
             {
-                var dA = _network.Layers[i].ActivationFunction.Derivative(_network.Layers[i].Net);
+                var dA = _network.Layers[i].ActivationFunction.Derivative(_network.Layers[i].Net!);
                 var delta = delta1W1.PointwiseMultiply(dA);
                 var deltaLr = delta.Multiply(Params.LearningRate);
 
