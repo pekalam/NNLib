@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
@@ -10,13 +11,53 @@ using NNLib.Training;
 
 namespace NNLib.MLP
 {
+    internal class LoadedSupervisedTrainingData
+    {
+        public LoadedSupervisedTrainingData(SupervisedTrainingData data)
+        {
+            (I_Train, T_Train) = data.TrainingSet.ReadAllSamples();
+            if (data.ValidationSet != null)
+            {
+                (I_Val, T_Val) = data.ValidationSet.ReadAllSamples();
+            }
+            
+            if (data.TestSet != null)
+            {
+                (I_Test, T_Test) = data.TestSet.ReadAllSamples();
+            }
+        }
+
+        public Matrix<double> I_Train;
+        public Matrix<double> T_Train;
+
+        public Matrix<double>? I_Val;
+        public Matrix<double>? T_Val;
+        
+        public Matrix<double>? I_Test;
+        public Matrix<double>? T_Test;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public (Matrix<double> I, Matrix<double> T) GetSamples(DataSetType setType)
+        {
+            return setType switch
+            {
+                DataSetType.Training => (I_Train, T_Train),
+                DataSetType.Test => (I_Test!, T_Test!),
+                DataSetType.Validation => (I_Val!, T_Val!),
+                _ => throw new NotImplementedException(),
+            };
+        }
+    }
+
     public class MLPTrainer
     {
         private AlgorithmBase _algorithm;
         private SupervisedTrainingData _trainingData;
+        private LoadedSupervisedTrainingData _loadedData;
 
         public event Action? EpochEnd;
         public event Action? IterationEnd;
+
 
         public MLPTrainer(MLPNetwork network, SupervisedTrainingData trainingData, AlgorithmBase algorithm,
             ILossFunction lossFunction)
@@ -29,6 +70,7 @@ namespace NNLib.MLP
             _trainingData = trainingData;
             _algorithm = algorithm;
             _algorithm.Setup(TrainingSets.TrainingSet, network, lossFunction);
+            _loadedData = new LoadedSupervisedTrainingData(TrainingSets);
         }
 
         public ILossFunction LossFunction { get;  }
@@ -40,6 +82,7 @@ namespace NNLib.MLP
                 ValidateNetworkAndDataSets(Network, value);
                 _trainingData = value;
                 _algorithm.Setup(value.TrainingSet, Network, LossFunction);
+                _loadedData = new LoadedSupervisedTrainingData(TrainingSets);
             }
         }
         public MLPNetwork Network { get; }
@@ -83,6 +126,7 @@ namespace NNLib.MLP
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckTrainingCancelationIsRequested(in CancellationToken ct)
         {
             if (ct.IsCancellationRequested)
@@ -91,24 +135,16 @@ namespace NNLib.MLP
             }
         }
 
-        private double CalculateNetworkError(in CancellationToken ct, SupervisedTrainingSamples trainingSamples)
+        private double CalculateNetworkError(in CancellationToken ct, DataSetType setType)
         {
             CheckTrainingCancelationIsRequested(ct);
 
-            var totalDelta = Matrix<double>.Build.Dense(Network.Layers.Last().NeuronsCount, 1);
-            for (int i = 0; i < trainingSamples.Input.Count; ++i)
-            {
-                Network.CalculateOutput(trainingSamples.Input[i]);
+            var (I, T) = _loadedData.GetSamples(setType);
+            Network.CalculateOutput(I);
+            
+            CheckTrainingCancelationIsRequested(ct);
 
-                CheckTrainingCancelationIsRequested(ct);
-
-                var err = LossFunction.Function(Network.Output!,
-                    trainingSamples.Target[i]);
-                totalDelta.Add(err, totalDelta);
-            }
-
-            var sum = totalDelta.ColumnSums().Sum() / trainingSamples.Input.Count;
-            return sum;
+            return LossFunction.Function(Network.Output!, T).Enumerate().Sum() / I.ColumnCount;
         }
 
         private bool DoIterationInternal(in CancellationToken ct)
@@ -127,7 +163,7 @@ namespace NNLib.MLP
             {
                 Epochs++;
                 EpochEnd?.Invoke();
-                Error = CalculateNetworkError(ct, TrainingSets.TrainingSet);
+                Error = CalculateNetworkError(ct, DataSetType.Training);
             }
         }
 
@@ -143,7 +179,7 @@ namespace NNLib.MLP
             while (!DoIterationInternal(ct)) { }
             Epochs++;
             EpochEnd?.Invoke();
-            Error = CalculateNetworkError(ct, TrainingSets.TrainingSet);
+            Error = CalculateNetworkError(ct, DataSetType.Training);
 
 
             return Error;
@@ -161,7 +197,7 @@ namespace NNLib.MLP
                 throw new NullReferenceException("Null validation set");
             }
 
-            return CalculateNetworkError(ct, TrainingSets.ValidationSet);
+            return CalculateNetworkError(ct, DataSetType.Validation);
         }
 
         public double RunTest(in CancellationToken ct = default)
@@ -171,7 +207,7 @@ namespace NNLib.MLP
                 throw new NullReferenceException("Null validation set");
             }
 
-            return CalculateNetworkError(ct, TrainingSets.TestSet);
+            return CalculateNetworkError(ct, DataSetType.Test);
         }
     }
 }

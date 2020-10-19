@@ -14,7 +14,7 @@ namespace NNLib.LossFunction
 
         public Matrix<double> Derivative(Matrix<double> input, Matrix<double> target)
         {
-            var result = target.Subtract(input);
+            var result = input.Subtract(target);
             return result;
         }
     }

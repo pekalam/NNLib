@@ -7,7 +7,7 @@ using NNLib.MLP;
 
 namespace NNLib.Training.LevenbergMarquardt
 {
-    public static class JacobianApproximation
+    public static class Jacobian
     {
         private const double StepSize = 0.001;
 
@@ -86,20 +86,6 @@ namespace NNLib.Training.LevenbergMarquardt
 
             #endregion
 
-            void CheckIsNan(Matrix<double> x)
-            {
-                for (int i = 0; i < x.ColumnCount; i++)
-                {
-                    for (int j = 0; j < x.RowCount; j++)
-                    {
-                        if (double.IsNaN(x[j, i]))
-                        {
-                            //throw new NotImplementedException();
-                        }
-                    }
-                }
-            }
-
 
             int a = 0;
             while (!(!inputEnum.MoveNext() || !targetEnum.MoveNext()))
@@ -110,7 +96,7 @@ namespace NNLib.Training.LevenbergMarquardt
                 int col = 0;
 
                 network.CalculateOutput(input);
-                Matrix<double> delta1W1 = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount, 1, -1);
+                var delta1W1 = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount, 1, -1);
                 for (var i = network.Layers.Count - 1; i >= 0; --i)
                 {
                     var dA = network.Layers[i].ActivationFunction.Derivative(network.Layers[i].Net!);
@@ -121,23 +107,18 @@ namespace NNLib.Training.LevenbergMarquardt
                     var b = delta;
                     var w = delta.TransposeAndMultiply(i > 0 ? network.Layers[i - 1].Output! : input);
                     
-                    CheckIsNan(w);
-                    CheckIsNan(b);
 
-                    for (int j = 0; j < w.RowCount; j++)
+                    for (int j = 0; j < w.ColumnCount; j++)
                     {
-                        for (int k = 0; k < w.ColumnCount; k++)
+                        for (int k = 0; k < w.RowCount; k++)
                         {
-                            J[a, col++] = w[j, k];
+                            J[a, col++] = w.At(k, j);
                         }
                     }
                     
                     for (int j = 0; j < b.RowCount; j++)
                     {
-                        for (int k = 0; k < b.ColumnCount; k++)
-                        {
-                            J[a, col++] = b[j, k];
-                        }
+                        J[a, col++] = b.At(j, 0);
                     }
                 }
             

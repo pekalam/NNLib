@@ -15,7 +15,7 @@ namespace NNLib.ActivationFunction
         {
             var exp = x.Negate().PointwiseExp();
             var s = 1 / (1 + exp);
-            var result = s % (1 - s);
+            var result = s.PointwiseMultiply(1 - s);
             return result;
         }
     }

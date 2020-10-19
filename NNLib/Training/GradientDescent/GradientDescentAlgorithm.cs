@@ -48,8 +48,8 @@ namespace NNLib.Training.GradientDescent
 
             for (int i = 0; i < result.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Add(result.Weights[i] / Params.BatchSize, _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Add(result.Biases[i] / Params.BatchSize, _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Subtract(result.Weights[i] / Params.BatchSize, _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Subtract(result.Biases[i] / Params.BatchSize, _network.Layers[i].Biases);
             }
         }
 
@@ -74,8 +74,7 @@ namespace NNLib.Training.GradientDescent
 
                 if (_previousLearningMethodResult != null)
                 {
-                    _previousLearningMethodResult.Weights[i] = _previousLearningMethodResult.Weights[i]
-                        .Multiply(Params.Momentum);
+                     _previousLearningMethodResult.Weights[i].Multiply(Params.Momentum, _previousLearningMethodResult.Weights[i]);
                     update.Weights[i].Add(_previousLearningMethodResult.Weights[i], update.Weights[i]);
                 }
             }

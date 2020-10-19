@@ -14,6 +14,7 @@ using NNLib.LossFunction;
 using NNLib.MLP;
 using NNLib.Tests;
 using NNLib.Training.GradientDescent;
+using NNLib.Training.LevenbergMarquardt;
 
 namespace TrainingTest
 {
@@ -30,17 +31,18 @@ namespace TrainingTest
             Control.UseNativeMKL();
             //Control.UseManaged();
 
-            var set = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\sinus2.csv").sets.TrainingSet;
+            var set = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\f-zloz-sin.csv").sets.TrainingSet;
             var lossFunction = new QuadraticLossFunction();
             var net = new MLPNetwork(
-                new PerceptronLayer(1, 10, new SigmoidActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(1, 20, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(20, 10, new TanHActivationFunction(), new XavierMatrixBuilder()),
                 new PerceptronLayer(10, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
                 );
             var trainer = new MLPTrainer(net,
                 new SupervisedTrainingData(set),
                 new GradientDescentAlgorithm(new GradientDescentParams()
                 {
-                    LearningRate = 0.001, Momentum = 0, BatchSize = set.Input.Count ,Randomize = false,
+                    LearningRate = 0.0001, Momentum = 0.1, BatchSize = 1 ,Randomize = false,
                 }),
                 lossFunction
             );
