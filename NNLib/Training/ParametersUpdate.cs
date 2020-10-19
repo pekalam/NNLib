@@ -19,11 +19,21 @@ namespace NNLib.Training
 
         public static ParametersUpdate FromNetwork(MLPNetwork network)
         {
-            return new ParametersUpdate()
+            var update = new ParametersUpdate()
             {
                 Weights = new Matrix<double>[network.TotalLayers],
                 Biases = new Matrix<double>[network.TotalLayers],
             };
+
+            for (int i = 0; i < update.Weights.Length; i++)
+            {
+                update.Weights[i] = Matrix<double>.Build.Dense(network.Layers[i].Weights.RowCount,
+                    network.Layers[i].Weights.ColumnCount);
+                update.Biases[i] = Matrix<double>.Build.Dense(network.Layers[i].Biases.RowCount,
+                    network.Layers[i].Biases.ColumnCount);
+            }
+
+            return update;
         }
     }
 }

@@ -15,9 +15,7 @@ namespace NNLib.Training.LevenbergMarquardt
     {
         private const double MinDampingParameter = 1.0e-25;
         private const double MaxDampingParameter = 1.0e25;
-        private SupervisedTrainingSamples _trainingData;
         private MLPNetwork _network;
-        private ILossFunction _lossFunction;
         private Matrix<double> P = null!;
         private Matrix<double> T = null!;
 
@@ -27,6 +25,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private double _dampingParameter = 0.1;
 
         private Jacobian _jacobian;
+        private ParametersUpdate _update;
 
         public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams? parameters = null)
         {
@@ -37,16 +36,29 @@ namespace NNLib.Training.LevenbergMarquardt
 
         internal override void Setup(SupervisedTrainingSamples set, MLPNetwork network, ILossFunction lossFunction)
         {
-            _lossFunction = lossFunction;
             _network = network;
-            _trainingData = set;
 
             (P, T) = set.ReadAllSamples();
             k = 0;
             _previousE = null;
             _jacobian = new Jacobian(network, set.Input);
+            _update = ParametersUpdate.FromNetwork(network);
+
+            network.StructureChanged -= NetworkOnStructureChanged;
+            network.StructureChanged += NetworkOnStructureChanged;
 
             SetDampingParameter(default);
+        }
+
+        internal override void Reset()
+        {
+            k = 0;
+            _previousE = null;
+        }
+
+        private void NetworkOnStructureChanged(INetwork obj)
+        {
+            _update = ParametersUpdate.FromNetwork(_network);
         }
 
         private void SetDampingParameter(in CancellationToken ct)
@@ -66,29 +78,21 @@ namespace NNLib.Training.LevenbergMarquardt
             _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? 0.1 : max);
         }
 
-        internal override void Reset()
-        {
-            k = 0;
-            _previousE = null;
-        }
-
-        private void SetResults(ParametersUpdate result, Vector<double> delta, MLPNetwork network)
+        private void SetUpdate(Vector<double> delta, MLPNetwork network)
         {
             int col = 0;
             for (int i = network.TotalLayers - 1; i >= 0; i--)
             {
-                result.Weights[i] = network.Layers[i].Weights.Clone();
                 for (int j = 0; j < network.Layers[i].InputsCount; j++)
                 {
                     for (int n = 0; n < network.Layers[i].NeuronsCount; n++)
                     {
-                        result.Weights[i][n, j] = delta[col++];
+                        _update.Weights[i].At(n, j, delta.At(col++));
                     }
                 }
-                result.Biases[i] = network.Layers[i].Biases.Clone();
                 for (int j = 0; j < network.Layers[i].NeuronsCount; j++)
                 {
-                    result.Biases[i][j, 0] = delta[col++];
+                    _update.Biases[i].At(j, 0, delta.At(col++));
                 }
             }
         }
@@ -103,21 +107,21 @@ namespace NNLib.Training.LevenbergMarquardt
             }
         }
 
-        private void UpdateWeightsAndBiasesWithDeltaRule(ParametersUpdate result)
+        private void UpdateWeightsAndBiasesWithDeltaRule()
         {
-            for (int i = 0; i < result.Weights.Length; i++)
+            for (int i = 0; i < _update.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Subtract(result.Weights[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Subtract(result.Biases[i], _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Subtract(_update.Weights[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Subtract(_update.Biases[i], _network.Layers[i].Biases);
             }
         }
 
-        private void ResetWeightsAndBiases(ParametersUpdate update)
+        private void ResetWeightsAndBiases()
         {
-            for (int i = 0; i < update.Weights.Length; i++)
+            for (int i = 0; i < _update.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Add(update.Weights[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Add(update.Biases[i], _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Add(_update.Weights[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Add(_update.Biases[i], _network.Layers[i].Biases);
             }
         }
 
@@ -129,16 +133,11 @@ namespace NNLib.Training.LevenbergMarquardt
 
         internal override bool DoIteration(in CancellationToken ct = default)
         {
-            var result = ParametersUpdate.FromNetwork(_network);
             double error;
             int it = 0;
             do
             {
                 var E = _previousE ?? CalcE(ct);
-                if (k == 0)
-                {
-                    Console.WriteLine("k==0: " + CalcError(E));
-                }
 
                 CheckTrainingCancelationIsRequested(ct);
 
@@ -150,15 +149,15 @@ namespace NNLib.Training.LevenbergMarquardt
                 var JtJ = Jt * J;
                 var diag = Matrix<double>.Build.Diagonal(JtJ.RowCount, JtJ.ColumnCount, _dampingParameter);
                 var G = JtJ + diag;
-                //todo infinity exc
+
                 CheckTrainingCancelationIsRequested(ct);
 
                 var d = G.PseudoInverse() * g;
 
                 var delta = d.RowSums();
 
-                SetResults(result, delta, _network);
-                UpdateWeightsAndBiasesWithDeltaRule(result);
+                SetUpdate(delta, _network);
+                UpdateWeightsAndBiasesWithDeltaRule();
 
 
                 E = CalcE(ct);
@@ -172,19 +171,17 @@ namespace NNLib.Training.LevenbergMarquardt
                     if (error >= _previousError)
                     {
                         _dampingParameter *= Params.DampingParamIncFactor;
-                        Debug.WriteLine("inc: " + _dampingParameter);
                         if (_dampingParameter > MaxDampingParameter)
                         {
                             _dampingParameter = MaxDampingParameter; 
                             break;
                         }
-                        ResetWeightsAndBiases(result);
+                        ResetWeightsAndBiases();
                     }
                     else
                     {
                         _dampingParameter *= Params.DampingParamDecFactor;
 
-                        Debug.WriteLine(_dampingParameter);
                         if (_dampingParameter < MinDampingParameter)
                         {
                             _dampingParameter = MinDampingParameter;
