@@ -42,6 +42,7 @@ namespace NNLib.MLP
                 layer.Initialize();
             }
 
+            RaiseNetworkStructureChanged();
             return layer;
         }
 

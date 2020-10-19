@@ -18,6 +18,8 @@ namespace NNLib
     {
         protected readonly List<T> _layers;
 
+        public event Action<INetwork> StructureChanged;
+
         protected Network(params T[] layers)
         {
             if (layers.Length == 0)
@@ -59,6 +61,7 @@ namespace NNLib
             {
                 layer.Initialize();
             }
+            RaiseNetworkStructureChanged();
         }
 
         public void RemoveLayer(T layer)
@@ -74,12 +77,15 @@ namespace NNLib
 
             next?.AdjustMatSize(prev);
             _layers.RemoveAt(ind);
+            RaiseNetworkStructureChanged();
         }
 
         protected void AssignEventHandlers(Layer layer)
         {
             layer.NeuronsCountChanged += LayerOnNeuronsCountChanged;
         }
+
+        protected void RaiseNetworkStructureChanged() => StructureChanged?.Invoke(this);
 
         private void LayerOnNeuronsCountChanged(Layer layer)
         {
@@ -94,6 +100,7 @@ namespace NNLib
                     break;
                 }
             }
+            RaiseNetworkStructureChanged();
         }
 
         private void ValidateLayersInputsAndOutputs(List<T> layers)
@@ -114,54 +121,6 @@ namespace NNLib
                 {
                     throw new ArgumentException($"Inputs count of layer {i} does not match neuronsCount of layer {i-1}");
                 }
-            }
-        }
-
-        public Matrix<double> GetParameters()
-        {
-            var p = Matrix<double>.Build.Dense(Layers[^1].NeuronsCount, TotalSynapses + TotalBiases);
-            int col = 0;
-            for (int i = 0; i < Layers.Count; i++)
-            {
-                var w = Layers[i].Weights;
-                for (int j = 0; j < w.ColumnCount; j++)
-                {
-                    for (int k = 0; k < w.RowCount; k++)
-                    {
-                        for (int l = 0; l < p.RowCount; l++)
-                        {
-                            p[l, col] = w[k, j];
-                        }
-                        col++;
-                    }
-                }
-            }
-
-            for (int i = 0; i < Layers.Count; i++)
-            {
-                var b = Layers[i].Biases;
-                for (int j = 0; j < b.RowCount; j++)
-                {
-                    for (int k = 0; k < p.RowCount; k++)
-                    {
-                        p[k, col] = b[j, 0];
-                    }
-
-                    col++;
-                }
-            }
-
-
-
-
-            return p;
-        }
-
-        public void ResetParameters()
-        {
-            foreach (var layer in _layers)
-            {
-                layer.ResetParameters();
             }
         }
 

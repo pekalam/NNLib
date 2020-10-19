@@ -20,15 +20,13 @@ namespace NNLib.Training.LevenbergMarquardt
         private ILossFunction _lossFunction;
         private Matrix<double> P = null!;
         private Matrix<double> T = null!;
-        private Matrix<double>? _g;
 
         private double _previousError;
         private Matrix<double>? _previousE = null;
         private int k;
         private double _dampingParameter = 0.1;
 
-        private IEnumerator<Matrix<double>> _inputEnum;
-        private IEnumerator<Matrix<double>> _targetEnum;
+        private Jacobian _jacobian;
 
         public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams? parameters = null)
         {
@@ -44,11 +42,9 @@ namespace NNLib.Training.LevenbergMarquardt
             _trainingData = set;
 
             (P, T) = set.ReadAllSamples();
-
             k = 0;
-
-            _inputEnum = set.Input.GetEnumerator();
-            _targetEnum = set.Target.GetEnumerator();
+            _previousE = null;
+            _jacobian = new Jacobian(network, set.Input);
 
             SetDampingParameter(default);
         }
@@ -56,11 +52,9 @@ namespace NNLib.Training.LevenbergMarquardt
         private void SetDampingParameter(in CancellationToken ct)
         {
             var max = Double.MinValue;
-            var E = _previousE ?? CalcE(ct);
             
-            var J = Jacobian.CalcJacobian(_network, _lossFunction, _inputEnum,_targetEnum,_trainingData, E);
+            var J = _jacobian.CalcJacobian();
             var Jt = J.Transpose();
-            var g = Jt * E;
             var JtJ = Jt * J;
             var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real);
             
@@ -81,7 +75,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private void SetResults(ParametersUpdate result, Vector<double> delta, MLPNetwork network)
         {
             int col = 0;
-            for (int i = 0; i < network.TotalLayers; i++)
+            for (int i = network.TotalLayers - 1; i >= 0; i--)
             {
                 result.Weights[i] = network.Layers[i].Weights.Clone();
                 for (int j = 0; j < network.Layers[i].InputsCount; j++)
@@ -111,11 +105,6 @@ namespace NNLib.Training.LevenbergMarquardt
 
         private void UpdateWeightsAndBiasesWithDeltaRule(ParametersUpdate result)
         {
-            if (result.Weights.Length != result.Biases.Length)
-            {
-                throw new Exception();
-            }
-        
             for (int i = 0; i < result.Weights.Length; i++)
             {
                 _network.Layers[i].Weights.Subtract(result.Weights[i], _network.Layers[i].Weights);
@@ -125,11 +114,6 @@ namespace NNLib.Training.LevenbergMarquardt
 
         private void ResetWeightsAndBiases(ParametersUpdate update)
         {
-            if (update.Weights.Length != update.Biases.Length)
-            {
-                throw new Exception();
-            }
-
             for (int i = 0; i < update.Weights.Length; i++)
             {
                 _network.Layers[i].Weights.Add(update.Weights[i], _network.Layers[i].Weights);
@@ -148,7 +132,6 @@ namespace NNLib.Training.LevenbergMarquardt
             var result = ParametersUpdate.FromNetwork(_network);
             double error;
             int it = 0;
-            Matrix<double> g;
             do
             {
                 var E = _previousE ?? CalcE(ct);
@@ -159,11 +142,11 @@ namespace NNLib.Training.LevenbergMarquardt
 
                 CheckTrainingCancelationIsRequested(ct);
 
-                var J = Jacobian.CalcJacobian(_network, _lossFunction, _inputEnum, _targetEnum, _trainingData, E);
+                var J = _jacobian.CalcJacobian();
 
                 var Jt = J.Transpose();
 
-                g = Jt * E / T.ColumnCount;
+                var g = Jt * E;
                 var JtJ = Jt * J;
                 var diag = Matrix<double>.Build.Diagonal(JtJ.RowCount, JtJ.ColumnCount, _dampingParameter);
                 var G = JtJ + diag;
@@ -215,19 +198,7 @@ namespace NNLib.Training.LevenbergMarquardt
 
             k++;
 
-            if (k > 1 && _g != null)
-            {
-                var diff = (g - _g).PointwisePower(2).Enumerate().Sum();
-                Debug.WriteLine("GRAD DIFF: " + diff);
-                    
-                if (diff == 0)
-                {
-                    throw new TrainingCanceledException();
-                }
-            }
-
             _previousError = error;
-            _g = g;
 
 
             return true;
