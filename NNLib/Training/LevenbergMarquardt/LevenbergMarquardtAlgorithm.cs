@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
@@ -13,7 +14,7 @@ namespace NNLib.Training.LevenbergMarquardt
     public class LevenbergMarquardtAlgorithm : AlgorithmBase
     {
         private const double MinDampingParameter = 1.0e-25;
-        private const double MaxDampingParameter = 1e25;
+        private const double MaxDampingParameter = 1e10;
         private const int MaxIterations = 10;
         private SupervisedTrainingSamples _trainingData;
         private MLPNetwork _network;
@@ -24,7 +25,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private double _previousError;
         private Matrix<double>? _previousE = null;
         private int k;
-        private double _dampingParameter = 0.1;
+        private double _dampingParameter = 10000000;
 
         private IEnumerator<Matrix<double>> _inputEnum;
         private IEnumerator<Matrix<double>> _targetEnum;
@@ -87,11 +88,6 @@ namespace NNLib.Training.LevenbergMarquardt
                         result.Weights[i][k, j] = delta[col++];
                     }
                 }
-                
-            }
-
-            for (int i = 0; i < network.TotalLayers; i++)
-            {
                 result.Biases[i] = network.Layers[i].Biases.Clone();
                 for (int j = 0; j < network.Layers[i].NeuronsCount; j++)
                 {
@@ -119,8 +115,8 @@ namespace NNLib.Training.LevenbergMarquardt
         
             for (int i = 0; i < result.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Subtract(result.Weights[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Subtract(result.Biases[i], _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Add(result.Weights[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Add(result.Biases[i], _network.Layers[i].Biases);
             }
         }
 
@@ -133,14 +129,28 @@ namespace NNLib.Training.LevenbergMarquardt
 
             for (int i = 0; i < update.Weights.Length; i++)
             {
-                _network.Layers[i].Weights.Add(update.Weights[i], _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Add(update.Biases[i], _network.Layers[i].Biases);
+                _network.Layers[i].Weights.Subtract(update.Weights[i], _network.Layers[i].Weights);
+                _network.Layers[i].Biases.Subtract(update.Biases[i], _network.Layers[i].Biases);
             }
         }
 
         private double CalcError(Matrix<double> E)
         {
-            return E.PointwisePower(2).Enumerate().Sum(); /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
+            return E.PointwiseMultiply(E).Enumerate().Sum() / E.RowCount; /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
+        }
+
+        private void CheckIsNan(Matrix<double> x)
+        {
+            for (int i = 0; i < x.ColumnCount; i++)
+            {
+                for (int j = 0; j < x.RowCount; j++)
+                {
+                    if (double.IsNaN(x[j, i]))
+                    {
+                        //throw new NotImplementedException();
+                    }
+                }
+            }
         }
 
         internal override bool DoIteration(in CancellationToken ct = default)
@@ -162,19 +172,33 @@ namespace NNLib.Training.LevenbergMarquardt
                 CheckTrainingCancelationIsRequested(ct);
 
                 var J = JacobianApproximation.CalcJacobian(_network, _lossFunction, _inputEnum, _targetEnum, _trainingData, E);
-
+                CheckIsNan(J);
 
                 var Jt = J.Transpose();
+                CheckIsNan(Jt);
                 var g = Jt * E;
                 var JtJ = Jt * J;
-                var diag = Matrix<double>.Build.Dense(JtJ.RowCount, JtJ.ColumnCount, 0);
-                diag.SetDiagonal(JtJ.Diagonal());
-                var G = JtJ + _dampingParameter * diag;
+                var diag = Matrix<double>.Build.Diagonal(JtJ.RowCount, JtJ.ColumnCount, _dampingParameter);
+                var G = JtJ + diag;
                 //todo infinity exc
-
                 CheckTrainingCancelationIsRequested(ct);
+                
+                // var det = G.Determinant();
+                // Debug.WriteLine(det);
 
-                var d = G.PseudoInverse() * g;
+                Matrix<double> d;
+                d = G.PseudoInverse() * g;
+
+                // if (double.IsFinite(det))
+                // {
+                //   d = G.PseudoInverse() * g;
+                // }
+                //  else
+                //  {
+                //      //var w = diag.Inverse();
+                //d = diag.Inverse() * g;
+                //  }
+                 //var d = diag.Inverse() * g;
                 var delta = d.RowSums();
 
                 SetResults(result, delta, _network);
@@ -185,11 +209,13 @@ namespace NNLib.Training.LevenbergMarquardt
                 error = CalcError(E);
                 _previousE = E;
 
-                if (k >= 1)
+                if (k >= 1 && it <= 5)
                 {
                     if (error >= _previousError)
                     {
+                        it++;
                         _dampingParameter *= Params.DampingParamIncFactor;
+                        Debug.WriteLine("inc: " + _dampingParameter);
                         if (_dampingParameter > MaxDampingParameter)
                         {
                             _dampingParameter = MaxDampingParameter; 
@@ -200,6 +226,8 @@ namespace NNLib.Training.LevenbergMarquardt
                     else
                     {
                         _dampingParameter *= Params.DampingParamDecFactor;
+                     
+                        Debug.WriteLine(_dampingParameter);
                         if (_dampingParameter < MinDampingParameter)
                         {
                             _dampingParameter = MinDampingParameter;
@@ -213,27 +241,12 @@ namespace NNLib.Training.LevenbergMarquardt
             k++;
             _previousError = error;
 
+
             return true;
         }
 
         private Matrix<double> CalcE(in CancellationToken ct)
         {
-            //var E = Matrix<double>.Build.Dense(_network.Layers[^1].NeuronsCount, _trainingData.Target.Count);
-            // for (int i = 0; i < _trainingData.Input.Count; i++)
-            // {
-            //     var input = _trainingData.Input[i];
-            //     var target = _trainingData.Target[i];
-            //     
-            //     _network.CalculateOutput(input);
-            //     var y = _lossFunction.Derivative(_network.Output, target);
-            //
-            //     for (int j = 0; j < y.RowCount; j++)
-            //     {
-            //         E[j, i] = y[j, 0];
-            //
-            //     }
-            // }
-
             CheckTrainingCancelationIsRequested(ct);
 
             _network.CalculateOutput(P);

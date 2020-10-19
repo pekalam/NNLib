@@ -6,7 +6,7 @@ namespace NNLib.LossFunction
     {
         public Matrix<double> Function(Matrix<double> input, Matrix<double> target)
         {
-            var err = input.Subtract(target);
+            var err = target.Subtract(input);
             err.PointwiseMultiply(err, err);
             var result = err.Multiply(0.5d);
             return result;
@@ -14,7 +14,7 @@ namespace NNLib.LossFunction
 
         public Matrix<double> Derivative(Matrix<double> input, Matrix<double> target)
         {
-            var result = input.Subtract(target);
+            var result = target.Subtract(input);
             return result;
         }
     }

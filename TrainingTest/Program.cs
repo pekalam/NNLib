@@ -30,18 +30,17 @@ namespace TrainingTest
             Control.UseNativeMKL();
             //Control.UseManaged();
 
-            var set = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\f-zloz-sin.csv").sets.TrainingSet;
+            var set = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\sinus2.csv").sets.TrainingSet;
             var lossFunction = new QuadraticLossFunction();
             var net = new MLPNetwork(
-                new PerceptronLayer(1, 50, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(50, 50, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(50, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
+                new PerceptronLayer(1, 10, new SigmoidActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(10, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
                 );
             var trainer = new MLPTrainer(net,
                 new SupervisedTrainingData(set),
                 new GradientDescentAlgorithm(new GradientDescentParams()
                 {
-                    LearningRate = 0.0001, Momentum = 0.09, BatchSize = 1 ,Randomize = false,
+                    LearningRate = 0.001, Momentum = 0, BatchSize = set.Input.Count ,Randomize = false,
                 }),
                 lossFunction
             );
@@ -49,7 +48,7 @@ namespace TrainingTest
 
             int i = 0;
             var s = Stopwatch.StartNew();
-            while (trainer.Error > 0.1)
+            while (trainer.Error > 0.01)
             {
                 trainer.DoEpoch();
                 i++;
