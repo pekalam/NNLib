@@ -22,7 +22,8 @@ namespace NNLib.Data
         }
 
         public int Count => _setOfVectors.Count;
-        
+        public bool Modified { get; }
+
         public void Dispose()
         {
         }

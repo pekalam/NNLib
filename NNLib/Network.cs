@@ -124,6 +124,14 @@ namespace NNLib
             }
         }
 
+        public void ResetParameters()
+        {
+            foreach (var layer in _layers)
+            {
+                layer.ResetParameters();
+            }
+        }
+
         public abstract void CalculateOutput(Matrix<double> input);
     }
 }

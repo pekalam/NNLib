@@ -16,8 +16,8 @@ namespace NNLib.Training.LevenbergMarquardt
         private const double MinDampingParameter = 1.0e-25;
         private const double MaxDampingParameter = 1.0e25;
         private MLPNetwork _network;
-        private Matrix<double> P = null!;
-        private Matrix<double> T = null!;
+
+        private LoadedSupervisedTrainingData _loadedSets;
 
         private double _previousError;
         private Matrix<double>? _previousE = null;
@@ -34,11 +34,12 @@ namespace NNLib.Training.LevenbergMarquardt
         
         public LevenbergMarquardtParams Params { get; set; }
 
-        internal override void Setup(SupervisedTrainingSamples set, MLPNetwork network, ILossFunction lossFunction)
+        internal override void Setup(SupervisedTrainingSamples set, LoadedSupervisedTrainingData loadedSets, MLPNetwork network,
+            ILossFunction lossFunction)
         {
+            _loadedSets = loadedSets;
             _network = network;
 
-            (P, T) = set.ReadAllSamples();
             k = 0;
             _previousE = null;
             _jacobian = new Jacobian(network, set.Input);
@@ -133,11 +134,13 @@ namespace NNLib.Training.LevenbergMarquardt
 
         internal override bool DoIteration(in CancellationToken ct = default)
         {
+            var (P, T) = _loadedSets.GetSamples(DataSetType.Training);
+
             double error;
             int it = 0;
             do
             {
-                var E = _previousE ?? CalcE(ct);
+                var E = _previousE ?? CalcE(P,T,ct);
 
                 CheckTrainingCancelationIsRequested(ct);
 
@@ -160,7 +163,7 @@ namespace NNLib.Training.LevenbergMarquardt
                 UpdateWeightsAndBiasesWithDeltaRule();
 
 
-                E = CalcE(ct);
+                E = CalcE(P, T, ct);
                 error = CalcError(E);
                 _previousE = E;
 
@@ -201,7 +204,7 @@ namespace NNLib.Training.LevenbergMarquardt
             return true;
         }
 
-        private Matrix<double> CalcE(in CancellationToken ct)
+        private Matrix<double> CalcE(Matrix<double> P, Matrix<double> T,in CancellationToken ct)
         {
             CheckTrainingCancelationIsRequested(ct);
 

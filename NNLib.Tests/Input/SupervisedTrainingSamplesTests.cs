@@ -90,7 +90,7 @@ namespace NNLib.Tests
             var samples = Data.SupervisedTrainingSamples.FromArrays(input, target);
 
 
-            var (I,T) = samples.ReadAllSamples();
+            var (I,T) = (samples.ReadInputSamples(), samples.ReadTargetSamples());
 
             I.RowCount.Should().Be(2);
             I.ColumnCount.Should().Be(4);

@@ -24,7 +24,7 @@ namespace NNLib.Training.GradientDescent
         public BatchTrainer? BatchTrainer { get; set; }
         internal override int Iterations => _iterations;
 
-        internal override void Setup(SupervisedTrainingSamples set, MLPNetwork network, ILossFunction lossFunction)
+        internal override void Setup(SupervisedTrainingSamples set , LoadedSupervisedTrainingData _, MLPNetwork network, ILossFunction lossFunction)
         {
             Guards._NotNull(set).NotNull(network).NotNull(lossFunction);
             _previousLearningMethodResult = null;

@@ -100,6 +100,8 @@ namespace NNLib.Data
         Matrix<double> this[int index] { get; set; }
         int Count { get; }
 
+        bool Modified { get; }
+
         public IEnumerator<Matrix<double>> GetEnumerator()
         {
             return new VectorSetEnumerator(this);

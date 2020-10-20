@@ -13,17 +13,20 @@ namespace NNLib.MLP
 {
     internal class LoadedSupervisedTrainingData
     {
+        private SupervisedTrainingData _data;
+
         public LoadedSupervisedTrainingData(SupervisedTrainingData data)
         {
-            (I_Train, T_Train) = data.TrainingSet.ReadAllSamples();
+            _data = data;
+            (I_Train, T_Train) = (data.TrainingSet.ReadInputSamples(), data.TrainingSet.ReadTargetSamples());
             if (data.ValidationSet != null)
             {
-                (I_Val, T_Val) = data.ValidationSet.ReadAllSamples();
+                (I_Val, T_Val) = (data.ValidationSet.ReadInputSamples(), data.ValidationSet.ReadTargetSamples());
             }
-            
+
             if (data.TestSet != null)
             {
-                (I_Test, T_Test) = data.TestSet.ReadAllSamples();
+                (I_Test, T_Test) = (data.TestSet.ReadInputSamples(), data.TestSet.ReadTargetSamples());
             }
         }
 
@@ -39,13 +42,50 @@ namespace NNLib.MLP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public (Matrix<double> I, Matrix<double> T) GetSamples(DataSetType setType)
         {
-            return setType switch
+            if (setType == DataSetType.Training)
             {
-                DataSetType.Training => (I_Train, T_Train),
-                DataSetType.Test => (I_Test!, T_Test!),
-                DataSetType.Validation => (I_Val!, T_Val!),
-                _ => throw new NotImplementedException(),
-            };
+                if (_data.TrainingSet.Input.Modified)
+                {
+                    I_Train = _data.TrainingSet.ReadInputSamples();
+                }
+                if (_data.TrainingSet.Target.Modified)
+                {
+                    T_Train = _data.TrainingSet.ReadTargetSamples();
+                }
+
+                return (I_Train, T_Train);
+            }
+
+            if(setType == DataSetType.Validation)
+
+            {
+                if (_data.ValidationSet.Input.Modified)
+                {
+                    I_Val = _data.ValidationSet.ReadInputSamples();
+                }
+                if (_data.ValidationSet.Target.Modified)
+                {
+                    T_Val = _data.ValidationSet.ReadTargetSamples();
+                }
+
+                return (I_Val, T_Val);
+            }
+            if(setType == DataSetType.Test)
+
+            {
+                if (_data.TestSet.Input.Modified)
+                {
+                    I_Test = _data.TestSet.ReadInputSamples();
+                }
+                if (_data.TestSet.Target.Modified)
+                {
+                    T_Test = _data.TestSet.ReadTargetSamples();
+                }
+
+                return (I_Test, T_Test);
+            }
+
+            throw new NotImplementedException();
         }
     }
 
@@ -69,8 +109,8 @@ namespace NNLib.MLP
             LossFunction = lossFunction;
             _trainingData = trainingData;
             _algorithm = algorithm;
-            _algorithm.Setup(TrainingSets.TrainingSet, network, lossFunction);
             _loadedData = new LoadedSupervisedTrainingData(TrainingSets);
+            _algorithm.Setup(TrainingSets.TrainingSet, _loadedData, network, lossFunction);
         }
 
         public ILossFunction LossFunction { get;  }
@@ -81,8 +121,8 @@ namespace NNLib.MLP
             {
                 ValidateNetworkAndDataSets(Network, value);
                 _trainingData = value;
-                _algorithm.Setup(value.TrainingSet, Network, LossFunction);
-                _loadedData = new LoadedSupervisedTrainingData(TrainingSets);
+                _loadedData = new LoadedSupervisedTrainingData(value);
+                _algorithm.Setup(value.TrainingSet, _loadedData, Network, LossFunction);
             }
         }
         public MLPNetwork Network { get; }
@@ -92,7 +132,7 @@ namespace NNLib.MLP
             set
             {
                 _algorithm = value;
-                _algorithm.Setup(TrainingSets.TrainingSet, Network, LossFunction);
+                _algorithm.Setup(TrainingSets.TrainingSet ,_loadedData, Network, LossFunction);
             }
         }
         public double Error { get; private set; } = double.PositiveInfinity;

@@ -35,6 +35,8 @@ namespace NNLib.Csv
         }
 
         public int Count { get; }
+        public bool Modified { get; internal set; }
+
 
         public void Dispose()
         {

@@ -22,19 +22,31 @@ namespace NNLib.Data
             Target = target;
         }
 
-        public (Matrix<double> input, Matrix<double> target) ReadAllSamples()
+        public Matrix<double> ReadInputSamples()
         {
             Matrix<double> I = Matrix<double>.Build.Dense(Input[0].RowCount, Input.Count);
-            Matrix<double> T = Matrix<double>.Build.Dense(Target[0].RowCount, Target.Count);
-
-            for (int i = 0; i < Input.Count; i++)
+            var iCount = Input.Count;
+            for (int i = 0; i < iCount; i++)
             {
                 I.SetColumn(i, Input[i].AsColumnMajorArray());
+            }
+
+            return I;
+        }
+
+        public Matrix<double> ReadTargetSamples()
+        {
+            Matrix<double> T = Matrix<double>.Build.Dense(Target[0].RowCount, Target.Count);
+            var tCount = Target.Count;
+            for (int i = 0; i < tCount; i++)
+            {
                 T.SetColumn(i, Target[i].AsColumnMajorArray());
             }
 
-            return (I, T);
+            return T;
         }
+
+
 
         public void Dispose()
         {
