@@ -34,9 +34,8 @@ namespace TrainingTest
             var set = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\f-zloz-sin.csv").sets.TrainingSet;
             var lossFunction = new QuadraticLossFunction();
             var net = new MLPNetwork(
-                new PerceptronLayer(1, 20, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(20, 10, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(10, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
+                new PerceptronLayer(1, 5, new SigmoidActivationFunction(), new SqrMUniformMatrixBuilder()),
+                new PerceptronLayer(5, 1, new LinearActivationFunction(), new SqrMUniformMatrixBuilder())
                 );
             var trainer = new MLPTrainer(net,
                 new SupervisedTrainingData(set),

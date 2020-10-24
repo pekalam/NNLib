@@ -74,7 +74,6 @@ namespace NNLib
         }
 
         public bool IsOutputLayer => (Network ?? throw new Exception("Network not assigned")).BaseLayers[^1] == this;
-        public bool IsInputLayer => (Network ?? throw new Exception("Network not assigned")).BaseLayers[0] == this;
 
         public int NeuronsCount
         {

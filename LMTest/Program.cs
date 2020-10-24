@@ -22,8 +22,9 @@ namespace LMTest
 
             var net = new MLPNetwork(new []
             {
-                new PerceptronLayer(1, 50, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(50, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
+                new PerceptronLayer(1, 300, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(300, 300, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(300, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
             });
 
             var sets = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\f-zloz-sin.csv").sets;
