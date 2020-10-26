@@ -19,15 +19,52 @@ namespace NNLib.MLP
         {
             _data = data;
             (I_Train, T_Train) = (data.TrainingSet.ReadInputSamples(), data.TrainingSet.ReadTargetSamples());
+            data.TrainingSet.Input.Modified += TrainingInputOnModified;
+            data.TrainingSet.Target.Modified += TrainingTargetOnModified;
             if (data.ValidationSet != null)
             {
                 (I_Val, T_Val) = (data.ValidationSet.ReadInputSamples(), data.ValidationSet.ReadTargetSamples());
+                data.ValidationSet.Input.Modified += ValidationInputOnModified;
+                data.ValidationSet.Target.Modified += ValidationTargetOnModified;
             }
 
             if (data.TestSet != null)
             {
                 (I_Test, T_Test) = (data.TestSet.ReadInputSamples(), data.TestSet.ReadTargetSamples());
+                data.TestSet.Input.Modified += TestInputOnModified;
+                data.TestSet.Target.Modified += TestTargetOnModified;
             }
+
+        }
+
+        private void TrainingInputOnModified()
+        {
+            I_Train = _data.TrainingSet.ReadInputSamples();
+        }
+
+        private void TrainingTargetOnModified()
+        {
+            T_Train = _data.TrainingSet.ReadTargetSamples();
+        }
+
+        private void ValidationInputOnModified()
+        {
+            I_Val = _data.ValidationSet!.ReadInputSamples();
+        }
+
+        private void ValidationTargetOnModified()
+        {
+            T_Val = _data.ValidationSet!.ReadTargetSamples();
+        }
+
+        private void TestInputOnModified()
+        {
+            I_Test = _data.TestSet!.ReadInputSamples();
+        }
+
+        private void TestTargetOnModified()
+        {
+            T_Test = _data.TestSet!.ReadTargetSamples();
         }
 
         public Matrix<double> I_Train;
@@ -44,45 +81,18 @@ namespace NNLib.MLP
         {
             if (setType == DataSetType.Training)
             {
-                if (_data.TrainingSet.Input.Modified)
-                {
-                    I_Train = _data.TrainingSet.ReadInputSamples();
-                }
-                if (_data.TrainingSet.Target.Modified)
-                {
-                    T_Train = _data.TrainingSet.ReadTargetSamples();
-                }
-
                 return (I_Train, T_Train);
             }
 
             if(setType == DataSetType.Validation)
 
             {
-                if (_data.ValidationSet.Input.Modified)
-                {
-                    I_Val = _data.ValidationSet.ReadInputSamples();
-                }
-                if (_data.ValidationSet.Target.Modified)
-                {
-                    T_Val = _data.ValidationSet.ReadTargetSamples();
-                }
-
-                return (I_Val, T_Val);
+                return (I_Val!, T_Val!);
             }
             if(setType == DataSetType.Test)
 
             {
-                if (_data.TestSet.Input.Modified)
-                {
-                    I_Test = _data.TestSet.ReadInputSamples();
-                }
-                if (_data.TestSet.Target.Modified)
-                {
-                    T_Test = _data.TestSet.ReadTargetSamples();
-                }
-
-                return (I_Test, T_Test);
+                return (I_Test!, T_Test!);
             }
 
             throw new NotImplementedException();
@@ -145,12 +155,12 @@ namespace NNLib.MLP
             {
                 if (network.Layers[0].InputsCount != set.Input[0].RowCount)
                 {
-                    throw new Exception("Invalid network inputs count");
+                    throw new Exception("Invalid network first layer inputs count");
                 }
 
                 if (network.Layers.Last().NeuronsCount != set.Target[0].RowCount)
                 {
-                    throw new Exception("Invalid network inputs count");
+                    throw new Exception("Invalid network output layer neurons count");
                 }
             }
 

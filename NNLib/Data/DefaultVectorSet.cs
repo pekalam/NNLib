@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra;
@@ -22,7 +23,7 @@ namespace NNLib.Data
         }
 
         public int Count => _setOfVectors.Count;
-        public bool Modified { get; }
+        public event Action Modified;
 
         public void Dispose()
         {

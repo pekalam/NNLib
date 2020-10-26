@@ -35,8 +35,13 @@ namespace NNLib.Csv
         }
 
         public int Count { get; }
-        public bool Modified { get; internal set; }
+        public event Action Modified;
 
+
+        internal void RaiseModified()
+        {
+            Modified?.Invoke();
+        }
 
         public void Dispose()
         {

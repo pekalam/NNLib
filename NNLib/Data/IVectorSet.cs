@@ -100,7 +100,7 @@ namespace NNLib.Data
         Matrix<double> this[int index] { get; set; }
         int Count { get; }
 
-        bool Modified { get; }
+        event Action Modified; 
 
         public IEnumerator<Matrix<double>> GetEnumerator()
         {
