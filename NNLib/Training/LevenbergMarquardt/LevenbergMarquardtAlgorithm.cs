@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,6 +27,9 @@ namespace NNLib.Training.LevenbergMarquardt
         private Jacobian _jacobian;
         private ParametersUpdate _update;
 
+        private Matrix<double> _E;
+        private Matrix<double> _Et;
+
         public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams? parameters = null)
         {
             Params = parameters ?? new LevenbergMarquardtParams();
@@ -44,6 +47,9 @@ namespace NNLib.Training.LevenbergMarquardt
             _previousE = null;
             _jacobian = new Jacobian(network, set.Input);
             _update = ParametersUpdate.FromNetwork(network);
+
+            _E = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount, set.Input.Count);
+            _Et = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
 
             network.StructureChanged -= NetworkOnStructureChanged;
             network.StructureChanged += NetworkOnStructureChanged;
@@ -222,10 +228,11 @@ namespace NNLib.Training.LevenbergMarquardt
             CheckTrainingCancelationIsRequested(ct);
 
             _network.CalculateOutput(P);
-            var E = T - _network.Output!;
+            T.Subtract(_network.Output!, _E);
+            _E.Transpose(_Et);
 
             CheckTrainingCancelationIsRequested(ct);
-            return E.Transpose();
+            return _Et;
         }
 
     }
