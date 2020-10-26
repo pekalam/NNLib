@@ -22,9 +22,9 @@ namespace LMTest
 
             var net = new MLPNetwork(new []
             {
-                new PerceptronLayer(1, 300, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(300, 300, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(300, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
+                new PerceptronLayer(1, 30, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(30, 30, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(30, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
             });
 
             var sets = CsvFacade.LoadSets("C:\\Users\\Marek\\Desktop\\f-zloz-sin.csv").sets;
@@ -42,6 +42,10 @@ namespace LMTest
                 {
                     err = trainer.DoEpoch();
                     Console.WriteLine(err);
+                    if (Console.KeyAvailable)
+                    {
+                        break;
+                    }
                 } while (i < 10_000 && err > 0.01);
 
                 Console.WriteLine(i + " " + err);
@@ -51,6 +55,9 @@ namespace LMTest
                 Console.WriteLine(e);
             }
 
+            Console.WriteLine();
+            Console.WriteLine("Average time: " + LevenbergMarquardtAlgorithm.Total / LevenbergMarquardtAlgorithm.TotalIt);
+            Console.ReadKey();
         }
     }
 }

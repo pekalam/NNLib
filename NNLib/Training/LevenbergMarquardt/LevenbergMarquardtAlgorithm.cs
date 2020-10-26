@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -131,15 +131,17 @@ namespace NNLib.Training.LevenbergMarquardt
             return E.PointwisePower(2).Divide(2).Enumerate().Sum() / E.RowCount; /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
         }
 
-
+        private Stopwatch _stw = new Stopwatch();
+        public static TimeSpan Total;
+        public static int TotalIt;
         internal override bool DoIteration(in CancellationToken ct = default)
         {
             var (P, T) = _loadedSets.GetSamples(DataSetType.Training);
-
             double error;
             int it = 0;
             do
             {
+                _stw.Restart();
                 var E = _previousE ?? CalcE(P,T,ct);
 
                 CheckTrainingCancelationIsRequested(ct);
@@ -155,7 +157,7 @@ namespace NNLib.Training.LevenbergMarquardt
 
                 CheckTrainingCancelationIsRequested(ct);
 
-                var d = G.PseudoInverse() * g;
+                var d = G.Inverse() * g;
 
                 var delta = d.RowSums();
 
@@ -193,8 +195,19 @@ namespace NNLib.Training.LevenbergMarquardt
                     }
                 }
                 else break;
-
+                _stw.Stop();
+                Total += _stw.Elapsed;
+                TotalIt++;
+                Console.WriteLine("Elapsed: " + _stw.Elapsed);
             } while (true);
+
+            if (_stw.IsRunning)
+            {
+                _stw.Stop();
+                Total += _stw.Elapsed;
+                TotalIt++;
+                Console.WriteLine("Elapsed: " + _stw.Elapsed);
+            }
 
             k++;
 
