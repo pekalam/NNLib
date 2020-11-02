@@ -35,34 +35,64 @@ namespace NNLib.Csv
 
             var orgDivisionsOrder = divisions.SelectMany(d => d.positions).OrderBy(p => p).ToArray();
 
-            for (int i = 0; i < setInfos.Length; i++)
+            bool isLinear = true;
+            int di = 0;
+            foreach (var d in divisions.SelectMany(v => v.positions))
             {
-                var fileParts = new FilePart[divisions[i].positions.Count];
-                for (int j = 0; j < fileParts.Length; j++)
+                if (orgDivisionsOrder[di++] != d)
                 {
-                    var ind = Array.BinarySearch(orgDivisionsOrder, divisions[i].positions[j]);
-
-                    long previousStart = 0;
-                    if (ind == 0)
-                    {
-                        previousStart = 0;
-                    }
-                    else
-                    {
-                        previousStart = orgDivisionsOrder[ind - 1];
-                    }
-
-                    var filePart = new FilePart(previousStart, divisions[i].positions[j], 1);
-                    // Debug.WriteLine("file part for {0} starting at {1} with {2} dataItems end: {3}",
-                    //     divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
-                    fileParts[j] = filePart;
+                    isLinear = false;
+                    break;
                 }
-
-                var setInfo =
-                    new DataSetInfo(fileParts, divisions[i].positions.Count, -0, divisions[i].setType,
-                        variableNames);
-                setInfos[i] = setInfo;
             }
+
+            if (!isLinear)
+            {
+                for (int i = 0; i < setInfos.Length; i++)
+                {
+                    var fileParts = new FilePart[divisions[i].positions.Count];
+                    for (int j = 0; j < fileParts.Length; j++)
+                    {
+                        var ind = Array.BinarySearch(orgDivisionsOrder, divisions[i].positions[j]);
+
+                        long previousStart = 0;
+                        if (ind == 0)
+                        {
+                            previousStart = 0;
+                        }
+                        else
+                        {
+                            previousStart = orgDivisionsOrder[ind - 1];
+                        }
+
+                        var filePart = new FilePart(previousStart, divisions[i].positions[j], 1);
+                        // Debug.WriteLine("file part for {0} starting at {1} with {2} dataItems end: {3}",
+                        //     divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
+                        fileParts[j] = filePart;
+                    }
+
+                    var setInfo =
+                        new DataSetInfo(fileParts, divisions[i].positions.Count, -0, divisions[i].setType,
+                            variableNames);
+                    setInfos[i] = setInfo;
+                }
+            }else
+            {
+                long previousStart = 0;
+                for (int i = 0; i < setInfos.Length; i++)
+                {
+                    var filePart = new FilePart(previousStart, divisions[i].positions[^1], divisions[i].positions.Count);
+                    Debug.WriteLine("file part for {0} starting at {1} with {2} dataItems end: {3}",
+                        divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
+                    previousStart = divisions[i].positions[^1];
+                    var setInfo =
+                        new DataSetInfo(new []{filePart}, divisions[i].positions.Count, -0, divisions[i].setType,
+                            variableNames);
+                    setInfos[i] = setInfo;
+                }
+            }
+
+
 
             return setInfos;
         }
