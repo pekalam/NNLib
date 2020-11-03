@@ -8,15 +8,15 @@ namespace NNLib.Csv
 {
     internal class DataSetInfo
     {
-        public FilePart FilePart { get; }
+        public FilePart[] FileParts { get; }
         public int SetSize { get; }
         public int PageSize { get; }
         public DataSetType DataSetType { get; }
         public string[] VariableNames { get; }
 
-        public DataSetInfo(FilePart filePart, int size, int pageSize, DataSetType dataSetType, string[] variableNames)
+        public DataSetInfo(FilePart[] fileParts, int size, int pageSize, DataSetType dataSetType, string[] variableNames)
         {
-            FilePart = filePart;
+            FileParts = fileParts;
             SetSize = size;
             PageSize = pageSize;
             DataSetType = dataSetType;

@@ -33,7 +33,7 @@ namespace NNLib.Csv.Tests
 
             setInfo.Length.Should().Be(1);
             setInfo[0].SetSize.Should().Be(99);
-            setInfo[0].FilePart.Offset.Should().Be(0);
+            setInfo[0].FileParts[0].Offset.Should().Be(0);
         }
     }
 }

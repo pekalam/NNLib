@@ -29,7 +29,7 @@ namespace NNLib.Csv
             CurrentIndexes = setVariableIndexes;
             _dataSetInfo = dataDataSetInfo;
             _csvReader = csvReader;
-            _fileContents = csvReader.ReadVectorSets(dataDataSetInfo.FilePart, setVariableIndexes);
+            _fileContents = csvReader.ReadVectorSets(dataDataSetInfo.FileParts, setVariableIndexes);
         }
 
         public SupervisedSetVariableIndexes CurrentIndexes { get; private set; }

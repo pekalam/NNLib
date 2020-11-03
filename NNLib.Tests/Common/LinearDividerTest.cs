@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using NNLib.Common;
 using NNLib.Data;
@@ -7,6 +8,50 @@ using Xunit;
 
 namespace NNLib.Tests.Common
 {
+    public class RandomDataSetDividerTest
+    {
+        [Fact]
+        public void When_training_set_percent_is_100_set_should_not_be_in_random_order()
+        {
+            var divider = new RandomDataSetDivider();
+            var positions = new List<long>()
+            {
+                1, 2, 3, 4,5,6,7,8,9,10
+            };
+
+            var result = divider.Divide(positions, new DataSetDivisionOptions()
+            {
+                TrainingSetPercent = 100,
+            });
+
+            result.Length.Should().Be(1);
+            result[0].setType.Should().Be(DataSetType.Training);
+
+            //should not be random
+            for (int i = 0; i < result[0].positions.Count; i++)
+            {
+                result[0].positions[i].Should().Be(i + 1);
+            }
+        }
+
+        [Fact]
+        public void When_valid_division_params_returns_randomized_sets()
+        {
+            var divider = new RandomDataSetDivider();
+            var positions = new List<long>()
+            {
+                1, 2, 3, 4,5,6,7,8,9,10
+            };
+
+            var result = divider.Divide(positions, new DataSetDivisionOptions()
+            {
+                TrainingSetPercent = 50, TestSetPercent = 25,ValidationSetPercent = 25
+            });
+
+            result.Length.Should().Be(3);
+        }
+    }
+
     public class LinearDividerTest
     {
         [Fact]

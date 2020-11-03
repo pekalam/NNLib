@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using NNLib.Common;
 using NNLib.Data;
 
@@ -31,15 +33,33 @@ namespace NNLib.Csv
 
             var setInfos = new DataSetInfo[divisions.Length];
 
-            long previousStart = 0;
+            var orgDivisionsOrder = divisions.SelectMany(d => d.positions).OrderBy(p => p).ToArray();
+
             for (int i = 0; i < setInfos.Length; i++)
             {
-                var filePart = new FilePart(previousStart, divisions[i].positions[^1], divisions[i].positions.Count);
-                Debug.WriteLine("file part for {0} starting at {1} with {2} dataItems end: {3}",
-                    divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
-                previousStart = divisions[i].positions[^1];
+                var fileParts = new FilePart[divisions[i].positions.Count];
+                for (int j = 0; j < fileParts.Length; j++)
+                {
+                    var ind = Array.BinarySearch(orgDivisionsOrder, divisions[i].positions[j]);
+
+                    long previousStart = 0;
+                    if (ind == 0)
+                    {
+                        previousStart = 0;
+                    }
+                    else
+                    {
+                        previousStart = orgDivisionsOrder[ind - 1];
+                    }
+
+                    var filePart = new FilePart(previousStart, divisions[i].positions[j], 1);
+                    // Debug.WriteLine("file part for {0} starting at {1} with {2} dataItems end: {3}",
+                    //     divisions[i].setType, filePart.Offset, filePart.DataItems, filePart.End);
+                    fileParts[j] = filePart;
+                }
+
                 var setInfo =
-                    new DataSetInfo(filePart, divisions[i].positions.Count, -0, divisions[i].setType,
+                    new DataSetInfo(fileParts, divisions[i].positions.Count, -0, divisions[i].setType,
                         variableNames);
                 setInfos[i] = setInfo;
             }
