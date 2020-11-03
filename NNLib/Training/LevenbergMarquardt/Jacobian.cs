@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Storage;
 using NNLib.Data;
+using NNLib.Exceptions;
 using NNLib.LossFunction;
 using NNLib.MLP;
 
@@ -54,11 +56,12 @@ namespace NNLib.Training.LevenbergMarquardt
             InitMemory();
         }
 
-        public (Matrix<double> J, Matrix<double> Jt) CalcJacobian()
+        public (Matrix<double> J, Matrix<double> Jt) CalcJacobian(in CancellationToken ct)
         {
             for (int a = 0; a < input.Count; a++)
             {
                 int col = 0;
+                TrainingCanceledException.ThrowIfCancellationRequested(ct);
                 network.CalculateOutput(input[a]);
 
                 delta1W1 = neg1Matrix;
