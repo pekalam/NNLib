@@ -1,4 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.Data;
 
 namespace NNLib.LossFunction
 {
@@ -16,5 +17,7 @@ namespace NNLib.LossFunction
         /// Calculates derivative with respect to <see cref="input"/> parameter
         /// </summary>
         Matrix<double> Derivative(Matrix<double> input, Matrix<double> target);
+
+        void InitMemory(Layer layer, SupervisedTrainingSamples data);
     }
 }

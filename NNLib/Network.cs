@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using MathNet.Numerics.LinearAlgebra.Storage;
+using NNLib.Data;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace NNLib
@@ -39,6 +40,10 @@ namespace NNLib
                 }
             }
 
+            foreach (var layer in _layers)
+            {
+                layer.InitializeMemory();
+            }
         }
 
 
@@ -51,6 +56,10 @@ namespace NNLib
         public int TotalSynapses => _layers.Sum(l => l.InputsCount * l.NeuronsCount);
         public int TotalBiases => TotalNeurons;
 
+        public virtual void InitMemoryForData(SupervisedTrainingSamples data)
+        {
+        }
+
         public void AddLayer(T layer)
         {
             ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToList());
@@ -61,6 +70,7 @@ namespace NNLib
             {
                 layer.Initialize();
             }
+            layer.InitializeMemory();
             RaiseNetworkStructureChanged();
         }
 
@@ -101,6 +111,7 @@ namespace NNLib
                 }
             }
             RaiseNetworkStructureChanged();
+            layer.InitializeMemory();
         }
 
         private void ValidateLayersInputsAndOutputs(List<T> layers)

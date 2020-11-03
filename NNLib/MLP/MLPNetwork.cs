@@ -2,6 +2,7 @@
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.ActivationFunction;
+using NNLib.Data;
 
 namespace NNLib.MLP
 {
@@ -26,6 +27,14 @@ namespace NNLib.MLP
         {
         }
 
+        public override void InitMemoryForData(SupervisedTrainingSamples data)
+        {
+            foreach (var layer in _layers)
+            {
+                layer.InitializeMemoryForData(data);
+            }
+        }
+
         public PerceptronLayer InsertAfter(int ind)
         {
             ind++;
@@ -41,7 +50,7 @@ namespace NNLib.MLP
             {
                 layer.Initialize();
             }
-
+            layer.InitializeMemory();
             RaiseNetworkStructureChanged();
             return layer;
         }

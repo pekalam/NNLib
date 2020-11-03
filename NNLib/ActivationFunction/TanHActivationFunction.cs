@@ -1,31 +1,47 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
+using NNLib.Data;
 
 namespace NNLib.ActivationFunction
 {
     public class TanHActivationFunction : IActivationFunction
     {
+        private Matrix<double> _f;
+        private Matrix<double> _df;
+
+        private Matrix<double> _fData;
+        private Matrix<double> _dfData;
+
         public Matrix<double> Function(Matrix<double> x)
         {
-            return Matrix.Tanh(x);
-        }
+            Matrix<double> storage = x.ColumnCount == _f.ColumnCount ? _f : _fData;
 
-        public void Function(Matrix<double> x, Matrix<double> result)
-        {
-            x.PointwiseTanh(result);
+            x.PointwiseTanh(storage);
+            return storage;
         }
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            return 1 - Matrix.Tanh(x).PointwisePower(2);
+            Matrix<double> storage = x.ColumnCount == _df.ColumnCount ? _df : _dfData;
+
+            x.PointwiseTanh(storage);
+            storage.PointwisePower(2, storage);
+            storage.Negate(storage);
+            storage.Add(1, storage);
+
+            return storage;
         }
 
-        public void Derivative(Matrix<double> x, Matrix<double> result)
+        public void InitMemory(Layer layer)
         {
-            x.PointwiseTanh(result);
-            result.PointwisePower(2, result);
-            result.Negate(result);
-            result.Add(1, result);
+            _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
+            _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
+        }
+
+        public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
+        {
+            _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
+            _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
         }
     }
 }

@@ -23,8 +23,12 @@ namespace NNLib.Tests
 
         private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters)
         {
+            _trainingSamples = AndGateSet();
             var algorithm = new GradientDescentAlgorithm(parameters);
-            algorithm.Setup(_trainingSamples = AndGateSet(), new LoadedSupervisedTrainingData(new SupervisedTrainingData(_trainingSamples)), _net, new QuadraticLossFunction());
+            var data = new SupervisedTrainingData(_trainingSamples);
+            var lossFunction = new QuadraticLossFunction();
+            lossFunction.InitMemory(_net.Layers[^1], data.TrainingSet);
+            algorithm.Setup(_trainingSamples, new LoadedSupervisedTrainingData(data), _net, lossFunction);
             return algorithm;
         }
 

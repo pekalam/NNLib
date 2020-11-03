@@ -53,11 +53,16 @@ namespace NNLib
 
         public MatrixBuilder MatrixBuilder { get; set; }
 
-        internal void Initialize()
+        protected internal virtual void Initialize()
         {
             Debug.Assert(_initNeuronsCount > 0 && _initInputsCount > 0 && !IsInitialized);
             MatrixBuilder.BuildAllMatrices(_initNeuronsCount, _initInputsCount, this);
             IsInitialized = true;
+        }
+
+        protected internal virtual void InitializeMemory()
+        {
+
         }
 
         internal void AssignNetwork(INetwork network)

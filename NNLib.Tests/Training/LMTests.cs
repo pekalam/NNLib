@@ -18,23 +18,23 @@ namespace NNLib.Tests.Training
             var net = TrainingTestUtils.CreateNetwork(2, (2, new SigmoidActivationFunction()), (1, new TanHActivationFunction()));
             var jacobian = new Jacobian(net, sets.Input);
 
-            jacobian.CalcJacobian().ColumnCount.Should().Be(9);
+            jacobian.CalcJacobian().J.ColumnCount.Should().Be(9);
 
             net.Layers[0].NeuronsCount++;
 
-            jacobian.CalcJacobian().ColumnCount.Should().Be(13);
+            jacobian.CalcJacobian().J.ColumnCount.Should().Be(13);
 
             net.AddLayer(new PerceptronLayer(1, 1, new LinearActivationFunction()));
 
-            jacobian.CalcJacobian().ColumnCount.Should().Be(15);
+            jacobian.CalcJacobian().J.ColumnCount.Should().Be(15);
 
             net.RemoveLayer(net.Layers[^1]);
 
-            jacobian.CalcJacobian().ColumnCount.Should().Be(13);
+            jacobian.CalcJacobian().J.ColumnCount.Should().Be(13);
 
             net.InsertAfter(net.Layers.Count - 1);
 
-            jacobian.CalcJacobian().ColumnCount.Should().Be(15);
+            jacobian.CalcJacobian().J.ColumnCount.Should().Be(15);
         }
     }
 }

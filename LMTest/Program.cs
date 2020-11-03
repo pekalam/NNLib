@@ -22,8 +22,8 @@ namespace LMTest
 
             var net = new MLPNetwork(new []
             {
-                new PerceptronLayer(1, 30, new TanHActivationFunction(), new XavierMatrixBuilder()),
-                new PerceptronLayer(30, 30, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(1, 100, new TanHActivationFunction(), new XavierMatrixBuilder()),
+                new PerceptronLayer(100, 30, new TanHActivationFunction(), new XavierMatrixBuilder()),
                 new PerceptronLayer(30, 1, new LinearActivationFunction(), new XavierMatrixBuilder())
             });
 

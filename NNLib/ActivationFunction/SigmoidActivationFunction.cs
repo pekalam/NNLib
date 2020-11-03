@@ -1,34 +1,60 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.Data;
 
 namespace NNLib.ActivationFunction
 {
     public class SigmoidActivationFunction : IActivationFunction
     {
+        private Matrix<double> _f;
+        private Matrix<double> _df;
+        private Matrix<double> _dfClone;
+
+        private Matrix<double> _fData;
+        private Matrix<double> _dfData;
+        private Matrix<double> _dfDataClone;
+
         public Matrix<double> Function(Matrix<double> x)
         {
-            var exp = x.Negate().PointwiseExp();
-            var result = 1 / (1 + exp);
-            return result;
-        }
+            Matrix<double> storage = x.ColumnCount == _f.ColumnCount ? _f : _fData;
 
-        public void Function(Matrix<double> x, Matrix<double> result)
-        {
-            x.Negate(result);
-            result.PointwiseExp(result);
-            result.Add(1, result);
-            result.PointwisePower(-1, result);
+            x.Negate(storage);
+            storage.PointwiseExp(storage);
+            storage.Add(1, storage);
+            storage.PointwisePower(-1, storage);
+
+            return storage;
         }
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            var exp = x.Negate().PointwiseExp();
-            var s = 1 / (1 + exp);
-            var result = s.PointwiseMultiply(1 - s);
-            return result;
+            Matrix<double> storage = x.ColumnCount == _df.ColumnCount ? _df : _dfData;
+            Matrix<double> storage2 = x.ColumnCount == _df.ColumnCount ? _dfClone : _dfDataClone;
+
+            x.Negate(storage);
+            storage.PointwiseExp(storage);
+            storage.Add(1, storage);
+            storage.PointwisePower(-1, storage);
+
+            storage.Negate(storage2);
+            storage2.Add(1, storage2);
+
+            storage.PointwiseMultiply(storage2, storage);
+
+            return storage;
         }
 
-        public void Derivative(Matrix<double> x, Matrix<double> result)
+        public void InitMemory(Layer layer)
         {
+            _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
+            _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
+            _dfClone = _df.Clone();
+        }
+
+        public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
+        {
+            _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
+            _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
+            _dfDataClone = _dfData.Clone();
         }
     }
 }

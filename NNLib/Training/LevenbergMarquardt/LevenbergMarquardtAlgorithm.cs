@@ -4,6 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Factorization;
+using MathNet.Numerics.Providers.LinearAlgebra;
 using NNLib.Data;
 using NNLib.Exceptions;
 using NNLib.LossFunction;
@@ -28,7 +31,17 @@ namespace NNLib.Training.LevenbergMarquardt
         private ParametersUpdate _update;
 
         private Matrix<double> _E;
+        private Matrix<double> _Err;
         private Matrix<double> _Et;
+        private Matrix<double> _g;
+        private Matrix<double> _JtJ;
+        private Matrix<double> _G;
+        private Matrix<double> _GInv;
+        private Matrix<double> _d;
+        private int[] numArray;
+
+        private LU<double> _lu;
+
 
         public LevenbergMarquardtAlgorithm(LevenbergMarquardtParams? parameters = null)
         {
@@ -50,11 +63,28 @@ namespace NNLib.Training.LevenbergMarquardt
 
             _E = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount, set.Input.Count);
             _Et = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
+            _Err = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
+            _g = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
+            _JtJ = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
+            _G = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
+            _GInv = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
+            _d = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
 
+            numArray = new int[_G.RowCount];
+
+            _lu = _G.LU();
+                
             network.StructureChanged -= NetworkOnStructureChanged;
             network.StructureChanged += NetworkOnStructureChanged;
 
-            SetDampingParameter(default);
+            if (set.Input.Count <= 400 && network.TotalSynapses + network.TotalBiases < 300)
+            {
+                SetDampingParameter(default);
+            }
+            else
+            {
+                _dampingParameter = 0.1;
+            }
         }
 
         internal override void Reset()
@@ -72,8 +102,8 @@ namespace NNLib.Training.LevenbergMarquardt
         {
             var max = Double.MinValue;
             
-            var J = _jacobian.CalcJacobian();
-            var Jt = J.Transpose();
+            var (J, Jt) = _jacobian.CalcJacobian();
+   
             var JtJ = Jt * J;
             var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real);
             
@@ -134,7 +164,9 @@ namespace NNLib.Training.LevenbergMarquardt
 
         private double CalcError(Matrix<double> E)
         {
-            return E.PointwisePower(2).Divide(2).Enumerate().Sum() / E.RowCount; /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
+            E.PointwiseMultiply(E,_Err);
+            _Err.Divide(2, _Err);
+            return _Err.Enumerate().Sum() / E.RowCount; /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
         }
 
         private Stopwatch _stw = new Stopwatch();
@@ -152,20 +184,20 @@ namespace NNLib.Training.LevenbergMarquardt
 
                 CheckTrainingCancelationIsRequested(ct);
 
-                var J = _jacobian.CalcJacobian();
+                var (J, Jt) = _jacobian.CalcJacobian();
 
-                var Jt = J.Transpose();
-
-                var g = Jt * E;
-                var JtJ = Jt * J;
-                var diag = Matrix<double>.Build.Diagonal(JtJ.RowCount, JtJ.ColumnCount, _dampingParameter);
-                var G = JtJ + diag;
+                Jt.Multiply(E, _g);
+                Jt.Multiply(J, _JtJ);
+                var diag = Matrix<double>.Build.Diagonal(_JtJ.RowCount, _JtJ.ColumnCount, _dampingParameter);
+                _JtJ.Add(diag, _G);
 
                 CheckTrainingCancelationIsRequested(ct);
 
-                var d = G.Inverse() * g;
-
-                var delta = d.RowSums();
+                LinearAlgebraControl.Provider.LUFactor((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+                LinearAlgebraControl.Provider.LUInverseFactored((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+                _G.Multiply(_g, _d);
+                
+                var delta = _d.RowSums();
 
                 SetUpdate(delta, _network);
                 UpdateWeightsAndBiasesWithDeltaRule();
