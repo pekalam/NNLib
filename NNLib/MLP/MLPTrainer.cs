@@ -121,8 +121,10 @@ namespace NNLib.MLP
             _algorithm = algorithm;
             _loadedData = new LoadedSupervisedTrainingData(TrainingSets);
             _algorithm.Setup(TrainingSets.TrainingSet, _loadedData, network, lossFunction);
-            Network.InitMemoryForData(_trainingData.TrainingSet);
-            LossFunction.InitMemory(Network.Layers[^1], TrainingSets.TrainingSet);
+            Network.InitializeMemoryForData(_trainingData.TrainingSet);
+            LossFunction.InitializeMemory(Network.Layers[^1], TrainingSets.TrainingSet);
+
+            Network.StructureChanged += NetworkOnStructureChanged;
         }
 
         public ILossFunction LossFunction { get;  }
@@ -135,8 +137,8 @@ namespace NNLib.MLP
                 _trainingData = value;
                 _loadedData = new LoadedSupervisedTrainingData(value);
                 _algorithm.Setup(value.TrainingSet, _loadedData, Network, LossFunction);
-                Network.InitMemoryForData(_trainingData.TrainingSet);
-                LossFunction.InitMemory(Network.Layers[^1], TrainingSets.TrainingSet);
+                Network.InitializeMemoryForData(_trainingData.TrainingSet);
+                LossFunction.InitializeMemory(Network.Layers[^1], TrainingSets.TrainingSet);
             }
         }
         public MLPNetwork Network { get; }
@@ -152,6 +154,12 @@ namespace NNLib.MLP
         public double Error { get; private set; } = double.PositiveInfinity;
         public int Epochs { get; private set; }
         public int Iterations => Algorithm.Iterations;
+
+        private void NetworkOnStructureChanged(INetwork obj)
+        {
+            Network.InitializeMemoryForData(_trainingData.TrainingSet);
+            LossFunction.InitializeMemory(Network.Layers[^1], TrainingSets.TrainingSet);
+        }
 
         private void ValidateNetworkAndDataSets(MLPNetwork network, SupervisedTrainingData trainingData)
         {

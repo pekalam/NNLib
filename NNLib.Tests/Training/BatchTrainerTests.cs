@@ -27,7 +27,7 @@ namespace NNLib.Tests
             var algorithm = new GradientDescentAlgorithm(parameters);
             var data = new SupervisedTrainingData(_trainingSamples);
             var lossFunction = new QuadraticLossFunction();
-            lossFunction.InitMemory(_net.Layers[^1], data.TrainingSet);
+            lossFunction.InitializeMemory(_net.Layers[^1], data.TrainingSet);
             algorithm.Setup(_trainingSamples, new LoadedSupervisedTrainingData(data), _net, lossFunction);
             return algorithm;
         }

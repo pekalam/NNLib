@@ -56,8 +56,12 @@ namespace NNLib
         public int TotalSynapses => _layers.Sum(l => l.InputsCount * l.NeuronsCount);
         public int TotalBiases => TotalNeurons;
 
-        public virtual void InitMemoryForData(SupervisedTrainingSamples data)
+        public virtual void InitializeMemoryForData(SupervisedTrainingSamples data)
         {
+            foreach (var layer in _layers)
+            {
+                layer.InitializeMemoryForData(data);
+            }
         }
 
         public void AddLayer(T layer)

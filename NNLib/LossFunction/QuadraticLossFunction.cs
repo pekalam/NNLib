@@ -30,7 +30,7 @@ namespace NNLib.LossFunction
             return storage;
         }
 
-        public void InitMemory(Layer layer, SupervisedTrainingSamples data)
+        public void InitializeMemory(Layer layer, SupervisedTrainingSamples data)
         {
             _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
             _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);

@@ -27,14 +27,6 @@ namespace NNLib.MLP
         {
         }
 
-        public override void InitMemoryForData(SupervisedTrainingSamples data)
-        {
-            foreach (var layer in _layers)
-            {
-                layer.InitializeMemoryForData(data);
-            }
-        }
-
         public PerceptronLayer InsertAfter(int ind)
         {
             ind++;

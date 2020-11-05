@@ -47,7 +47,7 @@ namespace NNLib.MLP
             _net = Matrix<double>.Build.Dense(NeuronsCount, 1);
         }
 
-        internal void InitializeMemoryForData(SupervisedTrainingSamples data)
+        protected internal override void InitializeMemoryForData(SupervisedTrainingSamples data)
         {
             ActivationFunction.InitMemoryForData(this, data);
             _netData = Matrix<double>.Build.Dense(NeuronsCount, data.Input.Count);

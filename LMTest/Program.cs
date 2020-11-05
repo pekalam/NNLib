@@ -56,7 +56,6 @@ namespace LMTest
             }
 
             Console.WriteLine();
-            Console.WriteLine("Average time: " + LevenbergMarquardtAlgorithm.Total / LevenbergMarquardtAlgorithm.TotalIt);
             Console.ReadKey();
         }
     }

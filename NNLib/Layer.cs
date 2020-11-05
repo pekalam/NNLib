@@ -1,6 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Diagnostics;
+using NNLib.Data;
 using NNLib.MLP;
 
 namespace NNLib
@@ -61,6 +62,11 @@ namespace NNLib
         }
 
         protected internal virtual void InitializeMemory()
+        {
+
+        }
+
+        protected internal virtual void InitializeMemoryForData(SupervisedTrainingSamples data)
         {
 
         }

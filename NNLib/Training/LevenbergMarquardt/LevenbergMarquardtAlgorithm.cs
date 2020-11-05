@@ -21,6 +21,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private MLPNetwork _network;
 
         private LoadedSupervisedTrainingData _loadedSets;
+        private SupervisedTrainingSamples _set;
 
         private double _previousError;
         private Matrix<double>? _previousE = null;
@@ -54,21 +55,10 @@ namespace NNLib.Training.LevenbergMarquardt
         {
             _loadedSets = loadedSets;
             _network = network;
+            _set = set;
 
             k = 0;
-            _previousE = null;
-            _jacobian = new Jacobian(network, set.Input);
-            _update = ParametersUpdate.FromNetwork(network);
-
-            _E = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount, set.Input.Count);
-            _Et = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
-            _Err = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
-            _g = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
-            _JtJ = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
-            _G = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
-            _d = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
-
-            numArray = new int[_G.RowCount];
+            InitMemory(network, set);
 
             network.StructureChanged -= NetworkOnStructureChanged;
             network.StructureChanged += NetworkOnStructureChanged;
@@ -83,6 +73,23 @@ namespace NNLib.Training.LevenbergMarquardt
             }
         }
 
+        private void InitMemory(MLPNetwork network, SupervisedTrainingSamples set)
+        {
+            _previousE = null;
+            _jacobian = new Jacobian(network, set.Input);
+            _update = ParametersUpdate.FromNetwork(network);
+
+            _E = Matrix<double>.Build.Dense(network.Layers[^1].NeuronsCount, set.Input.Count);
+            _Et = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
+            _Err = Matrix<double>.Build.Dense(set.Input.Count, network.Layers[^1].NeuronsCount);
+            _g = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
+            _JtJ = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
+            _G = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
+            _d = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
+
+            numArray = new int[_G.RowCount];
+        }
+
         internal override void Reset()
         {
             k = 0;
@@ -91,7 +98,7 @@ namespace NNLib.Training.LevenbergMarquardt
 
         private void NetworkOnStructureChanged(INetwork obj)
         {
-            _update = ParametersUpdate.FromNetwork(_network);
+            InitMemory(_network, _set);
         }
 
         private void SetDampingParameter(in CancellationToken ct)
@@ -153,18 +160,20 @@ namespace NNLib.Training.LevenbergMarquardt
         private double CalcError(Matrix<double> E)
         {
             E.PointwiseMultiply(E,_Err);
-            return _Err.Enumerate().Sum() / (2 * E.RowCount); /// (T.ColumnCount * _network.Layers[^1].NeuronsCount);
+            return _Err.Enumerate().Sum() / (2 * E.RowCount);
         }
 
-        private Stopwatch _stw = new Stopwatch();
-        public static TimeSpan Total;
-        public static int TotalIt;
         internal override bool DoIteration(in CancellationToken ct = default)
         {
+            void calcGInverse()
+            {
+                LinearAlgebraControl.Provider.LUFactor((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+                LinearAlgebraControl.Provider.LUInverseFactored((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+            }
+
             var (P, T) = _loadedSets.GetSamples(DataSetType.Training);
             int it = 0;
 
-            _stw.Restart();
             var e = _previousE ?? CalcE(P, T, ct);
 
             TrainingCanceledException.ThrowIfCancellationRequested(ct);
@@ -178,8 +187,7 @@ namespace NNLib.Training.LevenbergMarquardt
 
             TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
-            LinearAlgebraControl.Provider.LUFactor((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
-            LinearAlgebraControl.Provider.LUInverseFactored((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+            calcGInverse();
             _G.Multiply(_g, _d);
 
             var delta = _d.RowSums();
@@ -212,8 +220,7 @@ namespace NNLib.Training.LevenbergMarquardt
 
                         TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
-                        LinearAlgebraControl.Provider.LUFactor((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
-                        LinearAlgebraControl.Provider.LUInverseFactored((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+                        calcGInverse();
                         _G.Multiply(_g, _d);
 
                         delta = _d.RowSums();

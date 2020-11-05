@@ -18,6 +18,6 @@ namespace NNLib.LossFunction
         /// </summary>
         Matrix<double> Derivative(Matrix<double> input, Matrix<double> target);
 
-        void InitMemory(Layer layer, SupervisedTrainingSamples data);
+        void InitializeMemory(Layer layer, SupervisedTrainingSamples data);
     }
 }
