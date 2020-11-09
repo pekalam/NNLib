@@ -15,12 +15,12 @@ namespace NNLib.Training.GradientDescent
             {
                 if (!double.IsFinite(value))
                 {
-                    throw new InvalidOperationException();
+                    throw new ArgumentException("Learning rate must be a positive, real number");
                 }
 
                 if (value <= 0)
                 {
-                    throw new InvalidOperationException();
+                    throw new ArgumentException("Learning rate must be a positive, real number");
                 }
 
                 _learningRate = value;
@@ -34,12 +34,12 @@ namespace NNLib.Training.GradientDescent
             {
                 if (!double.IsFinite(value))
                 {
-                    throw new InvalidOperationException();
+                    throw new ArgumentException("Momentum must be a positive, real number");
                 }
 
                 if (value < 0)
                 {
-                    throw new InvalidOperationException();
+                    throw new ArgumentException("Momentum must be a positive, real number");
                 }
 
                 _momentum = value;
@@ -54,7 +54,7 @@ namespace NNLib.Training.GradientDescent
             {
                 if (value <= 0)
                 {
-                    throw new InvalidOperationException();
+                    throw new ArgumentException("Batch size must be greater than zero");
                 }
                 _batchSize = value;
             }

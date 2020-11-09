@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Factorization;
@@ -38,7 +39,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private Matrix<double> _JtJ;
         private Matrix<double> _G;
         private Matrix<double> _d;
-        private int[] numArray;
+        private int[] ipiv;
 
 
 
@@ -87,7 +88,7 @@ namespace NNLib.Training.LevenbergMarquardt
             _G = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.TotalSynapses + network.TotalBiases);
             _d = Matrix<double>.Build.Dense(network.TotalSynapses + network.TotalBiases, network.Layers[^1].NeuronsCount);
 
-            numArray = new int[_G.RowCount];
+            ipiv = new int[_G.RowCount];
         }
 
         internal override void Reset()
@@ -167,8 +168,16 @@ namespace NNLib.Training.LevenbergMarquardt
         {
             void calcGInverse()
             {
-                LinearAlgebraControl.Provider.LUFactor((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
-                LinearAlgebraControl.Provider.LUInverseFactored((_G as DenseMatrix)!.Values, _G.RowCount, numArray);
+                try
+                {
+                    LinearAlgebraControl.Provider.LUFactor((_G as DenseMatrix)!.Values, _G.RowCount, ipiv);
+                    LinearAlgebraControl.Provider.LUInverseFactored((_G as DenseMatrix)!.Values, _G.RowCount, ipiv);
+                }
+                catch (InvalidParameterException)
+                {
+                    //cannot perform LU factorization
+                    throw new AlgorithmFailed();
+                }
             }
 
             var (P, T) = _loadedSets.GetSamples(DataSetType.Training);

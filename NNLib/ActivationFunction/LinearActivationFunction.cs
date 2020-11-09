@@ -26,7 +26,7 @@ namespace NNLib.ActivationFunction
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            if (x.ColumnCount == _f.ColumnCount)
+            if (x.ColumnCount == _df.ColumnCount)
             {
                 return _df;
             }
