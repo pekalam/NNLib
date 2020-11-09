@@ -21,5 +21,7 @@ namespace NNLib.ActivationFunction
         void InitMemory(Layer layer);
 
         void InitMemoryForData(Layer layer, SupervisedTrainingSamples data);
+
+        IActivationFunction Clone();
     }
 }

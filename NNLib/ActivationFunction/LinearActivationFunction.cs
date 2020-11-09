@@ -12,6 +12,19 @@ namespace NNLib.ActivationFunction
         private Matrix<double> _fData;
         private Matrix<double> _dfData;
 
+        private LinearActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> fData, Matrix<double> dfData)
+        {
+            _f = f;
+            _df = df;
+            _fData = fData;
+            _dfData = dfData;
+        }
+
+        public LinearActivationFunction()
+        {
+            
+        }
+
         public Matrix<double> Function(Matrix<double> x)
         {
             if (x.ColumnCount == _f.ColumnCount)
@@ -44,6 +57,11 @@ namespace NNLib.ActivationFunction
         {
             _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count, Matrix<double>.One);
             _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
+        }
+
+        public IActivationFunction Clone()
+        {
+            return new LinearActivationFunction(_f, _df, _fData, _dfData);
         }
     }
 }

@@ -13,6 +13,21 @@ namespace NNLib.ActivationFunction
         private Matrix<double> _dfData;
         private Matrix<double> _dfDataClone;
 
+        private SigmoidActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> dfClone, Matrix<double> fData, Matrix<double> dfData, Matrix<double> dfDataClone)
+        {
+            _f = f;
+            _df = df;
+            _dfClone = dfClone;
+            _fData = fData;
+            _dfData = dfData;
+            _dfDataClone = dfDataClone;
+        }
+
+        public SigmoidActivationFunction()
+        {
+            
+        }
+
         public Matrix<double> Function(Matrix<double> x)
         {
             Matrix<double> storage = x.ColumnCount == _f.ColumnCount ? _f : _fData;
@@ -55,6 +70,11 @@ namespace NNLib.ActivationFunction
             _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
             _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
             _dfDataClone = _dfData.Clone();
+        }
+
+        public IActivationFunction Clone()
+        {
+            return new SigmoidActivationFunction(_f, _df,_dfClone,_fData,_dfData,_dfDataClone);
         }
     }
 }

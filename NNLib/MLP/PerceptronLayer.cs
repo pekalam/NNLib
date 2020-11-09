@@ -58,7 +58,7 @@ namespace NNLib.MLP
         public Matrix<double>? Net;
 
         internal PerceptronLayer Clone() =>
-            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), Net?.Clone(), _net?.Clone(), _netData?.Clone(), ActivationFunction, MatrixBuilder);
+            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), Net?.Clone(), _net?.Clone(), _netData?.Clone(), ActivationFunction.Clone(), MatrixBuilder);
 
 
         public override void CalculateOutput(Matrix<double> input)
