@@ -27,6 +27,25 @@ namespace NNLib.MLP
         {
         }
 
+        public static MLPNetwork Create(int inputs,
+            params (int neuronsCount, IActivationFunction activationFunction)[] layers)
+        {
+            var netLayers = new PerceptronLayer[layers.Length];
+            var inputLayer = new PerceptronLayer(inputs, layers[0].neuronsCount, layers[0].activationFunction);
+
+            netLayers[0] = inputLayer;
+
+            for (int i = 1; i < layers.Length; i++)
+            {
+                var layer = new PerceptronLayer(netLayers[i - 1].NeuronsCount, layers[i].neuronsCount,
+                    layers[i].activationFunction);
+                netLayers[i] = layer;
+            }
+
+            var net = new MLPNetwork(netLayers);
+            return net;
+        }
+
         public PerceptronLayer InsertAfter(int ind)
         {
             ind++;

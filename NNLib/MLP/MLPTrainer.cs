@@ -219,6 +219,8 @@ namespace NNLib.MLP
             return result;
         }
 
+        public string ProgressString() => $"Epoch: {Epochs}, error: {Error}";
+
         public void DoIteration(in CancellationToken ct = default)
         {
             if (DoIterationInternal(ct))
