@@ -60,45 +60,45 @@ namespace NNLib.Csv
             SupervisedTrainingData data)
         {
             //TODO double dispatch
-            var tReader = (data.TrainingSet.Input as CsvFileVectorSet)?.FileReader;
-            if (!tReader.CurrentIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
+            var tReader = (data.TrainingSet.Input as CsvFileVectorSet)?.FileReader!;
+            var prevIndexes = tReader.CurrentIndexes.Clone();
+
+            tReader.ChangeVariables(variableIndexes);
+            if (!prevIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
             {
                 (data.TrainingSet.Input as CsvFileVectorSet).RaiseModified();
             }
-            if (!tReader.CurrentIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
+            if (!prevIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
             {
                 (data.TrainingSet.Target as CsvFileVectorSet).RaiseModified();
             }
-            tReader.ChangeVariables(variableIndexes);
 
             var tsReader = (data.TestSet?.Input as CsvFileVectorSet)?.FileReader;
             if (tsReader != null)
             {
-                if (!tsReader.CurrentIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
+                tsReader.ChangeVariables(variableIndexes);
+                if (!prevIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
                 {
                     (data.TestSet.Input as CsvFileVectorSet).RaiseModified();
                 }
-                if (!tsReader.CurrentIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
+                if (!prevIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
                 {
                     (data.TestSet.Target as CsvFileVectorSet).RaiseModified();
                 }
-
-                tsReader.ChangeVariables(variableIndexes);
             }
             
             var vReader = (data.ValidationSet?.Input as CsvFileVectorSet)?.FileReader;
             if (vReader != null)
             {
-                if (!vReader.CurrentIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
+                vReader.ChangeVariables(variableIndexes);
+                if (!prevIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
                 {
                     (data.ValidationSet.Input as CsvFileVectorSet).RaiseModified();
                 }
-                if (!vReader.CurrentIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
+                if (!prevIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
                 {
                     (data.ValidationSet.Target as CsvFileVectorSet).RaiseModified();
                 }
-
-                vReader.ChangeVariables(variableIndexes);
             }
         }
 

@@ -14,6 +14,8 @@ namespace NNLib.MLP
         private Matrix<double>? _biasData1;
         private Matrix<double>? _biasDataResult;
 
+        private SupervisedTrainingSamples? _activationFunctionDataInit;
+
         public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null)
             : base(inputsCount, neuronsCount, matrixBuilder ?? new DefaultNormDistMatrixBuilder())
         {
@@ -38,6 +40,11 @@ namespace NNLib.MLP
             {
                 Guards._NotNull(value);
                 _activationFunction = value;
+                _activationFunction.InitMemory(this);
+                if (_activationFunctionDataInit != null)
+                {
+                    _activationFunction.InitMemoryForData(this, _activationFunctionDataInit);
+                }
             }
         }
 
@@ -49,6 +56,7 @@ namespace NNLib.MLP
 
         protected internal override void InitializeMemoryForData(SupervisedTrainingSamples data)
         {
+            _activationFunctionDataInit = data;
             ActivationFunction.InitMemoryForData(this, data);
             _netData = Matrix<double>.Build.Dense(NeuronsCount, data.Input.Count);
             _biasData1 = Matrix<double>.Build.Dense(1, data.Input.Count, 1);

@@ -38,7 +38,7 @@ namespace NNLib.ActivationFunction
 
             x.PointwisePower(2, storage);
             storage.Add(1, storage);
-            storage.Power(-1, storage);
+            storage.PointwisePower(-1, storage);
             return storage;
         }
 
