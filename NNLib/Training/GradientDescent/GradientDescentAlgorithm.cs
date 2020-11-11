@@ -32,6 +32,14 @@ namespace NNLib.Training.GradientDescent
             _network = network;
             _iterations = 0;
             BatchTrainer = new BatchTrainer(Params.BatchSize, set, Params.Randomize);
+
+            network.StructureChanged -= NetworkOnStructureChanged;
+            network.StructureChanged += NetworkOnStructureChanged;
+        }
+
+        private void NetworkOnStructureChanged(INetwork obj)
+        {
+            BatchTrainer!.Reset();
         }
 
         internal override void Reset()
