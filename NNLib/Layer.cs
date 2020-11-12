@@ -26,7 +26,16 @@ namespace NNLib
             Output = output;
             Biases = biases;
 
-            MatrixBuilder = matrixBuilder;
+            if (matrixBuilder is NormDistMatrixBuilder n)
+            {
+                //temp - builder with options
+                MatrixBuilder = new NormDistMatrixBuilder(n.Options);
+            }
+            else
+            {
+                MatrixBuilder = matrixBuilder;
+            }
+
             IsInitialized = true;
         }
 #pragma warning restore 8618

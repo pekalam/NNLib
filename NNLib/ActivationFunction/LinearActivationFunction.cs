@@ -9,15 +9,15 @@ namespace NNLib.ActivationFunction
         private Matrix<double> _f;
         private Matrix<double> _df;
         
-        private Matrix<double> _fData;
-        private Matrix<double> _dfData;
+        private NetDataMatrixPool? _fData;
+        private NetDataMatrixPool? _dfData;
 
-        private LinearActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> fData, Matrix<double> dfData)
+        private LinearActivationFunction(Matrix<double> f, Matrix<double> df, NetDataMatrixPool? fData, NetDataMatrixPool? dfData)
         {
-            _f = f;
-            _df = df;
-            _fData = fData;
-            _dfData = dfData;
+            _f = f.Clone();
+            _df = df.Clone();
+            _fData = fData?.Clone();
+            _dfData = dfData?.Clone();
         }
 
         public LinearActivationFunction()
@@ -27,24 +27,26 @@ namespace NNLib.ActivationFunction
 
         public Matrix<double> Function(Matrix<double> x)
         {
-            if (x.ColumnCount == _f.ColumnCount)
+            var cols = x.ColumnCount;
+            if (cols == _f.ColumnCount)
             {
                 x.CopyTo(_f);
                 return _f;
             }
 
-            x.CopyTo(_fData);
-            return _fData;
+            x.CopyTo(_fData!.Get(cols));
+            return _fData.Get(cols);
         }
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            if (x.ColumnCount == _df.ColumnCount)
+            var cols = x.ColumnCount;
+            if (cols == _df.ColumnCount)
             {
                 return _df;
             }
 
-            return _dfData;
+            return _dfData!.Get(cols);
         }
 
         public void InitMemory(Layer layer)
@@ -55,8 +57,8 @@ namespace NNLib.ActivationFunction
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count, Matrix<double>.One);
-            _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
+            _dfData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count, Matrix<double>.One);
+            _fData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
         }
 
         public IActivationFunction Clone()

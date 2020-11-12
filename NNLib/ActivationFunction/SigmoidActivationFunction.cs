@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System;
+using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
 
 namespace NNLib.ActivationFunction
@@ -9,18 +10,18 @@ namespace NNLib.ActivationFunction
         private Matrix<double> _df;
         private Matrix<double> _dfClone;
 
-        private Matrix<double> _fData;
-        private Matrix<double> _dfData;
-        private Matrix<double> _dfDataClone;
+        private NetDataMatrixPool? _fData;
+        private NetDataMatrixPool? _dfData;
+        private NetDataMatrixPool? _dfDataClone;
 
-        private SigmoidActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> dfClone, Matrix<double> fData, Matrix<double> dfData, Matrix<double> dfDataClone)
+        private SigmoidActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> dfClone, NetDataMatrixPool? fData, NetDataMatrixPool? dfData, NetDataMatrixPool? dfDataClone)
         {
-            _f = f;
-            _df = df;
-            _dfClone = dfClone;
-            _fData = fData;
-            _dfData = dfData;
-            _dfDataClone = dfDataClone;
+            _f = f.Clone();
+            _df = df.Clone();
+            _dfClone = dfClone.Clone();
+            _fData = fData?.Clone();
+            _dfData = dfData?.Clone();
+            _dfDataClone = dfDataClone?.Clone();
         }
 
         public SigmoidActivationFunction()
@@ -30,7 +31,8 @@ namespace NNLib.ActivationFunction
 
         public Matrix<double> Function(Matrix<double> x)
         {
-            Matrix<double> storage = x.ColumnCount == _f.ColumnCount ? _f : _fData;
+            var cols = x.ColumnCount;
+            Matrix<double> storage = cols == _f.ColumnCount ? _f : _fData!.Get(cols);
 
             x.Negate(storage);
             storage.PointwiseExp(storage);
@@ -42,8 +44,10 @@ namespace NNLib.ActivationFunction
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            Matrix<double> storage = x.ColumnCount == _df.ColumnCount ? _df : _dfData;
-            Matrix<double> storage2 = x.ColumnCount == _df.ColumnCount ? _dfClone : _dfDataClone;
+            var cols = x.ColumnCount;
+
+            Matrix<double> storage = cols == _df.ColumnCount ? _df : _dfData!.Get(cols);
+            Matrix<double> storage2 = cols == _df.ColumnCount ? _dfClone : _dfDataClone!.Get(cols);
 
             x.Negate(storage);
             storage.PointwiseExp(storage);
@@ -67,9 +71,9 @@ namespace NNLib.ActivationFunction
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
-            _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
-            _dfDataClone = _dfData.Clone();
+            _fData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
+            _dfData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
+            _dfDataClone = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
         }
 
         public IActivationFunction Clone()

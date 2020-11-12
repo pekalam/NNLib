@@ -1,4 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.ActivationFunction;
 using NNLib.Data;
 
 namespace NNLib.LossFunction
@@ -8,12 +9,13 @@ namespace NNLib.LossFunction
         private Matrix<double> _f;
         private Matrix<double> _df;
 
-        private Matrix<double> _fData;
-        private Matrix<double> _dfData;
+        private NetDataMatrixPool _fData;
+        private NetDataMatrixPool _dfData;
 
         public Matrix<double> Function(Matrix<double> input, Matrix<double> target)
         {
-            var storage = target.ColumnCount == 1 ? _f : _fData;
+            var cols = target.ColumnCount;
+            var storage = cols == 1 ? _f : _fData.Get(cols);
 
             target.Subtract(input, storage);
             storage.PointwiseMultiply(storage, storage);
@@ -24,7 +26,9 @@ namespace NNLib.LossFunction
 
         public Matrix<double> Derivative(Matrix<double> input, Matrix<double> target)
         {
-            var storage = target.ColumnCount == 1 ? _df : _dfData;
+            var cols = target.ColumnCount;
+
+            var storage = cols == 1 ? _df : _dfData.Get(cols);
 
             input.Subtract(target, storage);
             return storage;
@@ -34,8 +38,8 @@ namespace NNLib.LossFunction
         {
             _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
             _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _fData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
-            _dfData = Matrix<double>.Build.Dense(layer.NeuronsCount, data.Input.Count);
+            _fData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
+            _dfData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
         }
     }
 }

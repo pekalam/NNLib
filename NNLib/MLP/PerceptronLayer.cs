@@ -10,9 +10,10 @@ namespace NNLib.MLP
     {
         private IActivationFunction _activationFunction;
         private Matrix<double>? _net;
-        private Matrix<double>? _netData;
-        private Matrix<double>? _biasData1;
-        private Matrix<double>? _biasDataResult;
+
+        private NetDataMatrixPool? _netData;
+        private NetDataMatrixPool? _biasData1;
+        private NetDataMatrixPool? _biasDataResult;
 
         private SupervisedTrainingSamples? _activationFunctionDataInit;
 
@@ -24,13 +25,16 @@ namespace NNLib.MLP
             _activationFunction = activationFunction;
         }
 
-        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output, Matrix<double>? net, Matrix<double>? netStorage, Matrix<double>? netDataStorage,
+        private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output, Matrix<double>? net, Matrix<double>? netStorage,
+            NetDataMatrixPool? netDataStorage, NetDataMatrixPool? biasData1, NetDataMatrixPool? biasDataResult,
             IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new DefaultNormDistMatrixBuilder())
         {
-            _activationFunction = activationFunction;
-            _netData = netDataStorage;
-            _net = netStorage;
-            Net = net;
+            _activationFunction = activationFunction.Clone();
+            _netData = netDataStorage?.Clone();
+            _biasDataResult = biasDataResult?.Clone();
+            _biasData1 = biasData1?.Clone();
+            _net = netStorage?.Clone();
+            Net = net?.Clone();
         }
 
         public IActivationFunction ActivationFunction
@@ -58,21 +62,21 @@ namespace NNLib.MLP
         {
             _activationFunctionDataInit = data;
             ActivationFunction.InitMemoryForData(this, data);
-            _netData = Matrix<double>.Build.Dense(NeuronsCount, data.Input.Count);
-            _biasData1 = Matrix<double>.Build.Dense(1, data.Input.Count, 1);
-            _biasDataResult = Matrix<double>.Build.Dense(NeuronsCount, data.Input.Count);
+            _netData = new NetDataMatrixPool(NeuronsCount, data.Input.Count);
+            _biasData1 = new NetDataMatrixPool(1, data.Input.Count, 1);
+            _biasDataResult = new NetDataMatrixPool(NeuronsCount, data.Input.Count);
         }
 
         public Matrix<double>? Net;
 
         internal PerceptronLayer Clone() =>
-            new PerceptronLayer(Weights.Clone(), Biases.Clone(), Output?.Clone(), Net?.Clone(), _net?.Clone(), _netData?.Clone(), ActivationFunction.Clone(), MatrixBuilder);
+            new PerceptronLayer(Weights, Biases, Output, Net, _net, _netData, _biasData1, _biasDataResult, ActivationFunction, MatrixBuilder);
 
 
         public override void CalculateOutput(Matrix<double> input)
         {
-
-            if (input.ColumnCount == 1)
+            int cols = input.ColumnCount;
+            if (cols == 1)
             {
                 Weights.Multiply(input, _net);
                 Net = _net!;
@@ -80,10 +84,10 @@ namespace NNLib.MLP
             }
             else
             {
-                Weights.Multiply(input, _netData);
-                Net = _netData!;
-                Biases.Multiply(_biasData1, _biasDataResult);
-                Net.Add(_biasDataResult, Net);
+                Weights.Multiply(input, _netData!.Get(cols));
+                Net = _netData!.Get(cols);
+                Biases.Multiply(_biasData1!.Get(cols), _biasDataResult!.Get(cols));
+                Net.Add(_biasDataResult!.Get(cols), Net);
             }
 
             Output = ActivationFunction.Function(Net);
