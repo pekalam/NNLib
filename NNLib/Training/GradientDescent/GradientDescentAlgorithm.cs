@@ -46,6 +46,7 @@ namespace NNLib.Training.GradientDescent
         {
             _iterations = 0;
             BatchTrainer?.Reset();
+            _previousLearningMethodResult = null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
