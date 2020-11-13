@@ -23,7 +23,7 @@ namespace NNLib
             Matrix<double>? output, MatrixBuilder matrixBuilder)
         {
             Weights = weights.Clone();
-            Output = output.Clone();
+            Output = output?.Clone();
             Biases = biases.Clone();
 
             if (matrixBuilder is NormDistMatrixBuilder n)

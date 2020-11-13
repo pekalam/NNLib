@@ -6,9 +6,9 @@ namespace NNLib.ActivationFunction
 {
     public class SigmoidActivationFunction : IActivationFunction
     {
-        private Matrix<double> _f;
-        private Matrix<double> _df;
-        private Matrix<double> _dfClone;
+        private Matrix<double> _f = null!;
+        private Matrix<double> _df = null!;
+        private Matrix<double> _dfClone = null!;
 
         private NetDataMatrixPool? _fData;
         private NetDataMatrixPool? _dfData;

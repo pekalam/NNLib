@@ -35,7 +35,7 @@ namespace NNLib.Csv
         }
 
         public int Count { get; }
-        public event Action Modified;
+        public event Action Modified = null!;
 
 
         internal void RaiseModified()

@@ -23,7 +23,9 @@ namespace NNLib.Data
         }
 
         public int Count => _setOfVectors.Count;
-        public event Action Modified;
+#pragma warning disable 0414
+        public event Action Modified = null!;
+#pragma warning restore 0414
 
         public void Dispose()
         {

@@ -6,8 +6,8 @@ namespace NNLib.ActivationFunction
 {
     public class TanHActivationFunction : IActivationFunction
     {
-        private Matrix<double> _f;
-        private Matrix<double> _df;
+        private Matrix<double> _f = null!;
+        private Matrix<double> _df = null!;
 
         private NetDataMatrixPool? _fData;
         private NetDataMatrixPool? _dfData;

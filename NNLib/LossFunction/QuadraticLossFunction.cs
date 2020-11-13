@@ -6,11 +6,11 @@ namespace NNLib.LossFunction
 {
     public class QuadraticLossFunction : ILossFunction
     {
-        private Matrix<double> _f;
-        private Matrix<double> _df;
+        private Matrix<double> _f = null!;
+        private Matrix<double> _df = null!;
 
-        private NetDataMatrixPool _fData;
-        private NetDataMatrixPool _dfData;
+        private NetDataMatrixPool _fData = null!;
+        private NetDataMatrixPool _dfData = null!;
 
         public Matrix<double> Function(Matrix<double> input, Matrix<double> target)
         {

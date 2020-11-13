@@ -19,7 +19,7 @@ namespace NNLib
     {
         protected readonly List<T> _layers;
 
-        public event Action<INetwork> StructureChanged;
+        public event Action<INetwork> StructureChanged = null!;
 
         protected Network(params T[] layers)
         {

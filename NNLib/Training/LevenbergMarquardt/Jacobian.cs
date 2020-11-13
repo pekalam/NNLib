@@ -12,14 +12,14 @@ namespace NNLib.Training.LevenbergMarquardt
 {
     public class Jacobian
     {
-        private Matrix<double> J;
-        private Matrix<double> Jt;
+        private Matrix<double> J = null!;
+        private Matrix<double> Jt = null!;
 
-        private Matrix<double>[] delta;
-        private Matrix<double>[] w;
-        private Matrix<double> delta1W1;
-        private Matrix<double>[] delta1W1NetStorage;
-        private Matrix<double> neg1Matrix;
+        private Matrix<double>[] delta = null!;
+        private Matrix<double>[] w = null!;
+        private Matrix<double> delta1W1 = null!;
+        private Matrix<double>[] delta1W1NetStorage = null!;
+        private Matrix<double> neg1Matrix = null!;
 
         private readonly IVectorSet input;
         private readonly MLPNetwork network;

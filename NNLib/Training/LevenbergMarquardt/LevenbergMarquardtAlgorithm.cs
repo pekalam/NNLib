@@ -19,27 +19,27 @@ namespace NNLib.Training.LevenbergMarquardt
     {
         private const double MinDampingParameter = 1.0e-25;
         private const double MaxDampingParameter = 1.0e25;
-        private MLPNetwork _network;
+        private MLPNetwork _network = null!;
 
-        private LoadedSupervisedTrainingData _loadedSets;
-        private SupervisedTrainingSamples _set;
+        private LoadedSupervisedTrainingData _loadedSets = null!;
+        private SupervisedTrainingSamples _set = null!;
 
         private double _previousError;
-        private Matrix<double>? _previousE = null;
+        private Matrix<double>? _previousE;
         private int k;
         private double _dampingParameter = 0.1;
 
-        private Jacobian _jacobian;
-        private ParametersUpdate _update;
+        private Jacobian _jacobian = null!;
+        private ParametersUpdate _update = null!;
 
-        private Matrix<double> _E;
-        private Matrix<double> _Err;
-        private Matrix<double> _Et;
-        private Matrix<double> _g;
-        private Matrix<double> _JtJ;
-        private Matrix<double> _G;
-        private Matrix<double> _d;
-        private int[] ipiv;
+        private Matrix<double> _E = null!;
+        private Matrix<double> _Err = null!;
+        private Matrix<double> _Et = null!;
+        private Matrix<double> _g = null!;
+        private Matrix<double> _JtJ = null!;
+        private Matrix<double> _G = null!;
+        private Matrix<double> _d = null!;
+        private int[] ipiv = null!;
 
 
 

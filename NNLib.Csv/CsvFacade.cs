@@ -66,11 +66,11 @@ namespace NNLib.Csv
             tReader.ChangeVariables(variableIndexes);
             if (!prevIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
             {
-                (data.TrainingSet.Input as CsvFileVectorSet).RaiseModified();
+                (data.TrainingSet.Input as CsvFileVectorSet)!.RaiseModified();
             }
             if (!prevIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
             {
-                (data.TrainingSet.Target as CsvFileVectorSet).RaiseModified();
+                (data.TrainingSet.Target as CsvFileVectorSet)!.RaiseModified();
             }
 
             var tsReader = (data.TestSet?.Input as CsvFileVectorSet)?.FileReader;
@@ -79,11 +79,11 @@ namespace NNLib.Csv
                 tsReader.ChangeVariables(variableIndexes);
                 if (!prevIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
                 {
-                    (data.TestSet.Input as CsvFileVectorSet).RaiseModified();
+                    (data.TestSet!.Input as CsvFileVectorSet)!.RaiseModified();
                 }
                 if (!prevIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
                 {
-                    (data.TestSet.Target as CsvFileVectorSet).RaiseModified();
+                    (data.TestSet!.Target as CsvFileVectorSet)!.RaiseModified();
                 }
             }
             
@@ -93,11 +93,11 @@ namespace NNLib.Csv
                 vReader.ChangeVariables(variableIndexes);
                 if (!prevIndexes.InputVarIndexes.SequenceEqual(variableIndexes.InputVarIndexes))
                 {
-                    (data.ValidationSet.Input as CsvFileVectorSet).RaiseModified();
+                    (data.ValidationSet!.Input as CsvFileVectorSet)!.RaiseModified();
                 }
                 if (!prevIndexes.TargetVarIndexes.SequenceEqual(variableIndexes.TargetVarIndexes))
                 {
-                    (data.ValidationSet.Target as CsvFileVectorSet).RaiseModified();
+                    (data.ValidationSet!.Target as CsvFileVectorSet)!.RaiseModified();
                 }
             }
         }
