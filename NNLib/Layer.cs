@@ -22,9 +22,9 @@ namespace NNLib
         protected Layer(Matrix<double> weights, Matrix<double> biases,
             Matrix<double>? output, MatrixBuilder matrixBuilder)
         {
-            Weights = weights;
-            Output = output;
-            Biases = biases;
+            Weights = weights.Clone();
+            Output = output.Clone();
+            Biases = biases.Clone();
 
             if (matrixBuilder is NormDistMatrixBuilder n)
             {

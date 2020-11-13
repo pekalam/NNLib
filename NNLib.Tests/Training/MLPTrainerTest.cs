@@ -69,7 +69,7 @@ namespace NNLib.Tests
 
             trainer.Iterations.Should().Be(0);
             trainer.Epochs.Should().Be(0);
-            (trainer.Algorithm as GradientDescentAlgorithm).BatchTrainer.CurrentBatch.Should().Be(0);
+            (trainer.Algorithm as GradientDescentAlgorithm).BatchIterations.Should().Be(0);
         }
 
 
@@ -84,7 +84,7 @@ namespace NNLib.Tests
 
             trainer.Iterations.Should().Be(0);
             trainer.Epochs.Should().Be(0);
-            (trainer.Algorithm as GradientDescentAlgorithm).BatchTrainer.CurrentBatch.Should().Be(0);
+            (trainer.Algorithm as GradientDescentAlgorithm).BatchIterations.Should().Be(0);
         }
     }
 }

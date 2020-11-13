@@ -43,8 +43,8 @@ namespace NNLib.Tests
             };
             
             var trainer = CreateBatchTrainer(learningParams);
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(1);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(0);
+            trainer.IterationsPerEpoch.Should().Be(1);
+            trainer.BatchIterations.Should().Be(0);
         }
 
         [Fact]
@@ -71,14 +71,14 @@ namespace NNLib.Tests
             };
             var trainer = CreateBatchTrainer(learningParams);
 
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(1);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(0);
+            trainer.IterationsPerEpoch.Should().Be(1);
+            trainer.BatchIterations.Should().Be(0);
 
             var result = trainer.DoIteration();
             
             result.Should().BeTrue();
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(1);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(0);
+            trainer.IterationsPerEpoch.Should().Be(1);
+            trainer.BatchIterations.Should().Be(0);
         }
 
         [Fact]
@@ -92,18 +92,18 @@ namespace NNLib.Tests
             };
             var trainer = CreateBatchTrainer(learningParams);
 
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(2);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(0);
+            trainer.IterationsPerEpoch.Should().Be(2);
+            trainer.BatchIterations.Should().Be(0);
 
             var result = trainer.DoIteration();
             result.Should().BeFalse();
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(2);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(1);
+            trainer.IterationsPerEpoch.Should().Be(2);
+            trainer.BatchIterations.Should().Be(1);
 
             result = trainer.DoIteration();
             result.Should().BeTrue();
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(2);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(0);
+            trainer.IterationsPerEpoch.Should().Be(2);
+            trainer.BatchIterations.Should().Be(0);
         }
 
 
@@ -118,14 +118,14 @@ namespace NNLib.Tests
             };
             var trainer = CreateBatchTrainer(learningParams);
 
-            trainer.BatchTrainer.IterationsPerEpoch.Should().Be(4);
-            trainer.BatchTrainer.CurrentBatch.Should().Be(0);
+            trainer.IterationsPerEpoch.Should().Be(4);
+            trainer.BatchIterations.Should().Be(0);
 
             for (int i = 0; i < _trainingSamples.Input.Count; i++)
             {
 
-                trainer.BatchTrainer.IterationsPerEpoch.Should().Be(4);
-                trainer.BatchTrainer.CurrentBatch.Should().Be(i % _trainingSamples.Input.Count);
+                trainer.IterationsPerEpoch.Should().Be(4);
+                trainer.BatchIterations.Should().Be(i % _trainingSamples.Input.Count);
                 var result = trainer.DoIteration();
 
                 if (i == _trainingSamples.Input.Count - 1)

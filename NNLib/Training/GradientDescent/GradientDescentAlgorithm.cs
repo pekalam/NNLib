@@ -1,37 +1,62 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
+using NNLib.Exceptions;
 using NNLib.LossFunction;
 using NNLib.MLP;
 
 namespace NNLib.Training.GradientDescent
 {
-    public class GradientDescentAlgorithm : AlgorithmBase
+    public partial class GradientDescentAlgorithm : AlgorithmBase
     {
-        private ParametersUpdate? _previousLearningMethodResult;
         private MLPNetwork? _network;
         private ILossFunction? _lossFunction;
         private int _iterations;
+        private ParametersUpdate? _previousDelta;
+        private readonly int _batchSize;
+        private ParametersUpdate[] _delta = null!;
+        private int _inBatch;
+
+        private IEnumerator<Matrix<double>> _inputEnum = null!;
+        private IEnumerator<Matrix<double>> _targetEnum = null!;
 
         public GradientDescentAlgorithm(GradientDescentParams parameters)
         {
             Params = parameters;
+            Guards._GtZero(parameters.BatchSize);
+            _batchSize = parameters.BatchSize;
         }
 
         public GradientDescentParams Params { get; set; }
-        public BatchTrainer? BatchTrainer { get; set; }
         internal override int Iterations => _iterations;
+        public int IterationsPerEpoch { get; private set; }
+        public int BatchIterations { get; private set; }
 
         internal override void Setup(SupervisedTrainingSamples set , LoadedSupervisedTrainingData _, MLPNetwork network, ILossFunction lossFunction)
         {
             Guards._NotNull(set).NotNull(network).NotNull(lossFunction);
-            _previousLearningMethodResult = null;
             _lossFunction = lossFunction;
             _network = network;
             _iterations = 0;
-            BatchTrainer = new BatchTrainer(Params.BatchSize, set, Params.Randomize);
+
+            if (_batchSize > set.Input.Count)
+            {
+                throw new ArgumentException($"Invalid batch size {_batchSize} for training set with count {set.Input.Count}");
+            }
+
+            if (set.Input.Count % _batchSize != 0)
+            {
+                throw new ArgumentException($"Cannot divide training set");
+            }
+            IterationsPerEpoch = set.Input.Count / _batchSize;
+            _delta = new ParametersUpdate[_batchSize];
+            _inputEnum = Params.Randomize ? new RandomVectorSetEnumerator(set.Input) : set.Input.GetEnumerator();
+            _targetEnum = Params.Randomize ? new RandomVectorSetEnumerator(set.Target) : set.Target.GetEnumerator();
+            _inBatch = BatchIterations = 0;
 
             network.StructureChanged -= NetworkOnStructureChanged;
             network.StructureChanged += NetworkOnStructureChanged;
@@ -39,27 +64,74 @@ namespace NNLib.Training.GradientDescent
 
         private void NetworkOnStructureChanged(INetwork obj)
         {
-            BatchTrainer!.Reset();
+            _inBatch = BatchIterations = 0;
+            _previousDelta = null;
         }
 
         internal override void Reset()
         {
-            _iterations = 0;
-            BatchTrainer?.Reset();
-            _previousLearningMethodResult = null;
+            _iterations = _inBatch = BatchIterations = 0;
+            _previousDelta = null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateWeightsAndBiasesWithDeltaRule(ParametersUpdate result)
+        private ParametersUpdate DeltaAvg()
         {
-            Debug.Assert(_network != null, nameof(_network) + " != null");
-            Debug.Assert(result.Weights.Length == result.Biases.Length);
+            var result = _delta[0];
 
-            for (int i = 0; i < result.Weights.Length; i++)
+            for (int i = 1; i < _delta.Length; i++)
             {
-                _network.Layers[i].Weights.Subtract(result.Weights[i] / Params.BatchSize, _network.Layers[i].Weights);
-                _network.Layers[i].Biases.Subtract(result.Biases[i] / Params.BatchSize, _network.Layers[i].Biases);
+                for (int j = 0; j < result.Weights.Length; j++)
+                {
+                    result.Weights[j].Add(_delta[i].Weights[j], result.Weights[j]);
+                }
+
+                for (int j = 0; j < result.Biases.Length; j++)
+                {
+                    result.Biases[j].Add(_delta[i].Biases[j], result.Biases[j]);
+                }
             }
+
+            for (int j = 0; j < result.Weights.Length; j++)
+            {
+                result.Weights[j].Divide(Params.BatchSize, result.Weights[j]);
+            }
+
+            for (int j = 0; j < result.Biases.Length; j++)
+            {
+                result.Biases[j].Divide(Params.BatchSize, result.Biases[j]);
+            }
+
+            return result;
+        }
+
+        private void UpdateWeightsAndBiasesWithDeltaRule()
+        {
+            var delta = DeltaAvg();
+
+            if (Params.Momentum > 0d && _previousDelta != null)
+            {
+                for (int i = 0; i < delta.Weights.Length; i++)
+                {
+                    _previousDelta.Weights[i].Multiply(Params.Momentum, _previousDelta.Weights[i]);
+                    delta.Weights[i].Add(_previousDelta.Weights[i], delta.Weights[i]);
+                    _network!.Layers[i].Weights.Subtract(delta.Weights[i], _network.Layers[i].Weights);
+
+
+                    _previousDelta.Biases[i].Multiply(Params.Momentum, _previousDelta.Biases[i]);
+                    delta.Biases[i].Add(_previousDelta.Biases[i], delta.Biases[i]);
+                    _network.Layers[i].Biases.Subtract(delta.Biases[i], _network.Layers[i].Biases);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < delta.Weights.Length; i++)
+                {
+                    _network!.Layers[i].Weights.Subtract(delta.Weights[i], _network.Layers[i].Weights);
+                    _network.Layers[i].Biases.Subtract(delta.Biases[i], _network.Layers[i].Biases);
+                }
+            }
+
+            _previousDelta = delta;
         }
 
         private ParametersUpdate CalculateDelta(Matrix<double> input, Matrix<double> expected)
@@ -80,30 +152,35 @@ namespace NNLib.Training.GradientDescent
 
                 update.Biases[i] = deltaLr;
                 update.Weights[i] = deltaLr.TransposeAndMultiply(i > 0 ? _network.Layers[i-1].Output : input);
-
-                if (_previousLearningMethodResult != null)
-                {
-                     _previousLearningMethodResult.Weights[i].Multiply(Params.Momentum, _previousLearningMethodResult.Weights[i]);
-                    update.Weights[i].Add(_previousLearningMethodResult.Weights[i], update.Weights[i]);
-                }
-            }
-
-            if (Params.Momentum > 0d)
-            {
-                _previousLearningMethodResult = update;
             }
 
             return update;
         }
 
-        internal override bool DoIteration(in CancellationToken ct = default)
-        { 
-            var result = BatchTrainer!.DoIteration(CalculateDelta);
-            _iterations++;
 
-            if (result != null)
+        internal override bool DoIteration(in CancellationToken ct = default)
+        {
+            while (_inBatch != _batchSize)
             {
-                UpdateWeightsAndBiasesWithDeltaRule(result);
+                if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
+                {
+                    _inputEnum.Reset();
+                    _targetEnum.Reset();
+                }
+
+                TrainingCanceledException.ThrowIfCancellationRequested(ct);
+
+                _delta[_inBatch++] = CalculateDelta(_inputEnum.Current, _targetEnum.Current);
+            }
+            UpdateWeightsAndBiasesWithDeltaRule();
+
+            _inBatch = 0;
+            _iterations++;
+            BatchIterations++;
+
+            if (BatchIterations == IterationsPerEpoch)
+            {
+                BatchIterations = 0;
                 return true;
             }
 
