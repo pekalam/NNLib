@@ -197,16 +197,16 @@ namespace NNLib.MLP
             }
         }
 
-        private double CalculateNetworkError(in CancellationToken ct, DataSetType setType)
+        private double CalculateNetworkError(MLPNetwork network,in CancellationToken ct, DataSetType setType)
         {
             CheckTrainingCancelationIsRequested(ct);
 
             var (I, T) = _loadedData.GetSamples(setType);
-            Network.CalculateOutput(I);
+            network.CalculateOutput(I);
             
             CheckTrainingCancelationIsRequested(ct);
 
-            return LossFunction.Function(Network.Output!, T).Enumerate().Sum() / I.ColumnCount;
+            return LossFunction.Function(network.Output!, T).Enumerate().Sum() / I.ColumnCount;
         }
 
         private bool DoIterationInternal(in CancellationToken ct)
@@ -227,7 +227,7 @@ namespace NNLib.MLP
             {
                 Epochs++;
                 EpochEnd?.Invoke();
-                Error = CalculateNetworkError(ct, DataSetType.Training);
+                Error = CalculateNetworkError(Network,ct, DataSetType.Training);
             }
         }
 
@@ -243,7 +243,7 @@ namespace NNLib.MLP
             while (!DoIterationInternal(ct)) { }
             Epochs++;
             EpochEnd?.Invoke();
-            Error = CalculateNetworkError(ct, DataSetType.Training);
+            Error = CalculateNetworkError(Network,ct, DataSetType.Training);
 
 
             return Error;
@@ -254,24 +254,28 @@ namespace NNLib.MLP
             return Task.Run(() => DoEpoch(ct), ct);
         }
 
-        public double RunValidation(in CancellationToken ct = default)
+        public double RunValidation(in CancellationToken ct = default) => RunValidation(Network, ct);
+
+        public double RunValidation(MLPNetwork networkCopy, in CancellationToken ct = default)
         {
             if (TrainingSets.ValidationSet == null)
             {
                 throw new NullReferenceException("Null validation set");
             }
 
-            return CalculateNetworkError(ct, DataSetType.Validation);
+            return CalculateNetworkError(networkCopy,ct, DataSetType.Validation);
         }
 
-        public double RunTest(in CancellationToken ct = default)
+        public double RunTest(in CancellationToken ct = default) => RunTest(Network, ct);
+
+        public double RunTest(MLPNetwork networkCopy, in CancellationToken ct = default)
         {
             if (TrainingSets.TestSet == null)
             {
                 throw new NullReferenceException("Null validation set");
             }
 
-            return CalculateNetworkError(ct, DataSetType.Test);
+            return CalculateNetworkError(Network,ct, DataSetType.Test);
         }
     }
 }
