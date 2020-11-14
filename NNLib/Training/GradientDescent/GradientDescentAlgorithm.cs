@@ -54,8 +54,17 @@ namespace NNLib.Training.GradientDescent
             }
             IterationsPerEpoch = set.Input.Count / _batchSize;
             _delta = new ParametersUpdate[_batchSize];
-            _inputEnum = Params.Randomize ? new RandomVectorSetEnumerator(set.Input) : set.Input.GetEnumerator();
-            _targetEnum = Params.Randomize ? new RandomVectorSetEnumerator(set.Target) : set.Target.GetEnumerator();
+
+            if (Params.Randomize)
+            {
+                (_inputEnum, _targetEnum) = RandomVectorSetEnumerator.GetInputTargetEnumerators(set.Input, set.Target);
+            }
+            else
+            {
+                _inputEnum = set.Input.GetEnumerator();
+                _targetEnum = set.Target.GetEnumerator();
+            }
+
             _inBatch = BatchIterations = 0;
 
             network.StructureChanged -= NetworkOnStructureChanged;
@@ -104,9 +113,11 @@ namespace NNLib.Training.GradientDescent
             return result;
         }
 
-        private void UpdateWeightsAndBiasesWithDeltaRule()
+        private void UpdateWeightsAndBiasesWithDeltaRule(in CancellationToken ct)
         {
             var delta = DeltaAvg();
+
+            TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
             if (Params.Momentum > 0d && _previousDelta != null)
             {
@@ -162,17 +173,13 @@ namespace NNLib.Training.GradientDescent
         {
             while (_inBatch != _batchSize)
             {
-                if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
-                {
-                    _inputEnum.Reset();
-                    _targetEnum.Reset();
-                }
+                NextTrainingSample();
 
                 TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
                 _delta[_inBatch++] = CalculateDelta(_inputEnum.Current, _targetEnum.Current);
             }
-            UpdateWeightsAndBiasesWithDeltaRule();
+            UpdateWeightsAndBiasesWithDeltaRule(ct);
 
             _inBatch = 0;
             _iterations++;
@@ -185,6 +192,17 @@ namespace NNLib.Training.GradientDescent
             }
 
             return false;
+        }
+
+        private void NextTrainingSample()
+        {
+            if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
+            {
+                _inputEnum.Reset();
+                _targetEnum.Reset();
+                _inputEnum.MoveNext();
+                _targetEnum.MoveNext();
+            }
         }
     }
 }

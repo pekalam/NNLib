@@ -11,6 +11,25 @@ namespace NNLib.Data
         private readonly IVectorSet _vectorSet;
         private int _index = -1;
         private int[] _indexTable;
+        private Func<int[]>? _masterTable;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static (RandomVectorSetEnumerator input, RandomVectorSetEnumerator target) GetInputTargetEnumerators(IVectorSet input, IVectorSet target)
+        {
+            var i = new RandomVectorSetEnumerator(input);
+            var t = new RandomVectorSetEnumerator(target, () => i._indexTable);
+            return (i, t);
+        }
+
+        private RandomVectorSetEnumerator(IVectorSet vectorSet, Func<int[]>? masterTable)
+        {
+            _masterTable = masterTable;
+            _vectorSet = vectorSet;
+            _indexTable = GenerateIndexTable();
+        }
 
         public RandomVectorSetEnumerator(IVectorSet vectorSet)
         {
@@ -20,6 +39,10 @@ namespace NNLib.Data
 
         private int[] GenerateIndexTable()
         {
+            if (_masterTable != null)
+            {
+                return _masterTable();
+            }
             var rnd = new Random();
             return Enumerable.Range(0, _vectorSet.Count).OrderBy(_ => rnd.Next(0, _vectorSet.Count)).ToArray();
         }

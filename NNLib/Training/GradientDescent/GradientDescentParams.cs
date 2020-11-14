@@ -68,8 +68,13 @@ namespace NNLib.Training.GradientDescent
             return new GradientDescentParams()
             {
                 Momentum = _momentum, BatchSize = _batchSize,
-                LearningRate = _learningRate,
+                LearningRate = _learningRate,Randomize = Randomize
             };
+        }
+
+        protected bool Equals(GradientDescentParams other)
+        {
+            return _learningRate.Equals(other._learningRate) && _momentum.Equals(other._momentum) && _batchSize == other._batchSize && Randomize == other.Randomize;
         }
 
         public override bool Equals(object? obj)
@@ -80,20 +85,9 @@ namespace NNLib.Training.GradientDescent
             return Equals((GradientDescentParams) obj);
         }
 
-        protected bool Equals(GradientDescentParams other)
-        {
-            return _learningRate.Equals(other._learningRate) && _momentum.Equals(other._momentum) && _batchSize == other._batchSize;
-        }
-
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = _learningRate.GetHashCode();
-                hashCode = (hashCode * 397) ^ _momentum.GetHashCode();
-                hashCode = (hashCode * 397) ^ _batchSize;
-                return hashCode;
-            }
+            return HashCode.Combine(_learningRate, _momentum, _batchSize, Randomize);
         }
     }
 }
