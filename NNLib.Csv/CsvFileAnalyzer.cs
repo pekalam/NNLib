@@ -15,7 +15,7 @@ namespace NNLib.Csv
         {
             using var fs = File.OpenRead(fileName);
             using var rdr = new StreamReader(fs);
-            using var csv = new CsvHelper.CsvReader(rdr, CultureInfo.CurrentCulture);
+            using var csv = new CsvHelper.CsvReader(rdr, CultureInfo.InvariantCulture);
             csv.Read();
             csv.ReadHeader();
 

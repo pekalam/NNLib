@@ -50,7 +50,7 @@ namespace NNLib.Csv
                 using var fs = new FileStream(_fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
                 fs.Seek(filePart.Offset, SeekOrigin.Begin);
                 using var rdr = new StreamReader(fs);
-                using var csv = new CsvHelper.CsvReader(rdr, CultureInfo.CurrentCulture);
+                using var csv = new CsvHelper.CsvReader(rdr, CultureInfo.InvariantCulture);
 
                 if (filePart.Offset == 0)
                 {
