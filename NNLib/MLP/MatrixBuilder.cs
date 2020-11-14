@@ -37,6 +37,14 @@ namespace NNLib.MLP
         public double WMean { get; set; }
         public double BStdDev { get; set; }
         public double BMean { get; set; }
+
+        public NormDistMatrixBuilderOptions Clone()
+        {
+            return new NormDistMatrixBuilderOptions
+            {
+                BMean = BMean,BStdDev = BStdDev,WMean = WMean,WStdDev = WStdDev,
+            };
+        }
     }
 
     /// <summary>
