@@ -170,8 +170,6 @@ namespace NNLib.MLP
                 layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-.5d, .5d));
                 layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
             }
-
-            Console.WriteLine(layer.Weights);
         }
 
         public override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)

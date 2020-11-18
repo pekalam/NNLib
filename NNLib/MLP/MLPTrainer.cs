@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,7 +12,7 @@ using NNLib.Training;
 
 namespace NNLib.MLP
 {
-    internal class LoadedSupervisedTrainingData
+    public class LoadedSupervisedTrainingData
     {
         private SupervisedTrainingData _data;
 
@@ -110,11 +111,12 @@ namespace NNLib.MLP
 
 
         public MLPTrainer(MLPNetwork network, SupervisedTrainingData trainingData, AlgorithmBase algorithm,
-            ILossFunction lossFunction)
+            ILossFunction lossFunction, IErrorCalculation? errorCalculation = null)
         {
             Guards._NotNull(network).NotNull(trainingData).NotNull(lossFunction);
             ValidateNetworkAndDataSets(network, trainingData);
 
+            ErrorCalculation = errorCalculation ?? new MSEError();
             Network = network;
             LossFunction = lossFunction;
             _trainingData = trainingData;
@@ -128,6 +130,9 @@ namespace NNLib.MLP
         }
 
         public ILossFunction LossFunction { get;  }
+
+        public IErrorCalculation ErrorCalculation { get; set; }
+
         public SupervisedTrainingData TrainingSets
         {
             get => _trainingData;
@@ -197,18 +202,6 @@ namespace NNLib.MLP
             }
         }
 
-        private double CalculateNetworkError(MLPNetwork network,in CancellationToken ct, DataSetType setType)
-        {
-            CheckTrainingCancelationIsRequested(ct);
-
-            var (I, T) = _loadedData.GetSamples(setType);
-            network.CalculateOutput(I);
-            
-            CheckTrainingCancelationIsRequested(ct);
-
-            return LossFunction.Function(network.Output!, T).Enumerate().Sum() / I.ColumnCount;
-        }
-
         private bool DoIterationInternal(in CancellationToken ct)
         {
             var result = Algorithm.DoIteration(ct);
@@ -221,14 +214,17 @@ namespace NNLib.MLP
 
         public string ProgressString() => $"Epoch: {Epochs}, error: {Error}";
 
-        public void DoIteration(in CancellationToken ct = default)
+        public bool DoIteration(in CancellationToken ct = default)
         {
             if (DoIterationInternal(ct))
             {
                 Epochs++;
                 EpochEnd?.Invoke();
-                Error = CalculateNetworkError(Network,ct, DataSetType.Training);
+                Error = Algorithm.GetError() ?? ErrorCalculation.CalculateError(LossFunction, Network, _loadedData, DataSetType.Training, ct);
+                return true;
             }
+
+            return false;
         }
 
         public void Reset()
@@ -243,7 +239,7 @@ namespace NNLib.MLP
             while (!DoIterationInternal(ct)) { }
             Epochs++;
             EpochEnd?.Invoke();
-            Error = CalculateNetworkError(Network,ct, DataSetType.Training);
+            Error = Algorithm.GetError() ?? ErrorCalculation.CalculateError(LossFunction,Network, _loadedData, DataSetType.Training, ct);
 
 
             return Error;
@@ -254,6 +250,8 @@ namespace NNLib.MLP
             return Task.Run(() => DoEpoch(ct), ct);
         }
 
+        public double TrainingError(in CancellationToken ct = default) => ErrorCalculation.CalculateError(LossFunction, Network, _loadedData, DataSetType.Training, ct);
+
         public double RunValidation(in CancellationToken ct = default) => RunValidation(Network, ct);
 
         public double RunValidation(MLPNetwork networkCopy, in CancellationToken ct = default)
@@ -263,7 +261,7 @@ namespace NNLib.MLP
                 throw new NullReferenceException("Null validation set");
             }
 
-            return CalculateNetworkError(networkCopy,ct, DataSetType.Validation);
+            return ErrorCalculation.CalculateError(LossFunction, networkCopy, _loadedData, DataSetType.Validation, ct);
         }
 
         public double RunTest(in CancellationToken ct = default) => RunTest(Network, ct);
@@ -275,7 +273,7 @@ namespace NNLib.MLP
                 throw new NullReferenceException("Null validation set");
             }
 
-            return CalculateNetworkError(Network,ct, DataSetType.Test);
+            return ErrorCalculation.CalculateError(LossFunction, networkCopy, _loadedData, DataSetType.Test, ct);
         }
     }
 }

@@ -51,6 +51,8 @@ namespace NNLib.Training.LevenbergMarquardt
         public LevenbergMarquardtParams Params { get; set; }
         internal override int Iterations => k;
 
+        internal override double? GetError() => _previousError;
+
         internal override void Setup(SupervisedTrainingSamples set, LoadedSupervisedTrainingData loadedSets, MLPNetwork network,
             ILossFunction lossFunction)
         {
@@ -235,6 +237,9 @@ namespace NNLib.Training.LevenbergMarquardt
                         delta = _d.RowSums();
 
                         UpdateWeightsAndBiases(delta, _network);
+
+                        e = CalcE(P, T, ct);
+                        error = CalcError(e);
 
                         it++;
                     } while (it < 5 && error >= _previousError && !maxParamReached);

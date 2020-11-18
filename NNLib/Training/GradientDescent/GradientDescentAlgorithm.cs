@@ -24,7 +24,7 @@ namespace NNLib.Training.GradientDescent
         private IEnumerator<Matrix<double>> _inputEnum = null!;
         private IEnumerator<Matrix<double>> _targetEnum = null!;
 
-        public GradientDescentAlgorithm(GradientDescentParams parameters)
+        public GradientDescentAlgorithm(GradientDescentParams? parameters = null)
         {
             Params = parameters;
             Guards._GtZero(parameters.BatchSize);
@@ -35,6 +35,8 @@ namespace NNLib.Training.GradientDescent
         internal override int Iterations => _iterations;
         public int IterationsPerEpoch { get; private set; }
         public int BatchIterations { get; private set; }
+
+        internal override double? GetError() => null;
 
         internal override void Setup(SupervisedTrainingSamples set , LoadedSupervisedTrainingData _, MLPNetwork network, ILossFunction lossFunction)
         {

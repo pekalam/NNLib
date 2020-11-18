@@ -18,7 +18,6 @@ namespace NNLib
         internal event Action<Layer>? NeuronsCountChanged;
         internal event Action<Layer>? InputsCountChanged;
 
-#pragma warning disable 8618
         protected Layer(Matrix<double> weights, Matrix<double> biases,
             Matrix<double>? output, MatrixBuilder matrixBuilder)
         {
@@ -38,7 +37,6 @@ namespace NNLib
 
             IsInitialized = true;
         }
-#pragma warning restore 8618
 
 
 #pragma warning disable 8618
@@ -68,16 +66,6 @@ namespace NNLib
             Debug.Assert(_initNeuronsCount > 0 && _initInputsCount > 0 && !IsInitialized);
             MatrixBuilder.BuildAllMatrices(_initNeuronsCount, _initInputsCount, this);
             IsInitialized = true;
-        }
-
-        protected internal virtual void InitializeMemory()
-        {
-
-        }
-
-        protected internal virtual void InitializeMemoryForData(SupervisedTrainingSamples data)
-        {
-
         }
 
         internal void AssignNetwork(INetwork network)
@@ -132,6 +120,8 @@ namespace NNLib
             MatrixBuilder.BuildAllMatrices(NeuronsCount, InputsCount, this);
         }
 
+        protected internal abstract void InitializeMemory();
+        protected internal abstract void InitializeMemoryForData(SupervisedTrainingSamples data);
         public abstract void CalculateOutput(Matrix<double> input);
     }
 }
