@@ -26,9 +26,9 @@ namespace NNLib.Training.GradientDescent
 
         public GradientDescentAlgorithm(GradientDescentParams? parameters = null)
         {
-            Params = parameters;
-            Guards._GtZero(parameters.BatchSize);
-            _batchSize = parameters.BatchSize;
+            Params = parameters ?? new GradientDescentParams();
+            Guards._GtZero(Params.BatchSize);
+            _batchSize = Params.BatchSize;
         }
 
         public GradientDescentParams Params { get; set; }

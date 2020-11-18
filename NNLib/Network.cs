@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using MathNet.Numerics.LinearAlgebra.Storage;
 using NNLib.Data;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -11,9 +10,13 @@ namespace NNLib
 {
     public interface INetwork
     {
+        event Action<INetwork> StructureChanged;
         IReadOnlyList<Layer> BaseLayers { get; }
+        int TotalLayers { get; }
+        int TotalNeurons { get; }
+        int TotalSynapses { get; }
+        int TotalBiases { get; }
     }
-
 
     public abstract class Network<T> : INetwork where T : Layer
     {
@@ -64,6 +67,8 @@ namespace NNLib
             }
         }
 
+        public void AddLayer() => AddLayer(CreateOutputLayer(_layers[^1].NeuronsCount, 1));
+
         public void AddLayer(T layer)
         {
             ValidateLayersInputsAndOutputs(_layers.Concat(new []{layer}).ToList());
@@ -78,6 +83,16 @@ namespace NNLib
             RaiseNetworkStructureChanged();
         }
 
+        public void RemoveLayer(int ind)
+        {
+            Layer? next = ind == _layers.Count - 1 ? null : _layers[ind + 1];
+            Layer? prev = ind == 0 ? null : _layers[ind - 1];
+
+            next?.AdjustToMatchPrevious(prev);
+            _layers.RemoveAt(ind);
+            RaiseNetworkStructureChanged();
+        }
+
         public void RemoveLayer(T layer)
         {
             var ind = _layers.IndexOf(layer);
@@ -85,17 +100,50 @@ namespace NNLib
             {
                 throw new ArgumentException("Cannot find layer");
             }
-
-            Layer? next = ind == _layers.Count - 1 ? null : _layers[ind+1];
-            Layer? prev = ind == 0 ? null : _layers[ind-1];
-
-            next?.AdjustMatSize(prev);
-            _layers.RemoveAt(ind);
-            RaiseNetworkStructureChanged();
+            RemoveLayer(ind);
         }
+
+        public T InsertAfter(int ind)
+        {
+            ind++;
+            if (ind > TotalLayers || ind < 0) throw new ArgumentException("Cannot insert after " + ind + " - index out of bounds");
+
+            Func<int, int, T> layerFunc;
+            if (ind == TotalLayers)
+            {
+                layerFunc = CreateOutputLayer;
+            }
+            else
+            {
+                layerFunc = CreateHiddenLayer;
+            }
+            var layer = layerFunc(ind == 0 ? Layers[0].InputsCount : Layers[ind - 1].NeuronsCount,
+                ind == TotalLayers ? Layers[^1].NeuronsCount : Layers[ind].InputsCount);
+
+            _layers.Insert(ind, layer);
+            layer.AssignNetwork(this);
+            AssignEventHandlers(layer);
+            if (!layer.IsInitialized)
+            {
+                layer.Initialize();
+            }
+            layer.InitializeMemory();
+            RaiseNetworkStructureChanged();
+            return layer;
+        }
+
+        public T InsertBefore(int ind) => InsertAfter(ind - 1);
 
         protected void AssignEventHandlers(Layer layer)
         {
+            if (layer == _layers[0])
+            {
+                layer.InputsCountChanged += l =>
+                {
+                    RaiseNetworkStructureChanged();
+                    l.InitializeMemory();
+                };
+            }
             layer.NeuronsCountChanged += LayerOnNeuronsCountChanged;
         }
 
@@ -147,6 +195,8 @@ namespace NNLib
             }
         }
 
+        internal abstract T CreateHiddenLayer(int inputsCount, int neuronsCount);
+        internal abstract T CreateOutputLayer(int inputsCount, int neuronsCount);
         public abstract void CalculateOutput(Matrix<double> input);
     }
 }

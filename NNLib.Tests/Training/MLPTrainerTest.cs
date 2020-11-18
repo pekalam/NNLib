@@ -86,5 +86,28 @@ namespace NNLib.Tests
             trainer.Epochs.Should().Be(0);
             (trainer.Algorithm as GradientDescentAlgorithm).BatchIterations.Should().Be(0);
         }
+
+        [Fact]
+        public void Iteration_when_structure_changed_does_not_throw()
+        {
+            var net1 = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var trainer = CreateBasicAndGateTrainer(net1);
+
+            net1.Layers[0].NeuronsCount+=10;
+
+            trainer.DoIteration();
+        }
+
+        [Fact]
+        public void Iteration_when_structure_changed_to_invalid_and_then_to_valid_does_not_throw()
+        {
+            var net1 = CreateNetwork(2, (2, new LinearActivationFunction()), (1, new SigmoidActivationFunction()));
+            var trainer = CreateBasicAndGateTrainer(net1);
+
+            net1.Layers[^1].NeuronsCount = 10;
+            net1.Layers[^1].NeuronsCount = 1;
+
+            trainer.DoIteration();
+        }
     }
 }

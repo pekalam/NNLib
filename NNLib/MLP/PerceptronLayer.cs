@@ -4,8 +4,6 @@ using NNLib.Data;
 
 namespace NNLib.MLP
 {
-    
-
     public class PerceptronLayer : Layer
     {
         private IActivationFunction _activationFunction;

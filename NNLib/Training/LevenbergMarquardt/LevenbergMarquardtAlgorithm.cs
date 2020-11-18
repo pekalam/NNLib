@@ -101,6 +101,9 @@ namespace NNLib.Training.LevenbergMarquardt
 
         private void NetworkOnStructureChanged(INetwork obj)
         {
+            if(obj.BaseLayers[0].InputsCount != _loadedSets.I_Train.RowCount ||
+               obj.BaseLayers[^1].NeuronsCount != _loadedSets.T_Train.RowCount) return;
+
             InitMemory(_network, _set);
         }
 

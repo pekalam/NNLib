@@ -12,7 +12,7 @@ namespace NNLib.MLP
         {
             if (network.Layers[0].InputsCount != 1 || network.Layers[^1].NeuronsCount != 1)
             {
-                throw new Exception("Network must have 1 neuron at output and 1 on input layers");
+                throw new Exception("Network must have 1 neuron at output and 1 input at input layer");
             }
 
             network.CalculateOutput(Matrix<double>.Build.Dense(1, 1, x));
@@ -54,29 +54,11 @@ namespace NNLib.MLP
             return Create(inputs, x);
         }
 
-        public PerceptronLayer InsertAfter(int ind)
-        {
-            ind++;
-            if (ind > TotalLayers || ind < 0) throw new ArgumentException("Cannot insert after " + ind + " - index out of bounds");
-
-            var layer = new PerceptronLayer(ind == 0 ? Layers[0].InputsCount : Layers[ind-1].NeuronsCount, ind == TotalLayers ? Layers[^1].NeuronsCount : Layers[ind].InputsCount, new LinearActivationFunction());
-
-            
-            _layers.Insert(ind, layer);
-            layer.AssignNetwork(this);
-            AssignEventHandlers(layer);
-            if (!layer.IsInitialized)
-            {
-                layer.Initialize();
-            }
-            layer.InitializeMemory();
-            RaiseNetworkStructureChanged();
-            return layer;
-        }
-
-        public PerceptronLayer InsertBefore(int ind) => InsertAfter(ind - 1);
-
         public MLPNetwork Clone() => new MLPNetwork(Layers.Select(l => l.Clone()).ToArray());
+
+        internal override PerceptronLayer CreateHiddenLayer(int inputsCount, int neuronsCount) => new PerceptronLayer(inputsCount, neuronsCount, new SigmoidActivationFunction());
+
+        internal override PerceptronLayer CreateOutputLayer(int inputsCount, int neuronsCount) => new PerceptronLayer(inputsCount, neuronsCount, new LinearActivationFunction());
 
         public override void CalculateOutput(Matrix<double> input)
         {

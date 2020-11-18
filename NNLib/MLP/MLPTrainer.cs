@@ -162,6 +162,9 @@ namespace NNLib.MLP
 
         private void NetworkOnStructureChanged(INetwork obj)
         {
+            if (obj.BaseLayers[0].InputsCount != _loadedData.I_Train.RowCount ||
+                obj.BaseLayers[^1].NeuronsCount != _loadedData.T_Train.RowCount) return;
+
             Network.InitializeMemoryForData(_trainingData.TrainingSet);
             LossFunction.InitializeMemory(Network.Layers[^1], TrainingSets.TrainingSet);
         }

@@ -13,10 +13,8 @@ namespace NNLib
 
         internal INetwork? Network;
 
-        internal event Action<Layer>? NeuronsCountChanging;
-        internal event Action<Layer>? InputsCountChanging;
-        internal event Action<Layer>? NeuronsCountChanged;
-        internal event Action<Layer>? InputsCountChanged;
+        public event Action<Layer>? NeuronsCountChanged;
+        public event Action<Layer>? InputsCountChanged;
 
         protected Layer(Matrix<double> weights, Matrix<double> biases,
             Matrix<double>? output, MatrixBuilder matrixBuilder)
@@ -73,7 +71,7 @@ namespace NNLib
             Network = network;
         }
 
-        internal void AdjustMatSize(Layer? previous)
+        internal void AdjustToMatchPrevious(Layer? previous)
         {
             if (previous != null)
             {
@@ -93,7 +91,6 @@ namespace NNLib
                     throw new ArgumentException($"{nameof(NeuronsCount)} cannot be lower or equal 0");
                 }
 
-                NeuronsCountChanging?.Invoke(this);
                 MatrixBuilder.AdjustMatrices(value, InputsCount, this);
                 NeuronsCountChanged?.Invoke(this);
             }
@@ -109,7 +106,6 @@ namespace NNLib
                     throw new ArgumentException($"{nameof(InputsCount)} cannot be lower or equal 0");
                 }
 
-                InputsCountChanging?.Invoke(this);
                 MatrixBuilder.AdjustMatrices(NeuronsCount, value, this);
                 InputsCountChanged?.Invoke(this);
             }
