@@ -23,7 +23,7 @@ namespace NNLib
             Output = output?.Clone();
             Biases = biases.Clone();
 
-            if (!(matrixBuilder is DefaultNormDistMatrixBuilder) && matrixBuilder is NormDistMatrixBuilder n)
+            if (!(matrixBuilder is SmallStdevNormDistMatrixBuilder) && matrixBuilder is NormDistMatrixBuilder n)
             {
                 //temp - builder with options
                 MatrixBuilder = new NormDistMatrixBuilder(n.Options.Clone());

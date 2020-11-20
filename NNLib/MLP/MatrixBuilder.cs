@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using MathNet.Numerics.Distributions;
@@ -20,11 +20,14 @@ namespace NNLib.MLP
     }
 
 
-    public class DefaultNormDistMatrixBuilder : NormDistMatrixBuilder
+    /// <summary>
+    /// Sets values of weights using values from normal distribution with standard deviation equal 0.01. Biases are set to 0.
+    /// </summary>
+    public class SmallStdevNormDistMatrixBuilder : NormDistMatrixBuilder
     {
-        public DefaultNormDistMatrixBuilder() : base(new NormDistMatrixBuilderOptions()
+        public SmallStdevNormDistMatrixBuilder() : base(new NormDistMatrixBuilderOptions()
         {
-            BMean = 0,BStdDev = 0, WMean =0, WStdDev = 1
+            BMean = 0,BStdDev = 0, WMean =0, WStdDev = 0.01
         })
         {
         }
@@ -48,7 +51,7 @@ namespace NNLib.MLP
     }
 
     /// <summary>
-    /// Sets values of weight and biases matrices as values from normal distribution
+    /// Sets values of weights and biases using values from normal distribution.
     /// </summary>
     public class NormDistMatrixBuilder : MatrixBuilder
     {
@@ -104,7 +107,37 @@ namespace NNLib.MLP
         }
     }
 
+    /// <summary>
+    /// Sets weights with commonly used heuristics: U[-1/sqrt(inputsCount),1/sqrt(inputsCount)]. Biases are set to 0.
+    /// </summary>
+    public class SmallNumbersMatrixBuilder : MatrixBuilder
+    {
+        public override void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer)
+        {
+            var a = Math.Sqrt(1d / inputsCount);
+            layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
+            layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
+        }
 
+        public override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)
+        {
+            var a = Math.Sqrt(1d / inputsCount);
+            if (inputsCount != layer.InputsCount)
+            {
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
+            }
+
+            if (neuronsCount != layer.NeuronsCount)
+            {
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
+                layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Implements Xavier weights initialization method.
+    /// </summary>
     public class XavierMatrixBuilder : MatrixBuilder
     {
         public override void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer)
@@ -131,7 +164,9 @@ namespace NNLib.MLP
         }
     }
 
-
+    /// <summary>
+    /// Implements Nguyen-Widrow weights initialization method.
+    /// </summary>
     public class NguyenWidrowMatrixBuilder : MatrixBuilder
     {
         private void CheckCanInit(Layer layer)
@@ -148,22 +183,25 @@ namespace NNLib.MLP
 
             if (!layer.IsOutputLayer)
             {
-                var initialW = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-.5d, .5d));
+                double h = 0.7 * Math.Pow(neuronsCount, 1d / inputsCount);
+                var initialW = layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-.5d, .5d));
+                layer.Biases = Matrix<double>.Build.Random(neuronsCount, 1, new ContinuousUniform(-h, h));
 
-                double wRoot = 0d;
-                for (int i = 0; i < initialW.ColumnCount; i++)
+                //for each neuron
+                for (int i = 0; i < initialW.RowCount; i++)
                 {
-                    for (int j = 0; j < initialW.RowCount; j++)
+                    double wRoot = 0d;
+                    for (int j = 0; j < initialW.ColumnCount; j++)
                     {
-                        wRoot += initialW[j, i] * initialW[j, i];
+                        wRoot += initialW.At(i, j) * initialW.At(i, j);
+                    }
+                    wRoot = Math.Sqrt(wRoot);
+
+                    for (int j = 0; j < initialW.ColumnCount; j++)
+                    {
+                        layer.Weights.At(i, j, initialW.At(i, j) * h / wRoot);
                     }
                 }
-                wRoot = Math.Sqrt(wRoot);
-
-                double s = 0.7 * Math.Pow(neuronsCount, 1d / inputsCount) / wRoot;
-
-                layer.Weights = Matrix<double>.Build.Dense(neuronsCount, inputsCount, (r, c) => initialW[r,c] * s);
-                layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
             }
             else
             {
@@ -178,12 +216,14 @@ namespace NNLib.MLP
         }
     }
 
-
+    /// <summary>
+    /// Sets weights using values from uniform distribution with standard deviation equal sqrt(inputsCount).
+    /// </summary>
     public class SqrMUniformMatrixBuilder : MatrixBuilder
     {
         public override void BuildAllMatrices(int neuronsCount, int inputsCount, Layer layer)
         {
-            var a = Math.Sqrt(12d) * Math.Sqrt(inputsCount) / 2d;
+            var a = Math.Sqrt(12d) / (Math.Sqrt(inputsCount) * 2d);
             layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
             layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
         }

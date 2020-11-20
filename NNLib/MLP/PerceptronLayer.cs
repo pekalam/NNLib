@@ -16,7 +16,7 @@ namespace NNLib.MLP
         private SupervisedTrainingSamples? _activationFunctionDataInit;
 
         public PerceptronLayer(int inputsCount, int neuronsCount, IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null)
-            : base(inputsCount, neuronsCount, matrixBuilder ?? new DefaultNormDistMatrixBuilder())
+            : base(inputsCount, neuronsCount, matrixBuilder ?? new SmallNumbersMatrixBuilder())
         {
             Guards._GtZero(inputsCount).GtZero(neuronsCount).NotNull(activationFunction);
 
@@ -25,7 +25,7 @@ namespace NNLib.MLP
 
         private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output, Matrix<double>? net, Matrix<double>? netStorage,
             NetDataMatrixPool? netDataStorage, NetDataMatrixPool? biasData1, NetDataMatrixPool? biasDataResult,
-            IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new DefaultNormDistMatrixBuilder())
+            IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new SmallNumbersMatrixBuilder())
         {
             _activationFunction = activationFunction.Clone();
             _netData = netDataStorage?.Clone();

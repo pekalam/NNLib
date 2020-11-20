@@ -49,7 +49,7 @@ namespace NNLib.MLP
         public static MLPNetwork Create(int inputs,
             params (int neuronsCount, IActivationFunction activationFunction)[] layers)
         {
-            var x = layers.Select(l => (l.neuronsCount, l.activationFunction, (MatrixBuilder)new DefaultNormDistMatrixBuilder()))
+            var x = layers.Select(l => (l.neuronsCount, l.activationFunction, (MatrixBuilder)new SmallNumbersMatrixBuilder()))
                 .ToArray();
             return Create(inputs, x);
         }

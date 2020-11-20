@@ -12,9 +12,12 @@ namespace NNLib.Tests
     public class MLPNetworkTests
     {
         private readonly ITestOutputHelper output;
-        private const int DefaultNormal = 0;
+        private const int SmallStdDevNormal = 0;
         private const int Xavier = 1;
         private const int Normal = 2;
+        private const int NguyenWidrow = 3;
+        private const int SqrtM = 4;
+        private const int SmallNum = 5;
 
         public MLPNetworkTests(ITestOutputHelper output)
         {
@@ -25,12 +28,15 @@ namespace NNLib.Tests
         {
             return num switch
             {
-                DefaultNormal => new DefaultNormDistMatrixBuilder(),
+                SmallStdDevNormal => new SmallStdevNormDistMatrixBuilder(),
                 Xavier => new XavierMatrixBuilder(),
                 Normal => new NormDistMatrixBuilder(new NormDistMatrixBuilderOptions()
                 {
                     WMean = 0, BMean = 0, WStdDev = 0.1, BStdDev = 0.01,
                 }),
+                NguyenWidrow => new NguyenWidrowMatrixBuilder(),
+                SqrtM => new SqrMUniformMatrixBuilder(),
+                SmallNum => new SmallNumbersMatrixBuilder(),
             _ => throw new Exception(),
             };
         }
@@ -50,8 +56,12 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
         [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        
+        [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void NeuronsCount_when_changed_neurons_count_in_layer_is_changed(int matbuilder)
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -71,9 +81,12 @@ namespace NNLib.Tests
 
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
         [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void NeuronsCount_when_changed_neurons_count_in_layer_adjacent_layers_are_updated(int matbuilder)
         {
             var l = new PerceptronLayer(1, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -86,8 +99,11 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
         [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void NeuronsCount_when_changed_does_not_change_existing_weights_and_biases(int matbuilder)
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -129,8 +145,11 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
         [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void InputsCount_when_changed_does_not_change_existing_weights_and_biases(int matbuilder)
         {
             var l = new PerceptronLayer(2, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -204,8 +223,11 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
+        [InlineData(Normal)]
+        [InlineData(SmallNum)]
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void Clone_creates_deep_copy(int matbuilder)
         {
             var l = new PerceptronLayer(1, 2, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -234,9 +256,9 @@ namespace NNLib.Tests
             net2.Layers[0].Weights.Multiply(4, net2.Layers[0].Weights); 
             net2.Layers[1].Weights.Multiply(4, net2.Layers[1].Weights);
             net2.Layers[2].Weights.Multiply(4, net2.Layers[2].Weights);
-            net2.Layers[0].Biases.Multiply(4, net2.Layers[0].Biases);
-            net2.Layers[1].Biases.Multiply(4, net2.Layers[1].Biases);
-            net2.Layers[2].Biases.Multiply(4, net2.Layers[2].Biases);
+            net2.Layers[0].Biases.Add(4, net2.Layers[0].Biases);
+            net2.Layers[1].Biases.Add(4, net2.Layers[1].Biases);
+            net2.Layers[2].Biases.Add(4, net2.Layers[2].Biases);
             net2.CalculateOutput(input);
 
             net2.TotalLayers.Should().Be(net.TotalLayers);
@@ -244,15 +266,19 @@ namespace NNLib.Tests
             for (int i = 0; i < net.TotalLayers; i++)
             {
                 net.Layers[i].Weights.CompareTo(net2.Layers[i].Weights).Should().BeFalse();
-                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeTrue();
+                net.Layers[i].Biases.CompareTo(net2.Layers[i].Biases).Should().BeFalse();
                 net.Layers[i].Output.CompareTo(net2.Layers[i].Output).Should().BeFalse();
             }
         }
 
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
+        [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void RemoveLayer_removes_hidden_layer(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -270,8 +296,12 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
+        [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void RemoveLayer_removes_output_layer(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -289,8 +319,12 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
+        [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void RemoveLayer_removes_input_layer(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -308,8 +342,12 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
         [InlineData(Normal)]
+        [InlineData(SmallNum)]
+        
+        [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void RebuildMatrices_creates_new_matrices(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -331,9 +369,11 @@ namespace NNLib.Tests
         }
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
         [InlineData(Normal)]
+        [InlineData(SmallNum)]
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void InsertAfter_inserts_new_layer_after_given_index(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
@@ -358,8 +398,11 @@ namespace NNLib.Tests
 
 
         [Theory]
-        [InlineData(DefaultNormal)]
+        [InlineData(SmallStdDevNormal)]
+        [InlineData(Normal)]
+        [InlineData(SmallNum)]
         [InlineData(Xavier)]
+        [InlineData(SqrtM)]
         public void InsertBefore_inserts_new_layer_before_given_index(int matbuilder)
         {
             var l = new PerceptronLayer(1, 8, new LinearActivationFunction(), GetMatBuilder(matbuilder));
