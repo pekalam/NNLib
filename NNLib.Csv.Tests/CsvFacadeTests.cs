@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Complex;
@@ -53,7 +54,14 @@ namespace NNLib.Csv.Tests
         [Fact]
         public void ChangeVarIndexes_test()
         {
-            var (sets, variableNames, ind) = CsvFacade.LoadSets(fileName, divisionOptions: new DataSetDivisionOptions()
+            var (originalSets, _, orgInd) = CsvFacade.LoadSets(fileName, new LinearDataSetDivider(),
+                new DataSetDivisionOptions()
+                {
+                    TrainingSetPercent = 33,
+                    TestSetPercent = 33,
+                    ValidationSetPercent = 33,
+                });
+            var (sets, variableNames, ind) = CsvFacade.LoadSets(fileName, new LinearDataSetDivider(), new DataSetDivisionOptions()
             {
                 TrainingSetPercent = 33,
                 TestSetPercent = 33,
@@ -66,13 +74,49 @@ namespace NNLib.Csv.Tests
             CsvFacade.ChangeVariableIndexes(newIndexes, sets);
 
             sets.TrainingSet.Input[0].RowCount.Should().Be(1);
-
             sets.TrainingSet.Target[0].RowCount.Should().Be(2);
-            newIndexes = newIndexes.ChangeVariableUse(0, VariableUses.Ignore);
+            sets.TrainingSet.Input.Count.Should().Be(originalSets.TrainingSet.Input.Count);
+            sets.TrainingSet.Target.Count.Should().Be(originalSets.TrainingSet.Target.Count);
+
+            for (int i = 0; i < sets.TrainingSet.Input.Count; i++)
+            {
+                sets.TrainingSet.Input[i][0, 0].Should().Be(originalSets.TrainingSet.Input[i][1, 0]);
+                sets.TrainingSet.Target[i][0, 0].Should().Be(originalSets.TrainingSet.Input[i][0, 0]);
+                sets.TrainingSet.Target[i][1, 0].Should().Be(originalSets.TrainingSet.Target[i][0, 0]);
+            }
+
+            newIndexes = newIndexes.ChangeVariableUse(2, VariableUses.Ignore);
             CsvFacade.ChangeVariableIndexes(newIndexes, sets);
+
 
             sets.TrainingSet.Target[0].RowCount.Should().Be(1);
             sets.TrainingSet.Input[0].RowCount.Should().Be(1);
+            sets.TrainingSet.Input.Count.Should().Be(originalSets.TrainingSet.Input.Count);
+            sets.TrainingSet.Target.Count.Should().Be(originalSets.TrainingSet.Target.Count);
+
+            for (int i = 0; i < sets.TrainingSet.Input.Count; i++)
+            {
+                sets.TrainingSet.Input[i][0, 0].Should().Be(originalSets.TrainingSet.Input[i][1, 0]);
+                sets.TrainingSet.Target[i][0, 0].Should().Be(originalSets.TrainingSet.Input[i][0, 0]);
+            }
+
+
+
+            newIndexes = newIndexes.ChangeVariableUse(2, VariableUses.Input);
+            CsvFacade.ChangeVariableIndexes(newIndexes, sets);
+
+            sets.TrainingSet.Target[0].RowCount.Should().Be(1);
+            sets.TrainingSet.Input[0].RowCount.Should().Be(2);
+            sets.TrainingSet.Input.Count.Should().Be(originalSets.TrainingSet.Input.Count);
+            sets.TrainingSet.Target.Count.Should().Be(originalSets.TrainingSet.Target.Count);
+
+            for (int i = 0; i < sets.TrainingSet.Input.Count; i++)
+            {
+                sets.TrainingSet.Input[i][0, 0].Should().Be(originalSets.TrainingSet.Input[i][1, 0]);
+                sets.TrainingSet.Target[i][0, 0].Should().Be(originalSets.TrainingSet.Input[i][0, 0]);
+                sets.TrainingSet.Input[i][1, 0].Should().Be(originalSets.TrainingSet.Target[i][0, 0]);
+            }
+
         }
 
         [Fact]
