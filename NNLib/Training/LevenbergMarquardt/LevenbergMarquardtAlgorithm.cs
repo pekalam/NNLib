@@ -114,7 +114,7 @@ namespace NNLib.Training.LevenbergMarquardt
             var (J, Jt) = _jacobian.CalcJacobian(ct);
    
             var JtJ = Jt * J;
-            var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real);
+            var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real) * 100;
             
             if (m > max)
             {
