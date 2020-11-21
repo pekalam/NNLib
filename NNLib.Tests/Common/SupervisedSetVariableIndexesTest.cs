@@ -19,25 +19,25 @@ namespace NNLib.Tests.Common
         [Fact]
         public void Ctor_when_empty_input_throws()
         {
-            Assert.Throws<ArgumentException>(() => new SupervisedSetVariableIndexes(new int[0], new[] { 9, 10 }));
+            new SupervisedSetVariableIndexes(new int[0], new[] {9, 10}).Error.Should().NotBeNull();
         }
 
         [Fact]
         public void Ctor_when_empty_target_throws()
         {
-            Assert.Throws<ArgumentException>(() => new SupervisedSetVariableIndexes(new[] { 0 }, new int[0]));
+            new SupervisedSetVariableIndexes(new[] { 0 }, new int[0]).Error.Should().NotBeNull();
         }
 
         [Fact]
         public void Ctor_when_empty_target_and_input_throws()
         {
-            Assert.Throws<ArgumentException>(() => new SupervisedSetVariableIndexes(new int[0], new int[0]));
+            new SupervisedSetVariableIndexes(new int[0], new int[0]).Error.Should().NotBeNull();
         }
 
         [Fact]
         public void Ctor_when_expect_and_input_contains_the_same_vars_throws()
         {
-            Assert.Throws<ArgumentException>(() => new SupervisedSetVariableIndexes(new[] { 0, 1, 9 }, new[] { 0, 1, 2 }));
+            new SupervisedSetVariableIndexes(new[] { 0, 1, 9 }, new[] { 0, 1, 2 }).Should().NotBeNull();
         }
 
         [Fact]
@@ -76,8 +76,8 @@ namespace NNLib.Tests.Common
         {
             var vars = new SupervisedSetVariableIndexes(new[] { 1 }, new[] { 0 });
 
-            Assert.Throws<InvalidOperationException>(() => vars.ChangeVariableUse(0, VariableUses.Ignore));
-            Assert.Throws<InvalidOperationException>(() => vars.ChangeVariableUse(1, VariableUses.Ignore));
+            vars.ChangeVariableUse(0, VariableUses.Ignore).Error.Should().NotBeNull();
+            vars.ChangeVariableUse(1, VariableUses.Ignore).Error.Should().NotBeNull();
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace NNLib.Tests.Common
         {
             var vars = new SupervisedSetVariableIndexes(new[] { 1 }, new[] { 0 });
 
-            Assert.Throws<ArgumentException>(() => vars.ChangeVariableUse(1, VariableUses.Target));
+            vars.ChangeVariableUse(1, VariableUses.Target).Error.Should().NotBeNull();
         }
     }
 }

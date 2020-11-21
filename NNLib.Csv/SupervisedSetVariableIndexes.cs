@@ -9,48 +9,56 @@ namespace NNLib.Common
     /// </summary>
     public class SupervisedSetVariableIndexes
     {
-        public ImmutableArray<int> Ignored { get; }
-        public ImmutableArray<int> InputVarIndexes { get; }
-        public ImmutableArray<int> TargetVarIndexes { get; }
+        private readonly ImmutableArray<int> _ignored;
+        private readonly ImmutableArray<int> _inputVarIndexes;
+        private readonly ImmutableArray<int> _targetVarIndexes;
+
+        public ImmutableArray<int> Ignored => Error == null ? _ignored : throw new ArgumentException(Error);
+
+        public ImmutableArray<int> InputVarIndexes => Error == null ? _inputVarIndexes : throw new ArgumentException(Error);
+
+        public ImmutableArray<int> TargetVarIndexes => Error == null ? _targetVarIndexes : throw new ArgumentException(Error);
 
         public SupervisedSetVariableIndexes(int[] inputVarIndexes, int[] targetVarIndexes, int[] ingored) : this(inputVarIndexes, targetVarIndexes)
         {
-            Ignored = ingored.ToImmutableArray();
+            _ignored = ingored.ToImmutableArray();
         }
 
         private SupervisedSetVariableIndexes(ImmutableArray<int> inputVarIndexes, ImmutableArray<int> targetVarIndexes,
-            ImmutableArray<int> ignored) => (InputVarIndexes, TargetVarIndexes, Ignored) =
+            ImmutableArray<int> ignored) => (_inputVarIndexes, _targetVarIndexes, _ignored) =
             (inputVarIndexes, targetVarIndexes, ignored);
 
         public SupervisedSetVariableIndexes(int[] inputVarIndexes, int[] targetVarIndexes)
         {
             if (inputVarIndexes.Intersect(targetVarIndexes).Any())
             {
-                throw new ArgumentException("inputVarIndexes and targetVarIndexes contains the same elements");
+                Error = "inputVarIndexes and targetVarIndexes contains the same elements";
             }
 
             if (inputVarIndexes.Length <= 0)
             {
-                throw new ArgumentException("Input variable(s) must be set");
+                Error = "Input variable(s) must be set";
             }
 
             if (targetVarIndexes.Length <= 0)
             {
-                throw new ArgumentException("Target variable(s) must be set");
+                Error = "Target variable(s) must be set";
             }
 
 
             Array.Sort(inputVarIndexes);
             Array.Sort(targetVarIndexes);
 
-            if (Ignored.IsDefault)
+            if (_ignored.IsDefault)
             {
-                Ignored = ImmutableArray<int>.Empty;
+                _ignored = ImmutableArray<int>.Empty;
             }
 
-            InputVarIndexes = inputVarIndexes.ToImmutableArray();
-            TargetVarIndexes = targetVarIndexes.ToImmutableArray();
+            _inputVarIndexes = inputVarIndexes.ToImmutableArray();
+            _targetVarIndexes = targetVarIndexes.ToImmutableArray();
         }
+
+        public string? Error { get; private set; }
 
         public SupervisedSetVariableIndexes ChangeVariableUse(int index, VariableUses variableUse)
         {
@@ -61,82 +69,82 @@ namespace NNLib.Common
 
             ImmutableArray<int> newInputVars;
             ImmutableArray<int> newTargetVars;
-            ImmutableArray<int> newIgnored = Ignored;
-            if (variableUse == VariableUses.Target && InputVarIndexes.Contains(index))
+            ImmutableArray<int> new_ignored = _ignored;
+            if (variableUse == VariableUses.Target && _inputVarIndexes.Contains(index))
             {
-                newInputVars = InputVarIndexes.Remove(index);
-                newTargetVars = TargetVarIndexes.Add(index);
+                newInputVars = _inputVarIndexes.Remove(index);
+                newTargetVars = _targetVarIndexes.Add(index);
             }
-            else if (variableUse == VariableUses.Input && TargetVarIndexes.Contains(index))
+            else if (variableUse == VariableUses.Input && _targetVarIndexes.Contains(index))
             {
-                newInputVars = InputVarIndexes.Add(index);
-                newTargetVars = TargetVarIndexes.Remove(index);
+                newInputVars = _inputVarIndexes.Add(index);
+                newTargetVars = _targetVarIndexes.Remove(index);
             }
-            else if (Ignored.Contains(index))
+            else if (_ignored.Contains(index))
             {
-                newIgnored = newIgnored.Remove(index);
+                new_ignored = new_ignored.Remove(index);
                 if (variableUse == VariableUses.Input)
                 {
-                    newInputVars = InputVarIndexes.Add(index);
-                    newTargetVars = TargetVarIndexes;
+                    newInputVars = _inputVarIndexes.Add(index);
+                    newTargetVars = _targetVarIndexes;
                 }
                 else
                 {
-                    newInputVars = InputVarIndexes;
-                    newTargetVars = TargetVarIndexes.Add(index);
+                    newInputVars = _inputVarIndexes;
+                    newTargetVars = _targetVarIndexes.Add(index);
                 }
             }
-            else if ((variableUse == VariableUses.Input && InputVarIndexes.Contains(index)) ||
-                     (variableUse == VariableUses.Target && TargetVarIndexes.Contains(index)))
+            else if ((variableUse == VariableUses.Input && _inputVarIndexes.Contains(index)) ||
+                     (variableUse == VariableUses.Target && _targetVarIndexes.Contains(index)))
             {
-                newInputVars = InputVarIndexes;
-                newTargetVars = TargetVarIndexes;
+                newInputVars = _inputVarIndexes;
+                newTargetVars = _targetVarIndexes;
             }
             else
             {
                 throw new Exception();
             }
 
-            return new SupervisedSetVariableIndexes(newInputVars.ToArray(), newTargetVars.ToArray(), newIgnored.ToArray());
+            return new SupervisedSetVariableIndexes(newInputVars.ToArray(), newTargetVars.ToArray(), new_ignored.ToArray());
         }
 
         private SupervisedSetVariableIndexes IgnoreVariable(int index)
         {
             ImmutableArray<int> newInputVars;
             ImmutableArray<int> newTargetVars;
-            ImmutableArray<int> newIgnored = Ignored;
-            if (InputVarIndexes.Contains(index))
+            ImmutableArray<int> new_ignored = _ignored;
+            if (_inputVarIndexes.Contains(index))
             {
-                if (InputVarIndexes.Length == 1)
+                if (_inputVarIndexes.Length == 1)
                 {
-                    throw new InvalidOperationException("Input variables must be set");
+                    Error = "Input variables must be set";
                 }
-                newInputVars = InputVarIndexes.Remove(index);
-                newTargetVars = TargetVarIndexes;
+                newInputVars = _inputVarIndexes.Remove(index);
+                newTargetVars = _targetVarIndexes;
             }
-            else if (TargetVarIndexes.Contains(index))
+            else if (_targetVarIndexes.Contains(index))
             {
-                if (TargetVarIndexes.Length == 1)
+                if (_targetVarIndexes.Length == 1)
                 {
-                    throw new InvalidOperationException("Target variables must be set");
+                    Error = "Target variables must be set";
                 }
-                newInputVars = InputVarIndexes;
-                newTargetVars = TargetVarIndexes.Remove(index);
+                newInputVars = _inputVarIndexes;
+                newTargetVars = _targetVarIndexes.Remove(index);
             }
-            else if (Ignored.Contains(index))
+            else if (_ignored.Contains(index))
             {
-                return new SupervisedSetVariableIndexes(InputVarIndexes.ToArray(), TargetVarIndexes.ToArray(), Ignored.ToArray());
+                return new SupervisedSetVariableIndexes(_inputVarIndexes.ToArray(), _targetVarIndexes.ToArray(), _ignored.ToArray());
             }
             else
             {
-                throw new Exception($"Ignored array doesn't contain {index} index");
+                throw new Exception($"_ignored array doesn't contain {index} index");
             }
 
-            newIgnored = newIgnored.Add(index);
+            new_ignored = new_ignored.Add(index);
 
-            return new SupervisedSetVariableIndexes(newInputVars.ToArray(), newTargetVars.ToArray(), newIgnored.ToArray());
+            return new SupervisedSetVariableIndexes(newInputVars.ToArray(), newTargetVars.ToArray(), new_ignored.ToArray());
         }
 
-        public SupervisedSetVariableIndexes Clone() => new SupervisedSetVariableIndexes(InputVarIndexes, TargetVarIndexes, Ignored);
+        public SupervisedSetVariableIndexes Clone() => new SupervisedSetVariableIndexes(_inputVarIndexes, _targetVarIndexes, _ignored);
     }
 }
