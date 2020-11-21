@@ -1,9 +1,9 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using NNLib.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using NNLib.Data;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace NNLib

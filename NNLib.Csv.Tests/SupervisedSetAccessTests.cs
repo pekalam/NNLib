@@ -1,9 +1,7 @@
-using System;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Complex;
-using NNLib.Common;
 using NNLib.Data;
+using System;
 using Xunit;
 
 namespace NNLib.Csv.Tests

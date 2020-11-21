@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using NNLib.Data;
+﻿using NNLib.Data;
+using System.Collections.Generic;
 
-namespace NNLib.Common
+namespace NNLib.Csv
 {
     /// <summary>
     /// Service responsible for dividing training data.

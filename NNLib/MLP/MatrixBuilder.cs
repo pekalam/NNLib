@@ -1,9 +1,6 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.Random;
+using System;
 
 namespace NNLib.MLP
 {

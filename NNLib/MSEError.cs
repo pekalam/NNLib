@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using System.Threading;
-using NNLib.Data;
+﻿using NNLib.Data;
 using NNLib.Exceptions;
 using NNLib.LossFunction;
 using NNLib.MLP;
+using System.Linq;
+using System.Threading;
 
 namespace NNLib
 {

@@ -1,8 +1,8 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
-using System;
-using System.Diagnostics;
 using NNLib.Data;
 using NNLib.MLP;
+using System;
+using System.Diagnostics;
 
 namespace NNLib
 {

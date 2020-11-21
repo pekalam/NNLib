@@ -1,4 +1,4 @@
-﻿namespace NNLib.Common
+﻿namespace NNLib.Csv
 {
     public enum VariableUses
     {

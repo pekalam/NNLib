@@ -1,7 +1,6 @@
-﻿using System;
+﻿using NNLib.Data;
+using System;
 using System.Linq;
-using NNLib.Common;
-using NNLib.Data;
 
 namespace NNLib.Csv
 {

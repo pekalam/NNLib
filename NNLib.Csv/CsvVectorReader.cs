@@ -1,8 +1,6 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
 
 [assembly: InternalsVisibleTo("Data.Tests")]
 [assembly: InternalsVisibleTo("Infrastructure.Data.Tests")]

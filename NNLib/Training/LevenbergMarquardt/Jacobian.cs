@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Storage;
+﻿using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
 using NNLib.Exceptions;
-using NNLib.LossFunction;
 using NNLib.MLP;
+using System.Threading;
 
 namespace NNLib.Training.LevenbergMarquardt
 {

@@ -1,10 +1,9 @@
-﻿using System;
+﻿using NNLib.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using NNLib;
-using NNLib.Data;
 
-namespace NNLib.Common
+namespace NNLib.Csv
 {
     public class RandomDataSetDivider : IDataSetDivider
     {

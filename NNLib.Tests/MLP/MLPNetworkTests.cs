@@ -1,13 +1,13 @@
 using System;
-using System.Runtime.InteropServices.ComTypes;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.ActivationFunction;
 using NNLib.MLP;
+using NNLib.Tests.Training;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NNLib.Tests
+namespace NNLib.Tests.MLP
 {
     public class MLPNetworkTests
     {

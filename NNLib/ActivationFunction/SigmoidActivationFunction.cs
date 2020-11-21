@@ -1,5 +1,4 @@
-﻿using System;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
 
 namespace NNLib.ActivationFunction

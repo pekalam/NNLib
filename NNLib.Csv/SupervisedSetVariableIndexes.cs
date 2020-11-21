@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace NNLib.Common
+namespace NNLib.Csv
 {
     /// <summary>
     /// Used to choose input, target and ignored attributes of training data from csv file.

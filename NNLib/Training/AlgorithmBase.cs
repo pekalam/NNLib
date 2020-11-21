@@ -1,7 +1,7 @@
-﻿using System.Threading;
-using NNLib.Data;
+﻿using NNLib.Data;
 using NNLib.LossFunction;
 using NNLib.MLP;
+using System.Threading;
 
 namespace NNLib.Training
 {

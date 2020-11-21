@@ -1,20 +1,19 @@
 using System;
 using FluentAssertions;
 using NNLib.ActivationFunction;
-using NNLib.Common;
 using NNLib.Data;
 using NNLib.LossFunction;
 using NNLib.MLP;
 using NNLib.Training.GradientDescent;
 using Xunit;
-using static NNLib.Tests.TrainingTestUtils;
+using static NNLib.Tests.Training.TrainingTestUtils;
 
-namespace NNLib.Tests
+namespace NNLib.Tests.Training
 {
     public class BatchTrainerTests
     {
         private readonly MLPNetwork _net;
-        private Data.SupervisedTrainingSamples _trainingSamples;
+        private NNLib.Data.SupervisedTrainingSamples _trainingSamples;
 
         public BatchTrainerTests()
         {

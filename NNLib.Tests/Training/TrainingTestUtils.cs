@@ -1,10 +1,8 @@
 using NNLib.ActivationFunction;
-using NNLib.Common;
-using NNLib.Data;
 using NNLib.MLP;
 using M = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
-namespace NNLib.Tests
+namespace NNLib.Tests.Training
 {
     public static class TrainingTestUtils
     {
@@ -27,7 +25,7 @@ namespace NNLib.Tests
             return net;
         }
 
-        public static Data.SupervisedTrainingSamples AndGateSet()
+        public static NNLib.Data.SupervisedTrainingSamples AndGateSet()
         {
             var input = new[]
             {
@@ -45,7 +43,7 @@ namespace NNLib.Tests
                 new []{1d},
             };
 
-            return Data.SupervisedTrainingSamples.FromArrays(input, expected);
+            return NNLib.Data.SupervisedTrainingSamples.FromArrays(input, expected);
         }
 
         public static bool CompareTo(this M m1, M m2)

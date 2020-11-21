@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Factorization;
 using MathNet.Numerics.Providers.LinearAlgebra;
 using NNLib.Data;
 using NNLib.Exceptions;
 using NNLib.LossFunction;
 using NNLib.MLP;
+using System;
+using System.Linq;
+using System.Threading;
 
 namespace NNLib.Training.LevenbergMarquardt
 {

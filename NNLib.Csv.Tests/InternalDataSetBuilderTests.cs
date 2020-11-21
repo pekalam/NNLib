@@ -1,7 +1,6 @@
-using System;
 using FluentAssertions;
-using NNLib.Common;
 using NNLib.Data;
+using System;
 using Xunit;
 
 namespace NNLib.Csv.Tests

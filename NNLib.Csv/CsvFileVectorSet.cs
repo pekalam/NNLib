@@ -1,8 +1,7 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
+﻿using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
+using System;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Infrastructure.Data.Tests")]
 namespace NNLib.Csv

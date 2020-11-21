@@ -1,12 +1,10 @@
+using FluentAssertions;
+using NNLib.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
-using NNLib.Common;
-using NNLib.Data;
 using Xunit;
 
-namespace NNLib.Tests.Common
+namespace NNLib.Csv.Tests
 {
     public class RandomDataSetDividerTest
     {

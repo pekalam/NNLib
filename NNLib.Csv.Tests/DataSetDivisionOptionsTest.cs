@@ -1,9 +1,8 @@
-using System;
-using NNLib.Common;
 using NNLib.Data;
+using System;
 using Xunit;
 
-namespace NNLib.Tests.Common
+namespace NNLib.Csv.Tests
 {
     public class DataSetDivisionOptionsTest
     {

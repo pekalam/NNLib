@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using MathNet.Numerics.LinearAlgebra;
 
 namespace NNLib
 {

@@ -1,5 +1,4 @@
-﻿using NNLib.Common;
-using NNLib.Data;
+﻿using NNLib.Data;
 
 namespace NNLib.Csv
 {

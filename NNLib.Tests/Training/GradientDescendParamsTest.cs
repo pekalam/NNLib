@@ -2,7 +2,7 @@ using System;
 using NNLib.Training.GradientDescent;
 using Xunit;
 
-namespace NNLib.Tests
+namespace NNLib.Tests.Training
 {
     public class GradientDescendParamsTest
     {

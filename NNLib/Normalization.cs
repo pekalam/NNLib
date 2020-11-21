@@ -1,10 +1,10 @@
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Statistics;
+using NNLib.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.Statistics;
-using NNLib.Data;
 
 namespace NNLib
 {

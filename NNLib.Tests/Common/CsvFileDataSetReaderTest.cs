@@ -1,4 +1,0 @@
-namespace NNLib.Tests.Common
-{
-    
-}

@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
 using NNLib.Exceptions;
 using NNLib.LossFunction;
 using NNLib.MLP;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 
 namespace NNLib.Training.GradientDescent
 {

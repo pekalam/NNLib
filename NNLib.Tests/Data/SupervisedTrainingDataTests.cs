@@ -1,10 +1,8 @@
 using System;
-using FluentAssertions;
-using NNLib.Common;
 using NNLib.Data;
 using Xunit;
 
-namespace NNLib.Tests
+namespace NNLib.Tests.Data
 {
     public class SupervisedTrainingDataTests
     {

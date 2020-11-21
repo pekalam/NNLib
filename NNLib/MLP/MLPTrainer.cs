@@ -1,14 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
 using NNLib.Exceptions;
 using NNLib.LossFunction;
 using NNLib.Training;
+using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NNLib.MLP
 {

@@ -1,5 +1,4 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
-using NNLib.ActivationFunction;
 using NNLib.Data;
 
 namespace NNLib.LossFunction

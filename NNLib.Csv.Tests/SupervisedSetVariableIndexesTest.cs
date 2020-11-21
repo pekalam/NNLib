@@ -1,9 +1,7 @@
-using System;
 using FluentAssertions;
-using NNLib.Common;
 using Xunit;
 
-namespace NNLib.Tests.Common
+namespace NNLib.Csv.Tests
 {
     public class SupervisedSetVariableIndexesTest
     {
@@ -19,7 +17,7 @@ namespace NNLib.Tests.Common
         [Fact]
         public void Ctor_when_empty_input_throws()
         {
-            new SupervisedSetVariableIndexes(new int[0], new[] {9, 10}).Error.Should().NotBeNull();
+            new SupervisedSetVariableIndexes(new int[0], new[] { 9, 10 }).Error.Should().NotBeNull();
         }
 
         [Fact]

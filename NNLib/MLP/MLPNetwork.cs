@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 using NNLib.ActivationFunction;
-using NNLib.Data;
+using System;
+using System.Linq;
 
 namespace NNLib.MLP
 {

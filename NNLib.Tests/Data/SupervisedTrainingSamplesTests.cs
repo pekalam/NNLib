@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
-using NNLib.Common;
 using NNLib.Data;
 using Xunit;
 
-namespace NNLib.Tests
+namespace NNLib.Tests.Data
 {
     public class SupervisedTrainingSamplesTests
     {
@@ -29,7 +28,7 @@ namespace NNLib.Tests
                 new[] {7d, 6d},
             };
 
-            var samples = Data.SupervisedTrainingSamples.FromArrays(input, target);
+            var samples = NNLib.Data.SupervisedTrainingSamples.FromArrays(input, target);
 
             samples.Input.Count.Should().Be(4);
             for (int i = 0; i < samples.Input.Count; i++)
@@ -58,7 +57,7 @@ namespace NNLib.Tests
         [Fact]
         public void ctor_when_vector_sets_differ_in_length_throws()
         {
-            Assert.Throws<ArgumentException>(() => new Data.SupervisedTrainingSamples(new DefaultVectorSet(new List<Matrix<double>>()
+            Assert.Throws<ArgumentException>(() => new NNLib.Data.SupervisedTrainingSamples(new DefaultVectorSet(new List<Matrix<double>>()
             {
                 Matrix<double>.Build.Random(2,1), Matrix<double>.Build.Random(2,1),
             }), new DefaultVectorSet(new List<Matrix<double>>()
@@ -87,7 +86,7 @@ namespace NNLib.Tests
                 new[] {7d},
             };
 
-            var samples = Data.SupervisedTrainingSamples.FromArrays(input, target);
+            var samples = NNLib.Data.SupervisedTrainingSamples.FromArrays(input, target);
 
 
             var (I,T) = (samples.ReadInputSamples(), samples.ReadTargetSamples());
