@@ -13,16 +13,16 @@ namespace NNLib.Csv
     {
         private readonly DataSetInfo _dataSetInfo;
         private (Matrix<double> input, Matrix<double> target)[] _fileContents;
-        private Matrix<double>[] _ignored;
+        private Matrix<double>?[] _ignored;
         private readonly ICsvReader _csvReader;
 
-        private CsvVectorReader(SupervisedSetVariableIndexes setVariableIndexes, DataSetInfo dataSetInfo, (Matrix<double> input, Matrix<double> target)[] fileContents, ICsvReader csvReader)
+        private CsvVectorReader(SupervisedSetVariableIndexes setVariableIndexes, DataSetInfo dataSetInfo, (Matrix<double> input, Matrix<double> target)[] fileContents, ICsvReader csvReader, Matrix<double>?[] ignored)
         {
             _dataSetInfo = dataSetInfo;
             CurrentIndexes = setVariableIndexes;
-            _fileContents = fileContents;
+            _fileContents = fileContents.Select(v => (v.input.Clone(), v.target.Clone())).ToArray();
             _csvReader = csvReader;
-            _ignored = new Matrix<double>[_fileContents.Length];
+            _ignored = ignored.Select(v => v?.Clone()).ToArray();
         }
 
         public CsvVectorReader(ICsvReader csvReader,
@@ -89,6 +89,29 @@ namespace NNLib.Csv
             }
 
 
+            for (int i = 0; i < newVariableIndexes.Ignored.Length; i++)
+            {
+                var ind = CurrentIndexes.InputVarIndexes.IndexOf(newVariableIndexes.Ignored[i]);
+                if (ind != -1)
+                {
+                    indexMap[newVariableIndexes.Ignored[i]] = (1, ind);
+                }
+
+                ind = CurrentIndexes.TargetVarIndexes.IndexOf(newVariableIndexes.Ignored[i]);
+                if (ind != -1)
+                {
+                    indexMap[newVariableIndexes.Ignored[i]] = (0, ind);
+                }
+
+                ind = CurrentIndexes.Ignored.IndexOf(newVariableIndexes.Ignored[i]);
+                if (ind != -1)
+                {
+                    indexMap[newVariableIndexes.Ignored[i]] = (2, ind);
+                }
+            }
+
+
+
             for (int i = 0; i < _fileContents.Length; i++)
             {
                 var input = Matrix<double>.Build.Dense(newVariableIndexes.InputVarIndexes.Length, 1);
@@ -110,7 +133,7 @@ namespace NNLib.Csv
                     }
                     else
                     {
-                        input[r++, 0] = _ignored[i][map.index, 0];
+                        input[r++, 0] = _ignored[i]![map.index, 0];
                     }
                 }
 
@@ -129,7 +152,7 @@ namespace NNLib.Csv
                     }
                     else
                     {
-                        target[r++, 0] = _ignored[i][map.index, 0];
+                        target[r++, 0] = _ignored[i]![map.index, 0];
                     }
                 }
 
@@ -149,7 +172,7 @@ namespace NNLib.Csv
                     }
                     else
                     {
-                        ignored[r++, 0] = _ignored[i][map.index, 0];
+                        ignored[r++, 0] = _ignored[i]![map.index, 0];
                     }
                 }
 
@@ -191,7 +214,7 @@ namespace NNLib.Csv
 
         internal CsvVectorReader Copy()
         {
-            return new CsvVectorReader(CurrentIndexes, _dataSetInfo, _fileContents.Select(v => (v.input.Clone(), v.target.Clone())).ToArray(),_csvReader);
+            return new CsvVectorReader(CurrentIndexes, _dataSetInfo, _fileContents,_csvReader, _ignored);
         }
     }
 }
