@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +18,7 @@ namespace NNLib
             }
         }
 
-        public static async Task MinMax(SupervisedTrainingData sets)
+        public static async Task MinMax(SupervisedTrainingData sets, double a = 0, double b = 1)
         {
             void MinMax(SupervisedTrainingSamples set)
             {
@@ -49,7 +49,7 @@ namespace NNLib
                             }
                             else
                             {
-                                vec[j].At(i, 0, (vec[j].At(i, 0) - min) / (max - min));
+                                vec[j].At(i, 0, (vec[j].At(i, 0) - min) * (b - a) / (max - min) + a);
                             }
                         }
                     }
