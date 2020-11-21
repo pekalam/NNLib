@@ -27,7 +27,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private double _previousError;
         private Matrix<double>? _previousE;
         private int k;
-        private double _dampingParameter = 0.1;
+        private double _dampingParameter = 0.01;
 
         private Jacobian _jacobian = null!;
         private ParametersUpdate _update = null!;
