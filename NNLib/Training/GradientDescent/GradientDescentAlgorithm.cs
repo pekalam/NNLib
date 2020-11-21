@@ -17,7 +17,6 @@ namespace NNLib.Training.GradientDescent
         private ILossFunction? _lossFunction;
         private int _iterations;
         private ParametersUpdate? _previousDelta;
-        private readonly int _batchSize;
         private ParametersUpdate[] _delta = null!;
         private int _inBatch;
 
@@ -28,7 +27,6 @@ namespace NNLib.Training.GradientDescent
         {
             Params = parameters ?? new GradientDescentParams();
             Guards._GtZero(Params.BatchSize);
-            _batchSize = Params.BatchSize;
         }
 
         public GradientDescentParams Params { get; set; }
@@ -45,17 +43,17 @@ namespace NNLib.Training.GradientDescent
             _network = network;
             _iterations = 0;
 
-            if (_batchSize > set.Input.Count)
+            if (Params.BatchSize > set.Input.Count)
             {
-                throw new ArgumentException($"Invalid batch size {_batchSize} for training set with count {set.Input.Count}");
+                throw new ArgumentException($"Invalid batch size {Params.BatchSize} for training set with count {set.Input.Count}");
             }
 
-            if (set.Input.Count % _batchSize != 0)
+            if (set.Input.Count % Params.BatchSize != 0)
             {
                 throw new ArgumentException($"Cannot divide training set");
             }
-            IterationsPerEpoch = set.Input.Count / _batchSize;
-            _delta = new ParametersUpdate[_batchSize];
+            IterationsPerEpoch = set.Input.Count / Params.BatchSize;
+            _delta = new ParametersUpdate[Params.BatchSize];
 
             if (Params.Randomize)
             {
@@ -173,7 +171,7 @@ namespace NNLib.Training.GradientDescent
 
         internal override bool DoIteration(in CancellationToken ct = default)
         {
-            while (_inBatch != _batchSize)
+            while (_inBatch != Params.BatchSize)
             {
                 NextTrainingSample();
 

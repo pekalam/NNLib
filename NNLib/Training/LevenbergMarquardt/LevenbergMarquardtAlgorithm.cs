@@ -19,6 +19,7 @@ namespace NNLib.Training.LevenbergMarquardt
     {
         private const double MinDampingParameter = 1.0e-25;
         private const double MaxDampingParameter = 1.0e25;
+        private const double DefaultDampingParameter = 0.01;
         private MLPNetwork _network = null!;
 
         private LoadedSupervisedTrainingData _loadedSets = null!;
@@ -27,7 +28,7 @@ namespace NNLib.Training.LevenbergMarquardt
         private double _previousError;
         private Matrix<double>? _previousE;
         private int k;
-        private double _dampingParameter = 0.01;
+        private double _dampingParameter = DefaultDampingParameter;
 
         private Jacobian _jacobian = null!;
         private ParametersUpdate _update = null!;
@@ -114,14 +115,24 @@ namespace NNLib.Training.LevenbergMarquardt
             var (J, Jt) = _jacobian.CalcJacobian(ct);
    
             var JtJ = Jt * J;
-            var m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real) * 100;
+
+            double m = 0d;
+            try
+            {
+                m = JtJ.Evd().EigenValues.Enumerate().Max(v => v.Real) * 100;
+            }
+            catch (InvalidParameterException)
+            {
+                _dampingParameter = DefaultDampingParameter;
+                return;
+            }
             
             if (m > max)
             {
                 max = m;
             }
             
-            _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? 0.1 : max);
+            _dampingParameter = max > MaxDampingParameter ? MaxDampingParameter : (max < MinDampingParameter ? DefaultDampingParameter : max);
         }
 
         private void PrepareUpdate(Vector<double> delta, MLPNetwork network)
