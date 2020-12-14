@@ -7,7 +7,6 @@ namespace NNLib.Csv
     {
         private const char CR = '\r';
         private const char LF = '\n';
-        private const char NULL = '\0';
 
         public static List<long> CountLinesAndGetPositions(string fileName)
         {
@@ -18,7 +17,7 @@ namespace NNLib.Csv
 
             int read;
             long pos = 0L;
-            char previousChar = NULL, currentChar = NULL;
+            char? previousChar = null, currentChar = null;
             while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
             {
                 for (var i = 0; i < read; i++)
@@ -29,14 +28,14 @@ namespace NNLib.Csv
                     {
                         if (currentChar == LF && previousChar == CR) continue;
 
-                        previousChar = currentChar;
                         linePositions.Add(pos + i);
                     }
+                    previousChar = currentChar;
                 }
 
                 pos += read;
             }
-            if (currentChar != LF && currentChar != CR && currentChar != NULL)
+            if (currentChar != LF && currentChar != CR && currentChar.HasValue)
             {
                 linePositions.Add(pos);
             }
