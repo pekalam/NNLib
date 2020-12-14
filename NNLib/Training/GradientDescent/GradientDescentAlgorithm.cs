@@ -112,7 +112,7 @@ namespace NNLib.Training.GradientDescent
             return result;
         }
 
-        private void UpdateWeightsAndBiasesWithDeltaRule(in CancellationToken ct)
+        private void UpdateWeightsAndBiases(in CancellationToken ct)
         {
             var delta = DeltaAvg();
 
@@ -178,7 +178,7 @@ namespace NNLib.Training.GradientDescent
 
                 _delta[_inBatch++] = CalculateDelta(_inputEnum.Current, _targetEnum.Current);
             }
-            UpdateWeightsAndBiasesWithDeltaRule(ct);
+            UpdateWeightsAndBiases(ct);
 
             _inBatch = 0;
             _iterations++;
