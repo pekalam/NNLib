@@ -8,10 +8,10 @@ namespace NNLib.ActivationFunction
         private Matrix<double> _f = null!;
         private Matrix<double> _df = null!;
 
-        private NetDataMatrixPool? _fData;
-        private NetDataMatrixPool? _dfData;
+        private MatrixColPool? _fData;
+        private MatrixColPool? _dfData;
 
-        private ArcTanActivationFunction(Matrix<double> f, Matrix<double> df, NetDataMatrixPool? fData, NetDataMatrixPool? dfData)
+        private ArcTanActivationFunction(Matrix<double> f, Matrix<double> df, MatrixColPool? fData, MatrixColPool? dfData)
         {
             _f = f.Clone();
             _df = df.Clone();
@@ -54,8 +54,8 @@ namespace NNLib.ActivationFunction
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _dfData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
-            _fData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
+            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
         }
 
         public IActivationFunction Clone()

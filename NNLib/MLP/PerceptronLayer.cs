@@ -1,4 +1,4 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra;
 using NNLib.ActivationFunction;
 using NNLib.Data;
 
@@ -9,9 +9,9 @@ namespace NNLib.MLP
         private IActivationFunction _activationFunction;
         private Matrix<double>? _net;
 
-        private NetDataMatrixPool? _netData;
-        private NetDataMatrixPool? _biasData1;
-        private NetDataMatrixPool? _biasDataResult;
+        private MatrixColPool? _netData;
+        private MatrixColPool? _biasData1;
+        private MatrixColPool? _biasDataResult;
 
         private SupervisedTrainingSamples? _activationFunctionDataInit;
 
@@ -24,7 +24,7 @@ namespace NNLib.MLP
         }
 
         private PerceptronLayer(Matrix<double> weights, Matrix<double> biases, Matrix<double>? output, Matrix<double>? net, Matrix<double>? netStorage,
-            NetDataMatrixPool? netDataStorage, NetDataMatrixPool? biasData1, NetDataMatrixPool? biasDataResult,
+            MatrixColPool? netDataStorage, MatrixColPool? biasData1, MatrixColPool? biasDataResult,
             IActivationFunction activationFunction, MatrixBuilder? matrixBuilder = null) : base(weights, biases, output, matrixBuilder ?? new SmallNumbersMatrixBuilder())
         {
             _activationFunction = activationFunction.Clone();
@@ -60,9 +60,9 @@ namespace NNLib.MLP
         {
             _activationFunctionDataInit = data;
             ActivationFunction.InitMemoryForData(this, data);
-            _netData = new NetDataMatrixPool(NeuronsCount, data.Input.Count);
-            _biasData1 = new NetDataMatrixPool(1, data.Input.Count, 1);
-            _biasDataResult = new NetDataMatrixPool(NeuronsCount, data.Input.Count);
+            _netData = new MatrixColPool(NeuronsCount, data.Input.Count);
+            _biasData1 = new MatrixColPool(1, data.Input.Count, 1);
+            _biasDataResult = new MatrixColPool(NeuronsCount, data.Input.Count);
         }
 
         public Matrix<double>? Net;

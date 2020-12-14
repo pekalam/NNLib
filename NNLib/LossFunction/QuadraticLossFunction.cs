@@ -8,8 +8,8 @@ namespace NNLib.LossFunction
         private Matrix<double> _f = null!;
         private Matrix<double> _df = null!;
 
-        private NetDataMatrixPool _fData = null!;
-        private NetDataMatrixPool _dfData = null!;
+        private MatrixColPool _fData = null!;
+        private MatrixColPool _dfData = null!;
 
         public Matrix<double> Function(Matrix<double> input, Matrix<double> target)
         {
@@ -37,8 +37,8 @@ namespace NNLib.LossFunction
         {
             _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
             _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _fData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
-            _dfData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
+            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
         }
     }
 }

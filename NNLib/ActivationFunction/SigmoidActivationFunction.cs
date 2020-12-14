@@ -9,11 +9,11 @@ namespace NNLib.ActivationFunction
         private Matrix<double> _df = null!;
         private Matrix<double> _dfClone = null!;
 
-        private NetDataMatrixPool? _fData;
-        private NetDataMatrixPool? _dfData;
-        private NetDataMatrixPool? _dfDataClone;
+        private MatrixColPool? _fData;
+        private MatrixColPool? _dfData;
+        private MatrixColPool? _dfDataClone;
 
-        private SigmoidActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> dfClone, NetDataMatrixPool? fData, NetDataMatrixPool? dfData, NetDataMatrixPool? dfDataClone)
+        private SigmoidActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> dfClone, MatrixColPool? fData, MatrixColPool? dfData, MatrixColPool? dfDataClone)
         {
             _f = f.Clone();
             _df = df.Clone();
@@ -70,9 +70,9 @@ namespace NNLib.ActivationFunction
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _fData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
-            _dfData = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
-            _dfDataClone = new NetDataMatrixPool(layer.NeuronsCount, data.Input.Count);
+            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _dfDataClone = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
         }
 
         public IActivationFunction Clone()
