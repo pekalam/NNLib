@@ -1,68 +1,54 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System.Diagnostics;
+using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
 
 namespace NNLib.ActivationFunction
 {
     public class LinearActivationFunction : IActivationFunction
     {
-        private Matrix<double> _f = null!;
-        private Matrix<double> _df = null!;
-        
-        private MatrixColPool? _fData;
-        private MatrixColPool? _dfData;
+        private MatrixColPool _fData = null!;
+        private MatrixColPool _dfData = null!;
 
-        private LinearActivationFunction(Matrix<double> f, Matrix<double> df, MatrixColPool? fData, MatrixColPool? dfData)
+        private LinearActivationFunction(MatrixColPool fData, MatrixColPool dfData)
         {
-            _f = f.Clone();
-            _df = df.Clone();
-            _fData = fData?.Clone();
-            _dfData = dfData?.Clone();
+            _fData = fData.Clone();
+            _dfData = dfData.Clone();
         }
 
         public LinearActivationFunction()
         {
-            
         }
 
         public Matrix<double> Function(Matrix<double> x)
         {
-            var cols = x.ColumnCount;
-            if (cols == _f.ColumnCount)
-            {
-                x.CopyTo(_f);
-                return _f;
-            }
+            var fData = _fData.Get(x.ColumnCount);
 
-            x.CopyTo(_fData!.Get(cols));
-            return _fData.Get(cols);
+            x.CopyTo(fData);
+            return fData;
         }
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            var cols = x.ColumnCount;
-            if (cols == _df.ColumnCount)
-            {
-                return _df;
-            }
-
-            return _dfData!.Get(cols);
+            return _dfData.Get(x.ColumnCount);
         }
 
         public void InitMemory(Layer layer)
         {
-            _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1, Matrix<double>.One);
-            _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
+            _dfData = new MatrixColPool(layer.NeuronsCount, 1, Matrix<double>.One);
+            _fData = new MatrixColPool(layer.NeuronsCount, 1);
         }
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count, Matrix<double>.One);
-            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _dfData.ClearOtherThanColumnVec();
+            _fData.ClearOtherThanColumnVec();
+            _dfData.AddToPool(data.Input.Count);
+            _fData.AddToPool(data.Input.Count);
         }
 
         public IActivationFunction Clone()
         {
-            return new LinearActivationFunction(_f, _df, _fData, _dfData);
+            return new LinearActivationFunction(_fData!, _dfData!);
         }
     }
 }

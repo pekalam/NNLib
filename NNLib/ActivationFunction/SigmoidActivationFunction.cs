@@ -5,22 +5,15 @@ namespace NNLib.ActivationFunction
 {
     public class SigmoidActivationFunction : IActivationFunction
     {
-        private Matrix<double> _f = null!;
-        private Matrix<double> _df = null!;
-        private Matrix<double> _dfClone = null!;
+        private MatrixColPool _fData = null!;
+        private MatrixColPool _dfData = null!;
+        private MatrixColPool _dfDataClone = null!;
 
-        private MatrixColPool? _fData;
-        private MatrixColPool? _dfData;
-        private MatrixColPool? _dfDataClone;
-
-        private SigmoidActivationFunction(Matrix<double> f, Matrix<double> df, Matrix<double> dfClone, MatrixColPool? fData, MatrixColPool? dfData, MatrixColPool? dfDataClone)
+        private SigmoidActivationFunction(MatrixColPool fData, MatrixColPool dfData, MatrixColPool dfDataClone)
         {
-            _f = f.Clone();
-            _df = df.Clone();
-            _dfClone = dfClone.Clone();
-            _fData = fData?.Clone();
-            _dfData = dfData?.Clone();
-            _dfDataClone = dfDataClone?.Clone();
+            _fData = fData.Clone();
+            _dfData = dfData.Clone();
+            _dfDataClone = dfDataClone.Clone();
         }
 
         public SigmoidActivationFunction()
@@ -30,8 +23,7 @@ namespace NNLib.ActivationFunction
 
         public Matrix<double> Function(Matrix<double> x)
         {
-            var cols = x.ColumnCount;
-            Matrix<double> storage = cols == _f.ColumnCount ? _f : _fData!.Get(cols);
+            var storage = _fData!.Get(x.ColumnCount);
 
             x.Negate(storage);
             storage.PointwiseExp(storage);
@@ -44,9 +36,8 @@ namespace NNLib.ActivationFunction
         public Matrix<double> Derivative(Matrix<double> x)
         {
             var cols = x.ColumnCount;
-
-            Matrix<double> storage = cols == _df.ColumnCount ? _df : _dfData!.Get(cols);
-            Matrix<double> storage2 = cols == _df.ColumnCount ? _dfClone : _dfDataClone!.Get(cols);
+            var storage = _dfData!.Get(cols);
+            var storage2 = _dfDataClone!.Get(cols);
 
             x.Negate(storage);
             storage.PointwiseExp(storage);
@@ -63,21 +54,25 @@ namespace NNLib.ActivationFunction
 
         public void InitMemory(Layer layer)
         {
-            _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _dfClone = _df.Clone();
+            _fData = new MatrixColPool(layer.NeuronsCount, 1);
+            _dfData = new MatrixColPool(layer.NeuronsCount, 1);
+            _dfDataClone = new MatrixColPool(layer.NeuronsCount, 1);
         }
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
-            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
-            _dfDataClone = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _fData.ClearOtherThanColumnVec();
+            _dfData.ClearOtherThanColumnVec();
+            _dfDataClone.ClearOtherThanColumnVec();
+
+            _fData.AddToPool(data.Input.Count);
+            _dfData.AddToPool(data.Input.Count);
+            _dfDataClone.AddToPool(data.Input.Count);
         }
 
         public IActivationFunction Clone()
         {
-            return new SigmoidActivationFunction(_f, _df,_dfClone,_fData,_dfData,_dfDataClone);
+            return new SigmoidActivationFunction(_fData,_dfData,_dfDataClone);
         }
     }
 }

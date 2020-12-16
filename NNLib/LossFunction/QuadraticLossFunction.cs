@@ -5,16 +5,12 @@ namespace NNLib.LossFunction
 {
     public class QuadraticLossFunction : ILossFunction
     {
-        private Matrix<double> _f = null!;
-        private Matrix<double> _df = null!;
-
         private MatrixColPool _fData = null!;
         private MatrixColPool _dfData = null!;
 
         public Matrix<double> Function(Matrix<double> input, Matrix<double> target)
         {
-            var cols = target.ColumnCount;
-            var storage = cols == 1 ? _f : _fData.Get(cols);
+            var storage = _fData.Get(target.ColumnCount);
 
             target.Subtract(input, storage);
             storage.PointwiseMultiply(storage, storage);
@@ -25,9 +21,7 @@ namespace NNLib.LossFunction
 
         public Matrix<double> Derivative(Matrix<double> input, Matrix<double> target)
         {
-            var cols = target.ColumnCount;
-
-            var storage = cols == 1 ? _df : _dfData.Get(cols);
+            var storage = _dfData.Get(target.ColumnCount);
 
             input.Subtract(target, storage);
             return storage;
@@ -35,10 +29,10 @@ namespace NNLib.LossFunction
 
         public void InitializeMemory(Layer layer, SupervisedTrainingSamples data)
         {
-            _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
-            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _fData = new MatrixColPool(layer.NeuronsCount, 1);
+            _dfData = new MatrixColPool(layer.NeuronsCount, 1);
+            _fData.AddToPool(data.Input.Count);
+            _dfData.AddToPool(data.Input.Count);
         }
     }
 }

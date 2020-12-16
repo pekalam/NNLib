@@ -5,30 +5,23 @@ namespace NNLib.ActivationFunction
 {
     public class TanHActivationFunction : IActivationFunction
     {
-        private Matrix<double> _f = null!;
-        private Matrix<double> _df = null!;
-
-        private MatrixColPool? _fData;
-        private MatrixColPool? _dfData;
+        private MatrixColPool _fData = null!;
+        private MatrixColPool _dfData = null!;
 
         public TanHActivationFunction()
         {
             
         }
 
-        private TanHActivationFunction(Matrix<double> f, Matrix<double> df, MatrixColPool? fData, MatrixColPool? dfData)
+        private TanHActivationFunction(MatrixColPool fData, MatrixColPool dfData)
         {
-            _f = f.Clone();
-            _df = df.Clone();
-            _fData = fData?.Clone();
-            _dfData = dfData?.Clone();
+            _fData = fData.Clone();
+            _dfData = dfData.Clone();
         }
 
         public Matrix<double> Function(Matrix<double> x)
         {
-            var cols = x.ColumnCount;
-
-            Matrix<double> storage = cols == _f.ColumnCount ? _f : _fData!.Get(cols);
+            var storage = _fData!.Get(x.ColumnCount);
 
             x.PointwiseTanh(storage);
             return storage;
@@ -36,9 +29,7 @@ namespace NNLib.ActivationFunction
 
         public Matrix<double> Derivative(Matrix<double> x)
         {
-            var cols = x.ColumnCount;
-
-            Matrix<double> storage = cols == _df.ColumnCount ? _df : _dfData!.Get(cols);
+            var storage = _dfData!.Get(x.ColumnCount);
 
             x.PointwiseTanh(storage);
             storage.PointwisePower(2, storage);
@@ -50,19 +41,21 @@ namespace NNLib.ActivationFunction
 
         public void InitMemory(Layer layer)
         {
-            _f = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
-            _df = Matrix<double>.Build.Dense(layer.NeuronsCount, 1);
+            _fData = new MatrixColPool(layer.NeuronsCount, 1);
+            _dfData = new MatrixColPool(layer.NeuronsCount, 1);
         }
 
         public void InitMemoryForData(Layer layer, SupervisedTrainingSamples data)
         {
-            _fData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
-            _dfData = new MatrixColPool(layer.NeuronsCount, data.Input.Count);
+            _fData.ClearOtherThanColumnVec();
+            _dfData.ClearOtherThanColumnVec();
+            _dfData.AddToPool(data.Input.Count);
+            _fData.AddToPool(data.Input.Count);
         }
 
         public IActivationFunction Clone()
         {
-            return new TanHActivationFunction(_f,_df,_fData,_dfData);
+            return new TanHActivationFunction(_fData,_dfData);
         }
     }
 }

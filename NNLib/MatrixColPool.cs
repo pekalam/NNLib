@@ -9,9 +9,10 @@ namespace NNLib
     {
         private readonly Dictionary<int,Matrix<double>> _pool = new Dictionary<int, Matrix<double>>();
 
-        //cache of size 4 - for training, validation, test and user data. In case of overflow last item is substituted.
-        private Matrix<double>[] _prevMat = new Matrix<double>[4];
-        private int[] _prevCols = new int[4];
+        //cache of size 5 - for column vector, training, validation, test and user data. In case of overflow last item is substituted.
+        private Matrix<double>[] _prevMat = new Matrix<double>[5];
+        private int[] _prevCols = new int[5];
+        //pointing to last item in cache
         private int _cacheLastInd = -1;
 
         private readonly double _defaultValue;
@@ -46,8 +47,25 @@ namespace NNLib
             AddToPool(c);
         }
 
-        private void AddToPool(int c)
+        public void ClearOtherThanColumnVec()
         {
+            for (int i = 1; i < _prevCols.Length; i++)
+            {
+                _pool.Remove(_prevCols[i]);
+                _prevCols[i] = 0;
+                _prevMat[i] = null!;
+            }
+
+            _cacheLastInd = 0;
+        }
+
+        public void AddToPool(int c)
+        {
+            if (_pool.ContainsKey(c))
+            {
+                return;
+            }
+
             if (_cacheLastInd != _prevCols.Length - 1)
             {
                 _cacheLastInd++;
@@ -65,6 +83,7 @@ namespace NNLib
             if (requestedColumns == _prevCols[1]) return _prevMat[1];
             if (requestedColumns == _prevCols[2]) return _prevMat[2];
             if (requestedColumns == _prevCols[3]) return _prevMat[3];
+            if (requestedColumns == _prevCols[4]) return _prevMat[4];
 
             if (_pool.TryGetValue(requestedColumns, out var mat))
             {
