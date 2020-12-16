@@ -4,28 +4,28 @@ namespace NNLib.Data
 {
     public class DataSetDivisionOptions
     {
-        private int _trainingSetPercent;
-        private int _validationSetPercent;
-        private int _testSetPercent;
+        private decimal _trainingSetPercent;
+        private decimal _validationSetPercent;
+        private decimal _testSetPercent;
 
         private void ValidatePercentage()
         {
-            if (TrainingSetPercent + ValidationSetPercent + TestSetPercent > 100)
+            if (TrainingSetPercent + ValidationSetPercent + TestSetPercent > 100m)
             {
                 throw new ArgumentException(
                     $"Sum of percentages is gt than 100 training: {TrainingSetPercent} validation: {ValidationSetPercent} test:{TestSetPercent}");
             }
         }
 
-        private void CheckGtOrEqZero(int percents)
+        private void CheckGtOrEqZero(decimal percents)
         {
-            if (percents < 0)
+            if (percents < 0m)
             {
                 throw new ArgumentException("Percents cannot be lower than 0");
             }
         }
 
-        public int TrainingSetPercent
+        public decimal TrainingSetPercent
         {
             get => _trainingSetPercent;
             set
@@ -36,7 +36,7 @@ namespace NNLib.Data
             }
         }
 
-        public int ValidationSetPercent
+        public decimal ValidationSetPercent
         {
             get => _validationSetPercent;
             set
@@ -47,7 +47,7 @@ namespace NNLib.Data
             }
         }
 
-        public int TestSetPercent
+        public decimal TestSetPercent
         {
             get => _testSetPercent;
             set

@@ -5,6 +5,32 @@ using System.Linq;
 
 namespace NNLib.Csv
 {
+    internal class DataSetDividerHelpers
+    {
+        public static (int trainingSetCount, int validationSetCount, int testSetCount) GetSetDivision(
+            DataSetDivisionOptions divOptions, int totalLines)
+        {
+            long totalLinesLong = (long)totalLines;
+            var trainingSetCount = (int)Math.Ceiling(divOptions.TrainingSetPercent * totalLinesLong / 100m);
+            trainingSetCount = trainingSetCount > totalLines ? totalLines : trainingSetCount;
+            totalLines -= trainingSetCount;
+
+            var validationSetCount = (int)Math.Ceiling(divOptions.ValidationSetPercent * totalLinesLong / 100m);
+            validationSetCount = validationSetCount > totalLines ? totalLines : validationSetCount;
+            totalLines -= validationSetCount;
+
+            var testSetCount = (int)Math.Ceiling(divOptions.TestSetPercent * totalLinesLong / 100m);
+            testSetCount = testSetCount > totalLines ? totalLines : testSetCount;
+
+            if (trainingSetCount == 0)
+            {
+                throw new ArgumentException("Training set count cannot be 0");
+            }
+
+            return (trainingSetCount, validationSetCount, testSetCount);
+        }
+    }
+
     public class RandomDataSetDivider : IDataSetDivider
     {
         public (DataSetType setType, List<long> positions)[] Divide(List<long> fileNewLinePositions, DataSetDivisionOptions divOptions)
@@ -19,16 +45,8 @@ namespace NNLib.Csv
                 return new[] {(DataSetType.Training, fileNewLinePositions)};
             }
 
-            var trainingSetCount = (int)Math.Ceiling(divOptions.TrainingSetPercent * (long)fileNewLinePositions.Count / 100f);
-            trainingSetCount = trainingSetCount > totalLines ? totalLines : trainingSetCount;
-            totalLines -= trainingSetCount;
-
-            var validationSetCount = (int)Math.Ceiling(divOptions.ValidationSetPercent * (long)fileNewLinePositions.Count / 100f);
-            validationSetCount = validationSetCount > totalLines ? totalLines : validationSetCount;
-            totalLines -= validationSetCount;
-
-            var testSetCount = (int)Math.Ceiling(divOptions.TestSetPercent * (long)fileNewLinePositions.Count / 100f);
-            testSetCount = testSetCount > totalLines ? totalLines : testSetCount;
+            var (trainingSetCount, validationSetCount, testSetCount) =
+                DataSetDividerHelpers.GetSetDivision(divOptions, fileNewLinePositions.Count);
 
             var ind = 0;
             var setPositions = new List<long>();
@@ -79,17 +97,8 @@ namespace NNLib.Csv
 
             var divided = new List<(DataSetType setType, List<long> positions)>();
 
-            int totalLines = fileNewLinePositions.Count;
-            var trainingSetCount = (int)Math.Ceiling(divOptions.TrainingSetPercent * (long)fileNewLinePositions.Count / 100f);
-            trainingSetCount = trainingSetCount > totalLines ? totalLines : trainingSetCount;
-            totalLines -= trainingSetCount;
-
-            var validationSetCount = (int)Math.Ceiling(divOptions.ValidationSetPercent * (long)fileNewLinePositions.Count / 100f);
-            validationSetCount = validationSetCount > totalLines ? totalLines : validationSetCount;
-            totalLines -= validationSetCount;
-
-            var testSetCount = (int)Math.Ceiling(divOptions.TestSetPercent * (long)fileNewLinePositions.Count / 100f);
-            testSetCount = testSetCount > totalLines ? totalLines : testSetCount;
+            var (trainingSetCount, validationSetCount, testSetCount) =
+                DataSetDividerHelpers.GetSetDivision(divOptions, fileNewLinePositions.Count);
 
             var trainingSetPos = new List<long>();
             var trainingRange = fileNewLinePositions.GetRange(0, trainingSetCount);
