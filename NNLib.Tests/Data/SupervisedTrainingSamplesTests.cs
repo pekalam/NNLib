@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
@@ -7,6 +8,27 @@ using Xunit;
 
 namespace NNLib.Tests.Data
 {
+    public class ConcatenatedVectorSetTests
+    {
+        [Fact]
+        public void f()
+        {
+            var v1 = SupervisedTrainingSamples.FromArrays(Enumerable.Range(0, 5).Select(i => new double[] { i }).ToArray(),
+                                                                        Enumerable.Range(0, 5).Select(i => new double[] { i }).ToArray());
+            var v2 = SupervisedTrainingSamples.FromArrays(Enumerable.Range(0, 2).Select(i => new double[] { i+5 }).ToArray(),
+                                                                        Enumerable.Range(0, 2).Select(i => new double[] { i+5 }).ToArray());
+
+            var concatenated = new ConcatenatedVectorSet();
+            concatenated.AddVectorSet(v1.Input);
+            concatenated.AddVectorSet(v2.Input);
+
+            for (int i = 0; i < 7; i++)
+            {
+                concatenated[i][0, 0].Should().Be(i);
+            }
+        }
+    }
+
     public class SupervisedTrainingSamplesTests
     {
         [Fact]

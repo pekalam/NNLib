@@ -62,7 +62,7 @@ namespace NNLib
         protected internal virtual void Initialize()
         {
             Debug.Assert(_initNeuronsCount > 0 && _initInputsCount > 0 && !IsInitialized);
-            MatrixBuilder.BuildAllMatrices(_initNeuronsCount, _initInputsCount, this);
+            MatrixBuilder.BuildAllMatrices(this);
             IsInitialized = true;
         }
 
@@ -113,7 +113,7 @@ namespace NNLib
 
         public void ResetParameters()
         {
-            MatrixBuilder.BuildAllMatrices(NeuronsCount, InputsCount, this);
+            MatrixBuilder.BuildAllMatrices(this);
         }
 
         protected internal abstract void InitializeMemory();

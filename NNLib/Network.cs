@@ -80,6 +80,7 @@ namespace NNLib
                 layer.Initialize();
             }
             layer.InitializeMemory();
+            InvalidateMatrixBuilders();
             RaiseNetworkStructureChanged();
         }
 
@@ -90,6 +91,7 @@ namespace NNLib
 
             next?.AdjustToMatchPrevious(prev);
             _layers.RemoveAt(ind);
+            InvalidateMatrixBuilders();
             RaiseNetworkStructureChanged();
         }
 
@@ -128,6 +130,7 @@ namespace NNLib
                 layer.Initialize();
             }
             layer.InitializeMemory();
+            InvalidateMatrixBuilders();
             RaiseNetworkStructureChanged();
             return layer;
         }
@@ -148,6 +151,14 @@ namespace NNLib
         }
 
         protected void RaiseNetworkStructureChanged() => StructureChanged?.Invoke(this);
+
+        private void InvalidateMatrixBuilders()
+        {
+            foreach (var layer in BaseLayers)
+            {
+                layer.MatrixBuilder.InvalidateBuilder(layer);
+            }
+        }
 
         private void LayerOnNeuronsCountChanged(Layer layer)
         {

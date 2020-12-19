@@ -130,4 +130,51 @@ namespace NNLib.Data
             return new VectorSetEnumerator(this);
         }
     }
+
+    public class ConcatenatedVectorSet : IVectorSet
+    {
+        private List<IVectorSet> _vectorSets = new List<IVectorSet>();
+        public void AddVectorSet(IVectorSet vectorSet)
+        {
+            _vectorSets.Add(vectorSet);
+        }
+
+        public bool Remove(IVectorSet vectorSet) => _vectorSets.Remove(vectorSet);
+
+        public void Dispose()
+        {
+            
+        }
+
+        private IVectorSet FromIndex(ref int index)
+        {
+            int i = 0;
+            int count = _vectorSets[i].Count;
+            while (index / count > 0)
+            {
+                i++;
+                if (i == _vectorSets.Count)
+                {
+                    throw new IndexOutOfRangeException("Index in ConcatenatedVectorSet out of range");
+                }
+                count += _vectorSets[i].Count;
+            }
+
+            if (i > 0)
+            {
+                index -= count - _vectorSets[i].Count;
+            }
+
+            return _vectorSets[i];
+        }
+
+        public Matrix<double> this[int index]
+        {
+            get => FromIndex(ref index)[index];
+            set => FromIndex(ref index)[index] = value;
+        }
+
+        public int Count => _vectorSets.Sum(v => v.Count);
+        public event Action Modified;
+    }
 }
