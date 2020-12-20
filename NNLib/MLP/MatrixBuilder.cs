@@ -199,7 +199,7 @@ namespace NNLib.MLP
             return true;
         }
 
-        public override void BuildAllMatrices(Layer layer)
+        private void Build(int neuronsCount, int inputsCount, Layer layer)
         {
             if (!CheckCanInit(layer))
             {
@@ -208,10 +208,10 @@ namespace NNLib.MLP
 
             if (!layer.IsOutputLayer)
             {
-                double h = 0.7 * Math.Pow(layer.NeuronsCount, 1d / layer.InputsCount);
-                var initialW = layer.Weights = Matrix<double>.Build.Random(layer.NeuronsCount, layer.InputsCount,
+                double h = 0.7 * Math.Pow(neuronsCount, 1d / inputsCount);
+                var initialW = layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount,
                     new ContinuousUniform(-.5d, .5d));
-                layer.Biases = Matrix<double>.Build.Random(layer.NeuronsCount, 1, new ContinuousUniform(-h, h));
+                layer.Biases = Matrix<double>.Build.Random(neuronsCount, 1, new ContinuousUniform(-h, h));
 
                 //for each neuron
                 for (int i = 0; i < initialW.RowCount; i++)
@@ -232,15 +232,20 @@ namespace NNLib.MLP
             }
             else
             {
-                layer.Weights = Matrix<double>.Build.Random(layer.NeuronsCount, layer.InputsCount,
+                layer.Weights = Matrix<double>.Build.Random(neuronsCount, inputsCount,
                     new ContinuousUniform(-.5d, .5d));
-                layer.Biases = Matrix<double>.Build.Dense(layer.NeuronsCount, 1, 0);
+                layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
             }
+        }
+
+        public override void BuildAllMatrices(Layer layer)
+        {
+            Build(layer.NeuronsCount, layer.InputsCount, layer);
         }
 
         internal override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)
         {
-            BuildAllMatrices(layer);
+            Build(neuronsCount, inputsCount, layer);
         }
 
         internal override void InvalidateBuilder(Layer layer)
@@ -259,17 +264,22 @@ namespace NNLib.MLP
     /// </summary>
     public class SqrMUniformMatrixBuilder : MatrixBuilder
     {
+        private void Build(int neuronsCount, int inputsCount, Layer layer)
+        {
+            var a = Math.Sqrt(12d) / (Math.Sqrt(inputsCount) * 2d);
+            layer.Weights =
+                Matrix<double>.Build.Random(neuronsCount, inputsCount, new ContinuousUniform(-a, a));
+            layer.Biases = Matrix<double>.Build.Dense(neuronsCount, 1, 0);
+        }
+
         public override void BuildAllMatrices(Layer layer)
         {
-            var a = Math.Sqrt(12d) / (Math.Sqrt(layer.InputsCount) * 2d);
-            layer.Weights =
-                Matrix<double>.Build.Random(layer.NeuronsCount, layer.InputsCount, new ContinuousUniform(-a, a));
-            layer.Biases = Matrix<double>.Build.Dense(layer.NeuronsCount, 1, 0);
+            Build(layer.NeuronsCount, layer.InputsCount, layer);
         }
 
         internal override void AdjustMatrices(int neuronsCount, int inputsCount, Layer layer)
         {
-            BuildAllMatrices(layer);
+            Build(neuronsCount, inputsCount, layer);
         }
 
         internal override void InvalidateBuilder(Layer layer)
