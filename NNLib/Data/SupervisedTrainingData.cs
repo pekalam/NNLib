@@ -4,10 +4,9 @@ namespace NNLib.Data
 {
     public class SupervisedTrainingData : IDisposable
     {
-        private ConcatenatedVectorSet _concatenatedInput;
-        private ConcatenatedVectorSet _concatenatedTarget;
+        private readonly ConcatenatedVectorSet _concatenatedInput;
+        private readonly ConcatenatedVectorSet _concatenatedTarget;
         private SupervisedTrainingSamples? _validationSet;
-        private SupervisedTrainingSamples? _testSet;
 
         public SupervisedTrainingSamples TrainingSet { get; }
 
@@ -30,26 +29,15 @@ namespace NNLib.Data
             }
         }
 
-        public SupervisedTrainingSamples? TestSet
-        {
-            get => _testSet;
-            set
-            {
-                if (_testSet != null)
-                {
-                    _concatenatedInput.Remove(_testSet.Input);
-                    _concatenatedTarget.Remove(_testSet.Target);
-                }
-                _testSet = value;
-                if (value != null)
-                {
-                    _concatenatedInput.AddVectorSet(value.Input);
-                    _concatenatedTarget.AddVectorSet(value.Target);
-                }
-            }
-        }
+        public SupervisedTrainingSamples? TestSet { get; set; }
 
+        /// <summary>
+        /// Concatenated TrainingSet.Input + ValidationSet.Input
+        /// </summary>
         public IVectorSet ConcatenatedInput => _concatenatedInput;
+        /// <summary>
+        /// Concatenated TrainingSet.Target + ValidationSet.Target
+        /// </summary>
         public IVectorSet ConcatenatedTarget => _concatenatedTarget;
 
         public SupervisedTrainingData(SupervisedTrainingSamples trainingTrainingSamples)
