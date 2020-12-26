@@ -47,11 +47,12 @@ namespace NNLib.Training.GradientDescent
                 throw new ArgumentException($"Invalid batch size {Params.BatchSize} for training set with count {set.Input.Count}");
             }
 
+            IterationsPerEpoch = set.Input.Count / Params.BatchSize;
             if (set.Input.Count % Params.BatchSize != 0)
             {
-                throw new ArgumentException($"Cannot divide training set");
+                IterationsPerEpoch++;
             }
-            IterationsPerEpoch = set.Input.Count / Params.BatchSize;
+
             _delta = new ParametersUpdate[Params.BatchSize];
 
             if (Params.Randomize)
@@ -86,7 +87,7 @@ namespace NNLib.Training.GradientDescent
         {
             var result = _delta[0];
 
-            for (int i = 1; i < _delta.Length; i++)
+            for (int i = 1; i < _inBatch; i++)
             {
                 for (int j = 0; j < result.Weights.Length; j++)
                 {
@@ -170,9 +171,17 @@ namespace NNLib.Training.GradientDescent
 
         internal override bool DoIteration(in CancellationToken ct = default)
         {
+            if (BatchIterations == IterationsPerEpoch)
+            {
+                BatchIterations = 0;
+            }
+
             while (_inBatch != Params.BatchSize)
             {
-                NextTrainingSample();
+                if (!NextTrainingSample() && BatchIterations > 0)
+                {
+                    break;
+                }
 
                 TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
@@ -186,14 +195,13 @@ namespace NNLib.Training.GradientDescent
 
             if (BatchIterations == IterationsPerEpoch)
             {
-                BatchIterations = 0;
                 return true;
             }
 
             return false;
         }
 
-        private void NextTrainingSample()
+        private bool NextTrainingSample()
         {
             if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
             {
@@ -201,7 +209,10 @@ namespace NNLib.Training.GradientDescent
                 _targetEnum.Reset();
                 _inputEnum.MoveNext();
                 _targetEnum.MoveNext();
+                return false;
             }
+
+            return true;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace NNLib.Tests.Training
             _net = CreateNetwork(2, (1, new SigmoidActivationFunction()));
         }
 
-        private GradientDescentAlgorithm CreateBatchTrainer(GradientDescentParams parameters)
+        private GradientDescentAlgorithm CreateBatchGd(GradientDescentParams parameters)
         {
             _trainingSamples = AndGateSet();
             var algorithm = new GradientDescentAlgorithm(parameters);
@@ -41,9 +41,9 @@ namespace NNLib.Tests.Training
                 BatchSize = 4,
             };
             
-            var trainer = CreateBatchTrainer(learningParams);
-            trainer.IterationsPerEpoch.Should().Be(1);
-            trainer.BatchIterations.Should().Be(0);
+            var algorithm = CreateBatchGd(learningParams);
+            algorithm.IterationsPerEpoch.Should().Be(1);
+            algorithm.BatchIterations.Should().Be(0);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace NNLib.Tests.Training
                 BatchSize = 10
             };
 
-            Assert.Throws<ArgumentException>(() => CreateBatchTrainer(learningParams));
+            Assert.Throws<ArgumentException>(() => CreateBatchGd(learningParams));
         }
 
         [Fact]
@@ -68,43 +68,49 @@ namespace NNLib.Tests.Training
                 Momentum = 0.9,
                 BatchSize = 4
             };
-            var trainer = CreateBatchTrainer(learningParams);
+            var algorithm = CreateBatchGd(learningParams);
 
-            trainer.IterationsPerEpoch.Should().Be(1);
-            trainer.BatchIterations.Should().Be(0);
+            algorithm.IterationsPerEpoch.Should().Be(1);
+            algorithm.BatchIterations.Should().Be(0);
 
-            var result = trainer.DoIteration();
+            var result = algorithm.DoIteration();
             
             result.Should().BeTrue();
-            trainer.IterationsPerEpoch.Should().Be(1);
-            trainer.BatchIterations.Should().Be(0);
+            algorithm.BatchIterations.Should().Be(1);
+
+            result = algorithm.DoIteration();
+            result.Should().BeTrue();
+            algorithm.BatchIterations.Should().Be(1);
         }
 
-        [Fact]
-        public void Mini_Batch_training_iterations_returns_epoch_result()
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void Mini_Batch_training_iterations_returns_epoch_result(int batchSize)
         {
             var learningParams = new GradientDescentParams
             {
                 LearningRate = 0.1,
                 Momentum = 0.9,
-                BatchSize = 2
+                BatchSize = batchSize
             };
-            var trainer = CreateBatchTrainer(learningParams);
+            var algorithm = CreateBatchGd(learningParams);
 
-            trainer.IterationsPerEpoch.Should().Be(2);
-            trainer.BatchIterations.Should().Be(0);
+            algorithm.IterationsPerEpoch.Should().Be(2);
+            algorithm.BatchIterations.Should().Be(0);
 
-            var result = trainer.DoIteration();
+            var result = algorithm.DoIteration();
             result.Should().BeFalse();
-            trainer.IterationsPerEpoch.Should().Be(2);
-            trainer.BatchIterations.Should().Be(1);
+            algorithm.BatchIterations.Should().Be(1);
 
-            result = trainer.DoIteration();
+            result = algorithm.DoIteration();
             result.Should().BeTrue();
-            trainer.IterationsPerEpoch.Should().Be(2);
-            trainer.BatchIterations.Should().Be(0);
-        }
+            algorithm.BatchIterations.Should().Be(2);
 
+            result = algorithm.DoIteration();
+            result.Should().BeFalse();
+            algorithm.BatchIterations.Should().Be(1);
+        }
 
         [Fact]
         public void Online_training_iterations_returns_epoch_result()
@@ -115,17 +121,17 @@ namespace NNLib.Tests.Training
                 Momentum = 0.9,
                 BatchSize = 1
             };
-            var trainer = CreateBatchTrainer(learningParams);
+            var trainer = CreateBatchGd(learningParams);
 
             trainer.IterationsPerEpoch.Should().Be(4);
             trainer.BatchIterations.Should().Be(0);
 
             for (int i = 0; i < _trainingSamples.Input.Count; i++)
             {
-
-                trainer.IterationsPerEpoch.Should().Be(4);
                 trainer.BatchIterations.Should().Be(i % _trainingSamples.Input.Count);
                 var result = trainer.DoIteration();
+                trainer.BatchIterations.Should().Be(i % _trainingSamples.Input.Count + 1);
+
 
                 if (i == _trainingSamples.Input.Count - 1)
                 {
