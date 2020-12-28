@@ -10,20 +10,28 @@ namespace NNLib.LossFunction
 
         public Matrix<double> Function(Matrix<double> input, Matrix<double> target)
         {
-            var storage = _fData.Get(target.ColumnCount);
+            var cols = target.ColumnCount;
+            var storage = _fData.Get(cols);
 
             target.Subtract(input, storage);
             storage.PointwiseMultiply(storage, storage);
-            storage.Multiply(0.5d, storage);
+            storage.Multiply(1/(2d*cols), storage);
+
 
             return storage;
         }
 
         public Matrix<double> Derivative(Matrix<double> input, Matrix<double> target)
         {
-            var storage = _dfData.Get(target.ColumnCount);
+            var cols = target.ColumnCount;
+            var storage = _dfData.Get(cols);
 
             input.Subtract(target, storage);
+            if (cols > 1)
+            {
+                storage.Multiply(1d / cols, storage);
+            }
+
             return storage;
         }
 

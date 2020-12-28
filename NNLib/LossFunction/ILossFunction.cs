@@ -1,5 +1,8 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System.Threading;
+using MathNet.Numerics.LinearAlgebra;
 using NNLib.Data;
+using NNLib.Exceptions;
+using NNLib.MLP;
 
 namespace NNLib.LossFunction
 {
@@ -19,5 +22,15 @@ namespace NNLib.LossFunction
         Matrix<double> Derivative(Matrix<double> input, Matrix<double> target);
 
         void InitializeMemory(Layer layer, SupervisedTrainingSamples data);
+
+        /// <summary>
+        /// Calculates value of loss function using network output for given input
+        /// </summary>
+        Matrix<double> CalculateError(MLPNetwork network, Matrix<double> input, Matrix<double> target, in CancellationToken ct = default)
+        {
+            network.CalculateOutput(input);
+            TrainingCanceledException.ThrowIfCancellationRequested(ct);
+            return Function(network.Output!, target);
+        }
     }
 }

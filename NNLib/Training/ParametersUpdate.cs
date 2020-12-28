@@ -35,5 +35,12 @@ namespace NNLib.Training
 
             return update;
         }
+
+        public static ParametersUpdate EmptyFromNetwork(MLPNetwork network) =>
+            new ParametersUpdate()
+            {
+                Weights = new Matrix<double>[network.TotalLayers],
+                Biases = new Matrix<double>[network.TotalLayers],
+            };
     }
 }

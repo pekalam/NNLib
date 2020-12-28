@@ -28,6 +28,7 @@ namespace NNLib.Tests.Training
             var lossFunction = new QuadraticLossFunction();
             lossFunction.InitializeMemory(_net.Layers[^1], data.TrainingSet);
             algorithm.Setup(_trainingSamples, new LoadedSupervisedTrainingData(data), _net, lossFunction);
+            _net.InitializeMemoryForData(data.TrainingSet);
             return algorithm;
         }
 

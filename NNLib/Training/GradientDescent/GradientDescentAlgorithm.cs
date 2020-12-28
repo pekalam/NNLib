@@ -10,17 +10,22 @@ using System.Threading;
 
 namespace NNLib.Training.GradientDescent
 {
-    public partial class GradientDescentAlgorithm : AlgorithmBase
+    public class GradientDescentAlgorithm : AlgorithmBase
     {
         private MLPNetwork? _network;
         private ILossFunction? _lossFunction;
         private int _iterations;
         private ParametersUpdate? _previousDelta;
-        private ParametersUpdate[] _delta = null!;
-        private int _inBatch;
 
         private IEnumerator<Matrix<double>> _inputEnum = null!;
         private IEnumerator<Matrix<double>> _targetEnum = null!;
+
+        private Matrix<double> _batchIn = null!;
+        private Matrix<double> _batchT = null!;
+        private Matrix<double> _batchInRemainder = null!;
+        private Matrix<double> _batchTRemainder = null!;
+        private int _batchSize;
+        private int _batchRemainder;
 
         public GradientDescentAlgorithm(GradientDescentParams? parameters = null)
         {
@@ -42,18 +47,25 @@ namespace NNLib.Training.GradientDescent
             _network = network;
             _iterations = 0;
 
+
             if (Params.BatchSize > set.Input.Count)
             {
                 throw new ArgumentException($"Invalid batch size {Params.BatchSize} for training set with count {set.Input.Count}");
             }
 
+            _batchSize = Params.BatchSize;
+            _batchRemainder = set.Input.Count % Params.BatchSize;
+
             IterationsPerEpoch = set.Input.Count / Params.BatchSize;
-            if (set.Input.Count % Params.BatchSize != 0)
+            _batchIn = Matrix<double>.Build.Dense(set.Input[0].RowCount, Params.BatchSize);
+            _batchT = Matrix<double>.Build.Dense(set.Target[0].RowCount, Params.BatchSize);
+            if (_batchRemainder != 0)
             {
                 IterationsPerEpoch++;
             }
+            _batchInRemainder = Matrix<double>.Build.Dense(set.Input[0].RowCount, _batchRemainder);
+            _batchTRemainder = Matrix<double>.Build.Dense(set.Target[0].RowCount, _batchRemainder);
 
-            _delta = new ParametersUpdate[Params.BatchSize];
 
             if (Params.Randomize)
             {
@@ -65,7 +77,7 @@ namespace NNLib.Training.GradientDescent
                 _targetEnum = set.Target.GetEnumerator();
             }
 
-            _inBatch = BatchIterations = 0;
+            BatchIterations = 0;
 
             network.StructureChanged -= NetworkOnStructureChanged;
             network.StructureChanged += NetworkOnStructureChanged;
@@ -73,50 +85,18 @@ namespace NNLib.Training.GradientDescent
 
         private void NetworkOnStructureChanged(INetwork obj)
         {
-            _inBatch = BatchIterations = 0;
+            BatchIterations = 0;
             _previousDelta = null;
         }
 
         internal override void Reset()
         {
-            _iterations = _inBatch = BatchIterations = 0;
+            _iterations = BatchIterations = 0;
             _previousDelta = null;
         }
 
-        private ParametersUpdate DeltaAvg()
+        private void UpdateWeightsAndBiases(ParametersUpdate delta, in CancellationToken ct)
         {
-            var result = _delta[0];
-
-            for (int i = 1; i < _inBatch; i++)
-            {
-                for (int j = 0; j < result.Weights.Length; j++)
-                {
-                    result.Weights[j].Add(_delta[i].Weights[j], result.Weights[j]);
-                }
-
-                for (int j = 0; j < result.Biases.Length; j++)
-                {
-                    result.Biases[j].Add(_delta[i].Biases[j], result.Biases[j]);
-                }
-            }
-
-            for (int j = 0; j < result.Weights.Length; j++)
-            {
-                result.Weights[j].Divide(Params.BatchSize, result.Weights[j]);
-            }
-
-            for (int j = 0; j < result.Biases.Length; j++)
-            {
-                result.Biases[j].Divide(Params.BatchSize, result.Biases[j]);
-            }
-
-            return result;
-        }
-
-        private void UpdateWeightsAndBiases(in CancellationToken ct)
-        {
-            var delta = DeltaAvg();
-
             TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
             if (Params.Momentum > 0d && _previousDelta != null)
@@ -145,29 +125,80 @@ namespace NNLib.Training.GradientDescent
             _previousDelta = delta;
         }
 
-        private ParametersUpdate CalculateDelta(Matrix<double> input, Matrix<double> expected)
+        private ParametersUpdate CalculateDelta(Matrix<double> input, Matrix<double> expected, in CancellationToken ct)
         {
             Debug.Assert(_network != null && _lossFunction != null, "Setup was not called");
+            TrainingCanceledException.ThrowIfCancellationRequested(ct);
 
-            var update = ParametersUpdate.FromNetwork(_network);
+            var update = ParametersUpdate.EmptyFromNetwork(_network);
             _network.CalculateOutput(input);
 
             Matrix<double> delta1W1 = _lossFunction.Derivative(_network.Layers[^1].Output!, expected);
             for (var i = _network.Layers.Count - 1; i >= 0; --i)
             {
+                TrainingCanceledException.ThrowIfCancellationRequested(ct);
+
                 var dA = _network.Layers[i].ActivationFunction.Derivative(_network.Layers[i].Net!);
                 var delta = delta1W1.PointwiseMultiply(dA);
                 var deltaLr = delta.Multiply(Params.LearningRate);
 
                 delta1W1 = _network.Layers[i].Weights.TransposeThisAndMultiply(delta);
 
-                update.Biases[i] = deltaLr;
+                update.Biases[i] = deltaLr.RowSums().ToColumnMatrix();
                 update.Weights[i] = deltaLr.TransposeAndMultiply(i > 0 ? _network.Layers[i-1].Output : input);
             }
 
             return update;
         }
 
+        private (Matrix<double> batchIn, Matrix<double> batchT) ReadBatch(CancellationToken ct)
+        {
+            var batchIn = _batchIn;
+            var batchT = _batchT;
+            var sz = _batchSize;
+            var inBatch = 0;
+
+            if (BatchIterations == IterationsPerEpoch - 1 && _batchRemainder > 0)
+            {
+                batchIn = _batchInRemainder;
+                batchT = _batchTRemainder;
+                sz = _batchRemainder;
+            }
+
+            var batchInArr = batchIn.AsColumnMajorArray();
+            var batchTArr = batchT.AsColumnMajorArray();
+            int inputOffset = 0;
+            int targetOffset = 0;
+            while (inBatch != sz)
+            {
+                NextTrainingSample();
+
+                TrainingCanceledException.ThrowIfCancellationRequested(ct);
+
+                var iArr = _inputEnum.Current.AsColumnMajorArray();
+                var tArr = _targetEnum.Current.AsColumnMajorArray();
+
+                Array.Copy(iArr, 0, batchInArr, inputOffset, iArr.Length);
+                Array.Copy(tArr, 0, batchTArr, targetOffset, tArr.Length);
+
+                inputOffset += iArr.Length;
+                targetOffset += tArr.Length;
+                inBatch++;
+            }
+            
+            return (batchIn, batchT);
+        }
+
+        private void NextTrainingSample()
+        {
+            if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
+            {
+                _inputEnum.Reset();
+                _targetEnum.Reset();
+                _inputEnum.MoveNext();
+                _targetEnum.MoveNext();
+            }
+        }
 
         internal override bool DoIteration(in CancellationToken ct = default)
         {
@@ -176,20 +207,20 @@ namespace NNLib.Training.GradientDescent
                 BatchIterations = 0;
             }
 
-            while (_inBatch != Params.BatchSize)
+            Matrix<double> batchIn, batchT;
+            ParametersUpdate delta;
+            if (_batchSize == 1)
             {
-                if (!NextTrainingSample() && BatchIterations > 0)
-                {
-                    break;
-                }
-
-                TrainingCanceledException.ThrowIfCancellationRequested(ct);
-
-                _delta[_inBatch++] = CalculateDelta(_inputEnum.Current, _targetEnum.Current);
+                NextTrainingSample();
+                delta = CalculateDelta(_inputEnum.Current, _targetEnum.Current, ct);
             }
-            UpdateWeightsAndBiases(ct);
+            else
+            {
+                (batchIn, batchT) = ReadBatch(ct);
+                delta = CalculateDelta(batchIn, batchT, ct);
+            }
+            UpdateWeightsAndBiases(delta, ct);
 
-            _inBatch = 0;
             _iterations++;
             BatchIterations++;
 
@@ -199,20 +230,6 @@ namespace NNLib.Training.GradientDescent
             }
 
             return false;
-        }
-
-        private bool NextTrainingSample()
-        {
-            if (!_inputEnum.MoveNext() || !_targetEnum.MoveNext())
-            {
-                _inputEnum.Reset();
-                _targetEnum.Reset();
-                _inputEnum.MoveNext();
-                _targetEnum.MoveNext();
-                return false;
-            }
-
-            return true;
         }
     }
 }
