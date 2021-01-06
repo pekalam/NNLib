@@ -20,19 +20,20 @@ namespace NNLib
 
         private MatrixColPool(Dictionary<int, Matrix<double>> pool, int[] previousCols, double defaultValue, int defaultRows, int cacheLastInd)
         {
-            int i = 0;
+            int cacheCopiedInd = 0;
             foreach (var (k, v) in pool)
             {
                 var matCpy = v.Clone();
                 _pool.Add(k, matCpy);
-                if (previousCols[i] == k)
+                int ind;
+                if ((ind = Array.IndexOf(previousCols,k)) != -1)
                 {
-                    _prevMat[i] = matCpy;
-                    i++;
+                    _prevMat[ind] = matCpy;
+                    cacheCopiedInd++;
                 }
             }
 
-            Debug.Assert(i - 1 == cacheLastInd);
+            Debug.Assert(cacheCopiedInd - 1 == cacheLastInd);
 
             _cacheLastInd = cacheLastInd;
             _defaultRows = defaultRows;
