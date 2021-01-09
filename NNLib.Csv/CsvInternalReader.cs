@@ -7,9 +7,15 @@ using System.Linq;
 
 namespace NNLib.Csv
 {
+    internal class CsvReaderResult
+    {
+        public (Matrix<double> input, Matrix<double> target)[] VectorSets { get; set; }
+        public Matrix<double>?[] Ignored { get; set; }
+    }
+
     internal interface ICsvReader
     {
-        (Matrix<double> input, Matrix<double> target)[] ReadVectorSets(FilePart[] fileParts,
+        CsvReaderResult ReadFile(FilePart[] fileParts,
             SupervisedSetVariableIndexes setVariableIndexes);
     }
 
@@ -34,10 +40,12 @@ namespace NNLib.Csv
             return Matrix<double>.Build.Dense(vector.Length, 1, vector);
         }
 
-        public (Matrix<double> input, Matrix<double> target)[] ReadVectorSets(FilePart[] fileParts,
+        public CsvReaderResult ReadFile(FilePart[] fileParts,
             SupervisedSetVariableIndexes setVariableIndexes)
         {
-            var vectorsSet = new (Matrix<double> input, Matrix<double> target)[fileParts.Sum(v => v.DataItems)];
+            var dataItemsCount = fileParts.Sum(v => v.DataItems);
+            var vectorsSet = new (Matrix<double> input, Matrix<double> target)[dataItemsCount];
+            var ignored = new Matrix<double>?[dataItemsCount];
             var s = 0;
 
 
@@ -66,13 +74,22 @@ namespace NNLib.Csv
 
                     Matrix<double> input = ReadVector(csv, setVariableIndexes.InputVarIndexes);
                     Matrix<double> target = ReadVector(csv, setVariableIndexes.TargetVarIndexes);
+                    if (setVariableIndexes.Ignored.Length > 0)
+                    {
+                        var ignoredVec = ReadVector(csv, setVariableIndexes.Ignored);
+                        ignored[s] = ignoredVec;
+                    }
                     vectorsSet[s++] = (input, target);
+
                     i++;
                 }
             }
 
 
-            return vectorsSet;
+            return new CsvReaderResult()
+            {
+                VectorSets = vectorsSet, Ignored = ignored,
+            };
         }
     }
 }

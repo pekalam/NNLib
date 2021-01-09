@@ -58,7 +58,6 @@ namespace NNLib.Csv
         public static void ChangeVariableIndexes(SupervisedSetVariableIndexes variableIndexes,
             SupervisedTrainingData data)
         {
-            //TODO double dispatch
             var tReader = (data.TrainingSet.Input as CsvFileVectorSet)?.FileReader!;
             var prevIndexes = tReader.CurrentIndexes.Clone();
 

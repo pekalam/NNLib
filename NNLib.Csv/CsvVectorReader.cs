@@ -14,7 +14,9 @@ namespace NNLib.Csv
         private Matrix<double>?[] _ignored;
         private readonly ICsvReader _csvReader;
 
-        private CsvVectorReader(SupervisedSetVariableIndexes setVariableIndexes, DataSetInfo dataSetInfo, (Matrix<double> input, Matrix<double> target)[] fileContents, ICsvReader csvReader, Matrix<double>?[] ignored)
+        private CsvVectorReader(SupervisedSetVariableIndexes setVariableIndexes, DataSetInfo dataSetInfo,
+            (Matrix<double> input, Matrix<double> target)[] fileContents, ICsvReader csvReader,
+            Matrix<double>?[] ignored)
         {
             _dataSetInfo = dataSetInfo;
             CurrentIndexes = setVariableIndexes;
@@ -29,8 +31,9 @@ namespace NNLib.Csv
             CurrentIndexes = setVariableIndexes;
             _dataSetInfo = dataDataSetInfo;
             _csvReader = csvReader;
-            _fileContents = csvReader.ReadVectorSets(dataDataSetInfo.FileParts, setVariableIndexes);
-            _ignored = new Matrix<double>[_fileContents.Length];
+            var readResult = csvReader.ReadFile(dataDataSetInfo.FileParts, setVariableIndexes);
+            _fileContents = readResult.VectorSets;
+            _ignored = readResult.Ignored;
         }
 
         public SupervisedSetVariableIndexes CurrentIndexes { get; private set; }
@@ -42,7 +45,8 @@ namespace NNLib.Csv
 
             //dst=0 -target dst=1 - input dst=2 - ignore
             var indexMap = new (int dst, int index)[newVariableIndexes.InputVarIndexes.Length +
-                                   newVariableIndexes.TargetVarIndexes.Length + newVariableIndexes.Ignored.Length];
+                                                    newVariableIndexes.TargetVarIndexes.Length +
+                                                    newVariableIndexes.Ignored.Length];
 
             for (int i = 0; i < newVariableIndexes.InputVarIndexes.Length; i++)
             {
@@ -109,7 +113,6 @@ namespace NNLib.Csv
             }
 
 
-
             for (int i = 0; i < _fileContents.Length; i++)
             {
                 var input = Matrix<double>.Build.Dense(newVariableIndexes.InputVarIndexes.Length, 1);
@@ -125,7 +128,7 @@ namespace NNLib.Csv
                     {
                         input[r++, 0] = _fileContents[i].input[map.index, 0];
                     }
-                    else if(map.dst == 0)
+                    else if (map.dst == 0)
                     {
                         input[r++, 0] = _fileContents[i].target[map.index, 0];
                     }
@@ -212,7 +215,7 @@ namespace NNLib.Csv
 
         internal CsvVectorReader Copy()
         {
-            return new CsvVectorReader(CurrentIndexes, _dataSetInfo, _fileContents,_csvReader, _ignored);
+            return new CsvVectorReader(CurrentIndexes, _dataSetInfo, _fileContents, _csvReader, _ignored);
         }
     }
 }
