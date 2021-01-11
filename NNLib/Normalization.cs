@@ -30,15 +30,15 @@ namespace NNLib
 
     public class MinMaxNormalization : NormalizationBase
     {
-        private readonly double a;
-        private readonly double b;
-        private double[] _min;
-        private double[] _max;
+        private readonly double _a;
+        private readonly double _b;
+        private double[] _min = null!;
+        private double[] _max = null!;
 
         public MinMaxNormalization(double a, double b)
         {
-            this.a = a;
-            this.b = b;
+            _a = a;
+            _b = b;
         }
 
         void ToMinMax(Matrix<double> y)
@@ -77,7 +77,7 @@ namespace NNLib
 
                     for (int j = 0; j < set.Count; j++)
                     {
-                        set[j].At(i, 0, (set[j].At(i, 0) - min) * (b - a) / (max - min != 0 ? max - min : 1) + a);
+                        set[j].At(i, 0, (set[j].At(i, 0) - min) * (_b - _a) / (max - min != 0 ? max - min : 1) + _a);
                     }
                 }
             });
@@ -104,9 +104,9 @@ namespace NNLib
 
     public class MeanNormalization : NormalizationBase
     {
-        private double[] _avg;
-        private double[] _max;
-        private double[] _min;
+        private double[] _avg = null!;
+        private double[] _max = null!;
+        private double[] _min = null!;
 
         private void ToMean(Matrix<double> y)
         {
@@ -174,8 +174,8 @@ namespace NNLib
 
     public class Standarization : NormalizationBase
     {
-        private double[] _stddev;
-        private double[] _avg;
+        private double[] _stddev = null!;
+        private double[] _avg = null!;
 
         private void ToStd(Matrix<double> y)
         {
@@ -248,8 +248,8 @@ namespace NNLib
 
     public class RobutstNormalization : NormalizationBase
     {
-        private double[] _median;
-        private double[] _percDiff;
+        private double[] _median = null!;
+        private double[] _percDiff = null!;
 
         private static IEnumerable<Matrix<double>> Enumerate(IEnumerator<Matrix<double>> mat)
         {
